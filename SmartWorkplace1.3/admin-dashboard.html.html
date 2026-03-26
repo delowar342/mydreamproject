@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--navy3:#162035;
+  --gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;
+  --border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --red:#D94F4F;--red-bg:#FDF0F0;--red-bd:#F5CECE;
+  --amber:#C47B1A;--amber-bg:#FDF5E6;--amber-bd:#F0D9A8;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;--blue-bd:#BDDBF7;
+  --green:#1E8A5A;--green-bg:#EAF7F1;--green-bd:#A8DFC5;
+  --purple:#5B45C7;--purple-bg:#F0EEFF;--purple-bd:#C9C1F0;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+
+/* ═══════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════ */
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;letter-spacing:-.2px;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--navy);flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(200,169,110,.8);margin-top:1px;}
+
+.sb-nav{padding:10px 0;flex:1;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);font-weight:400;line-height:1;}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+
+.sb-sub{padding-left:58px;}
+.sb-sub-item{display:flex;align-items:center;gap:6px;padding:6px 18px 6px 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);transition:color .15s;text-decoration:none;}
+.sb-sub-item:hover{color:rgba(255,255,255,.85);}
+.sb-sub-item.active{color:var(--gold);}
+.sb-sub-item::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+
+.sb-area-toggle{cursor:pointer;}
+.sb-chevron{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s;flex-shrink:0;}
+.sb-area-toggle.open .sb-chevron{transform:rotate(90deg);}
+.sb-sub-list{overflow:hidden;max-height:0;transition:max-height .25s ease;}
+.sb-sub-list.open{max-height:300px;}
+
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+
+/* ═══════════════════════════════════
+   MAIN
+═══════════════════════════════════ */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-title{font-size:15px;font-weight:600;color:var(--text);}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);}
+.breadcrumb span{color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;width:240px;transition:border-color .18s;}
+.search-bar:focus-within{border-color:var(--navy);background:#fff;}
+.search-bar input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.search-bar input::placeholder{color:var(--light);}
+.search-icon{color:var(--light);font-size:14px;}
+
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;position:relative;}
+.top-btn:hover{border-color:var(--navy);background:var(--bg);}
+.notif-badge{position:absolute;top:-3px;right:-3px;width:16px;height:16px;background:var(--red);border-radius:50%;font-size:9px;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+
+/* CONTENT */
+.content{padding:24px 28px;flex:1;}
+
+/* PAGE HEADER */
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+.page-hdr-right{display:flex;gap:8px;align-items:center;}
+.date-badge{font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 12px;}
+
+/* ACTION BUTTON */
+.btn-act{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn-act:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);border-color:var(--navy);transform:translateY(-1px);}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:22px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;cursor:pointer;transition:all .18s;}
+.stat-card:hover{border-color:var(--navy);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.sc-red::before{background:var(--red);}
+.sc-amber::before{background:#E09B1A;}
+.sc-blue::before{background:var(--blue);}
+.sc-green::before{background:var(--green);}
+.sc-purple::before{background:var(--purple);}
+.sc-navy::before{background:var(--navy);}
+.stat-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.stat-num{font-family:'DM Serif Display',serif;font-size:28px;color:var(--text);line-height:1;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:4px;}
+.stat-trend{font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px;}
+.trend-up{background:var(--green-bg);color:var(--green);}
+.trend-dn{background:var(--red-bg);color:var(--red);}
+.trend-ok{background:var(--blue-bg);color:var(--blue);}
+.stat-icon{position:absolute;right:14px;top:14px;font-size:20px;opacity:.4;}
+
+/* ── TWO COLUMN LAYOUT ── */
+.two-col{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-bottom:16px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+
+/* ── CARD PANEL ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2);}
+.panel-hdr h2{font-size:14px;font-weight:600;color:var(--text);}
+.panel-hdr-right{display:flex;align-items:center;gap:8px;}
+.panel-link{font-size:12px;color:var(--navy);font-weight:500;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color .15s;}
+.panel-link:hover{color:var(--gold);}
+
+/* ── PRIORITY INBOX ── */
+.inbox-section{padding:0;}
+.inbox-group-hdr{padding:8px 18px 6px;display:flex;align-items:center;gap:8px;background:var(--bg);border-bottom:1px solid var(--border2);}
+.inbox-group-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.inbox-group-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.inbox-group-count{font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;}
+.ig-urgent .inbox-group-dot{background:var(--red);}
+.ig-urgent .inbox-group-label{color:var(--red);}
+.ig-urgent .inbox-group-count{background:var(--red-bg);color:var(--red);}
+.ig-imp .inbox-group-dot{background:var(--amber);}
+.ig-imp .inbox-group-label{color:var(--amber);}
+.ig-imp .inbox-group-count{background:var(--amber-bg);color:var(--amber);}
+.ig-prog .inbox-group-dot{background:var(--blue);}
+.ig-prog .inbox-group-label{color:var(--blue);}
+.ig-prog .inbox-group-count{background:var(--blue-bg);color:var(--blue);}
+
+.inbox-item{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.inbox-item:hover{background:var(--bg);}
+.inbox-item:last-child{border-bottom:none;}
+.ii-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.ii-body{flex:1;min-width:0;}
+.ii-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ii-desc{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ii-meta{display:flex;align-items:center;gap:6px;margin-top:4px;}
+.ii-time{font-size:10.5px;color:var(--light);}
+.ii-module{font-size:10px;padding:1px 7px;border-radius:10px;font-weight:500;}
+.ii-action{flex-shrink:0;}
+.ii-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.ii-btn-red{background:var(--red-bg);color:var(--red);}
+.ii-btn-red:hover{background:var(--red);color:#fff;}
+.ii-btn-amber{background:var(--amber-bg);color:var(--amber);}
+.ii-btn-amber:hover{background:#E09B1A;color:#fff;}
+.ii-btn-blue{background:var(--blue-bg);color:var(--blue);}
+.ii-btn-blue:hover{background:var(--blue);color:#fff;}
+
+/* ── ACTIVITY FEED ── */
+.activity-item{display:flex;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border2);font-size:13px;}
+.activity-item:last-child{border-bottom:none;}
+.act-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.act-body{flex:1;}
+.act-title{color:var(--text);line-height:1.4;font-size:12.5px;}
+.act-title strong{font-weight:600;}
+.act-time{font-size:11px;color:var(--light);margin-top:2px;}
+
+/* ── PROPERTY CARDS ── */
+.property-item{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.property-item:hover{background:var(--bg);}
+.property-item:last-child{border-bottom:none;}
+.prop-left{display:flex;align-items:center;gap:10px;}
+.prop-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.prop-name{font-size:13px;font-weight:500;color:var(--text);}
+.prop-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.prop-right{display:flex;align-items:center;gap:8px;}
+.prop-badge{font-size:11px;padding:3px 9px;border-radius:10px;font-weight:500;}
+.pb-green{background:var(--green-bg);color:var(--green);}
+.pb-amber{background:var(--amber-bg);color:var(--amber);}
+.pb-red{background:var(--red-bg);color:var(--red);}
+.prop-stat{font-size:11px;color:var(--muted);}
+
+/* ── BUDGET BAR ── */
+.budget-item{padding:12px 18px;border-bottom:1px solid var(--border2);}
+.budget-item:last-child{border-bottom:none;}
+.budget-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.budget-label{font-size:13px;font-weight:500;color:var(--text);}
+.budget-val{font-size:12px;color:var(--muted);}
+.budget-bar-wrap{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;}
+.budget-bar{height:100%;border-radius:3px;transition:width .8s ease;}
+.bar-green{background:var(--green);}
+.bar-amber{background:#E09B1A;}
+.bar-red{background:var(--red);}
+.budget-pct{font-size:11px;margin-top:5px;font-weight:500;}
+
+/* ── QUICK ACTIONS ── */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 18px;}
+.qa-btn{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;background:var(--bg);}
+.qa-btn:hover{border-color:var(--navy);background:var(--surface);transform:translateY(-1px);}
+.qa-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.qa-text{font-size:12.5px;font-weight:500;color:var(--text);line-height:1.2;}
+.qa-sub{font-size:10.5px;color:var(--muted);margin-top:1px;}
+
+/* ── VENDOR KPI ── */
+.vendor-item{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.vendor-item:last-child{border-bottom:none;}
+.vendor-item:hover{background:var(--bg);}
+.vendor-av{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.vendor-name{font-size:13px;font-weight:500;color:var(--text);}
+.vendor-type{font-size:11px;color:var(--muted);}
+.vendor-right{margin-left:auto;text-align:right;}
+.vendor-score{font-size:15px;font-weight:700;color:var(--text);}
+.vendor-trend{font-size:11px;color:var(--muted);margin-top:1px;}
+.kpi-bar{width:60px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:5px;margin-left:auto;}
+.kpi-fill{height:100%;border-radius:3px;}
+
+/* TAGS */
+.tag{display:inline-flex;align-items:center;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-purple{background:var(--purple-bg);color:var(--purple);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+
+/* SCROLL AREA */
+.scroll-area{overflow-y:auto;max-height:360px;}
+.scroll-area::-webkit-scrollbar{width:3px;}
+.scroll-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* TOOLTIP */
+.tippy{position:relative;}
+.tippy:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:11px;padding:4px 8px;border-radius:5px;white-space:nowrap;pointer-events:none;z-index:999;}
+
+/* DROPDOWN */
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-item:first-child{border-radius:10px 10px 0 0;}
+.dd-item:last-child{border-radius:0 0 10px 10px;}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.content>*{animation:fadeIn .4s ease both;}
+.stat-grid{animation-delay:.05s;}
+.two-col{animation-delay:.1s;}
+.three-col{animation-delay:.15s;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="sb-name">SmartWorkplace</div>
+        <div class="sb-by">bEnabler Bangladesh</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-user">
+    <div class="sb-avatar">DH</div>
+    <div>
+      <div class="sb-uname">Delowar Hossain</div>
+      <div class="sb-urole">Company Admin</div>
+    </div>
+  </div>
+
+  <nav class="sb-nav">
+    <!-- MAIN -->
+    <div class="sb-section"><span class="sb-section-label">Main</span></div>
+    <a class="sb-item active" href="admin-dashboard.html">
+      <div class="sb-item-icon">🏠</div>
+      <span class="sb-item-text">Dashboard</span>
+    </a>
+    <a class="sb-item" href="#">
+      <div class="sb-item-icon">🔔</div>
+      <span class="sb-item-text">Priority Inbox</span>
+      <span style="margin-left:auto;background:#D94F4F;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;">5</span>
+    </a>
+    <a class="sb-item" href="#">
+      <div class="sb-item-icon">🔍</div>
+      <span class="sb-item-text">Global Search</span>
+    </a>
+
+    <!-- AREA 1 -->
+    <div class="sb-section"><span class="sb-section-label">Area 1 — Workplace</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)">
+      <div class="sb-item-icon">🏢</div>
+      <span class="sb-item-text">Workplace Services</span>
+      <span class="sb-chevron">▶</span>
+    </div>
+    <div class="sb-sub-list">
+      <div class="sb-sub">
+        <a class="sb-sub-item" href="#">Service Requests</a>
+        <a class="sb-sub-item" href="#">Meeting Rooms</a>
+        <a class="sb-sub-item" href="#">Cafeteria</a>
+        <a class="sb-sub-item" href="#">Visitor Management</a>
+        <a class="sb-sub-item" href="#">Parking</a>
+        <a class="sb-sub-item" href="#">Courier</a>
+        <a class="sb-sub-item" href="#">Gym and Daycare</a>
+      </div>
+    </div>
+
+    <!-- AREA 2 -->
+    <div class="sb-section"><span class="sb-section-label">Area 2 — Assets</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)">
+      <div class="sb-item-icon">🏗</div>
+      <span class="sb-item-text">Real Estate and Assets</span>
+      <span class="sb-chevron">▶</span>
+    </div>
+    <div class="sb-sub-list">
+      <div class="sb-sub">
+        <a class="sb-sub-item" href="#">Lease Management</a>
+        <a class="sb-sub-item" href="#">Space Management</a>
+        <a class="sb-sub-item" href="#">Asset Register</a>
+        <a class="sb-sub-item" href="#">Maintenance</a>
+        <a class="sb-sub-item" href="#">Utilities</a>
+        <a class="sb-sub-item" href="#">Licenses</a>
+      </div>
+    </div>
+
+    <!-- AREA 3 -->
+    <div class="sb-section"><span class="sb-section-label">Area 3 — Security</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)">
+      <div class="sb-item-icon">🔒</div>
+      <span class="sb-item-text">Security and EHS</span>
+      <span class="sb-chevron">▶</span>
+    </div>
+    <div class="sb-sub-list">
+      <div class="sb-sub">
+        <a class="sb-sub-item" href="#">Security Operations</a>
+        <a class="sb-sub-item" href="#">Access Control</a>
+        <a class="sb-sub-item" href="#">Gate Pass</a>
+        <a class="sb-sub-item" href="#">Incidents</a>
+        <a class="sb-sub-item" href="#">EHS Compliance</a>
+      </div>
+    </div>
+
+    <!-- AREA 4 -->
+    <div class="sb-section"><span class="sb-section-label">Area 4 — Vendors</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)">
+      <div class="sb-item-icon">💼</div>
+      <span class="sb-item-text">Vendor and Finance</span>
+      <span class="sb-chevron">▶</span>
+    </div>
+    <div class="sb-sub-list">
+      <div class="sb-sub">
+        <a class="sb-sub-item" href="#">Vendor Management</a>
+        <a class="sb-sub-item" href="#">Contracts</a>
+        <a class="sb-sub-item" href="#">GRN Management</a>
+        <a class="sb-sub-item" href="#">Billing and Payments</a>
+        <a class="sb-sub-item" href="#">Penalty Management</a>
+        <a class="sb-sub-item" href="#">Vendor Performance</a>
+      </div>
+    </div>
+
+    <!-- AREA 5 -->
+    <div class="sb-section"><span class="sb-section-label">Area 5 — Fleet</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)">
+      <div class="sb-item-icon">🚗</div>
+      <span class="sb-item-text">Fleet Management</span>
+      <span class="sb-chevron">▶</span>
+    </div>
+    <div class="sb-sub-list">
+      <div class="sb-sub">
+        <a class="sb-sub-item" href="#">Fleet Inventory</a>
+        <a class="sb-sub-item" href="#">Vehicle Requisition</a>
+        <a class="sb-sub-item" href="#">Fuel Tracking</a>
+        <a class="sb-sub-item" href="#">Compliance</a>
+      </div>
+    </div>
+
+    <!-- AREA 6 -->
+    <div class="sb-section"><span class="sb-section-label">Area 6 — Inventory</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)">
+      <div class="sb-item-icon">📦</div>
+      <span class="sb-item-text">Inventory and Supply</span>
+      <span class="sb-chevron">▶</span>
+    </div>
+    <div class="sb-sub-list">
+      <div class="sb-sub">
+        <a class="sb-sub-item" href="#">Store Management</a>
+        <a class="sb-sub-item" href="#">Stock Levels</a>
+        <a class="sb-sub-item" href="#">Requisitions</a>
+        <a class="sb-sub-item" href="#">Consumption</a>
+      </div>
+    </div>
+
+    <!-- AREA 7 -->
+    <div class="sb-section"><span class="sb-section-label">Area 7 — Admin</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)">
+      <div class="sb-item-icon">✈️</div>
+      <span class="sb-item-text">Admin Support</span>
+      <span class="sb-chevron">▶</span>
+    </div>
+    <div class="sb-sub-list">
+      <div class="sb-sub">
+        <a class="sb-sub-item" href="#">Travel Management</a>
+        <a class="sb-sub-item" href="#">Cleaning Services</a>
+        <a class="sb-sub-item" href="#">ID and Business Cards</a>
+        <a class="sb-sub-item" href="#">Employee Admin</a>
+      </div>
+    </div>
+
+    <!-- PLATFORM -->
+    <div class="sb-section"><span class="sb-section-label">Platform</span></div>
+    <a class="sb-item" href="#">
+      <div class="sb-item-icon">📊</div>
+      <span class="sb-item-text">Reports and Analytics</span>
+    </a>
+    <a class="sb-item" href="#">
+      <div class="sb-item-icon">💰</div>
+      <span class="sb-item-text">Budget Management</span>
+    </a>
+    <a class="sb-item" href="#">
+      <div class="sb-item-icon">👥</div>
+      <span class="sb-item-text">User Management</span>
+    </a>
+    <a class="sb-item" href="#">
+      <div class="sb-item-icon">⚙️</div>
+      <span class="sb-item-text">Admin Settings</span>
+    </a>
+  </nav>
+
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'">
+      <span style="font-size:15px;">🚪</span>
+      <span>Sign Out</span>
+    </div>
+    <div class="sb-bottom-item">
+      <span style="font-size:15px;">❓</span>
+      <span>Help and Support</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb">
+        <span>SmartWorkplace</span>
+        <span style="color:var(--light)">›</span>
+        <span>Dashboard</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search tickets, vendors, assets...">
+      </div>
+      <div class="top-btn tippy" data-tip="Notifications">
+        🔔
+        <span class="notif-badge">5</span>
+      </div>
+      <div class="top-btn tippy" data-tip="System Health">⚡</div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;color:var(--text);">
+          <div style="width:26px;height:26px;background:var(--navy);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--gold);">DH</div>
+          <span>Delowar</span>
+          <span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div>
+          <div class="dd-item">⚙️ Settings</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>Good morning, Delowar 👋</h1>
+        <p>Here is what is happening across your workplace today</p>
+      </div>
+      <div class="page-hdr-right">
+        <div class="date-badge">📅 Wednesday, 25 March 2025</div>
+        <button class="btn-act btn-outline" onclick="alert('Reports coming soon!')">📊 View Reports</button>
+        <button class="btn-act">+ Quick Action</button>
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid">
+      <div class="stat-card sc-red" onclick="alert('Opening open requests...')">
+        <span class="stat-icon">🎫</span>
+        <div class="stat-label">Open Requests</div>
+        <div class="stat-num">24</div>
+        <div class="stat-sub"><span class="stat-trend trend-up">+3</span> since yesterday</div>
+      </div>
+      <div class="stat-card sc-amber" onclick="alert('Opening pending approvals...')">
+        <span class="stat-icon">⏳</span>
+        <div class="stat-label">Pending Approvals</div>
+        <div class="stat-num">8</div>
+        <div class="stat-sub"><span class="stat-trend trend-dn">-2</span> since yesterday</div>
+      </div>
+      <div class="stat-card sc-blue" onclick="alert('Opening visitor log...')">
+        <span class="stat-icon">👥</span>
+        <div class="stat-label">Visitors Today</div>
+        <div class="stat-num">12</div>
+        <div class="stat-sub"><span class="stat-trend trend-ok">4</span> checked in now</div>
+      </div>
+      <div class="stat-card sc-green" onclick="alert('Opening room bookings...')">
+        <span class="stat-icon">📅</span>
+        <div class="stat-label">Rooms Booked</div>
+        <div class="stat-num">7</div>
+        <div class="stat-sub"><span class="stat-trend trend-ok">3</span> in use now</div>
+      </div>
+      <div class="stat-card sc-purple" onclick="alert('Opening vendor dashboard...')">
+        <span class="stat-icon">🏭</span>
+        <div class="stat-label">Active Vendors</div>
+        <div class="stat-num">18</div>
+        <div class="stat-sub"><span class="stat-trend trend-dn" style="background:var(--red-bg);color:var(--red);">2</span> KPI alerts</div>
+      </div>
+      <div class="stat-card sc-navy" onclick="alert('Opening critical alerts...')">
+        <span class="stat-icon">🚨</span>
+        <div class="stat-label">Critical Alerts</div>
+        <div class="stat-num" style="color:var(--red);">3</div>
+        <div class="stat-sub"><span class="stat-trend trend-dn" style="background:var(--red-bg);color:var(--red);">!</span> Needs action</div>
+      </div>
+    </div>
+
+    <!-- ROW 2: PRIORITY INBOX + QUICK ACTIONS -->
+    <div class="two-col">
+
+      <!-- PRIORITY INBOX -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>🔴 Priority Inbox</h2>
+          <div class="panel-hdr-right">
+            <span class="tag tag-red">5 urgent</span>
+            <button class="panel-link">View all</button>
+          </div>
+        </div>
+        <div class="scroll-area">
+
+          <!-- URGENT -->
+          <div class="inbox-group-hdr ig-urgent">
+            <div class="inbox-group-dot"></div>
+            <span class="inbox-group-label">Urgent — action needed now</span>
+            <span class="inbox-group-count">3</span>
+          </div>
+
+          <div class="inbox-item">
+            <div class="ii-dot" style="background:var(--red);"></div>
+            <div class="ii-body">
+              <div class="ii-title">SLA Breached — HVAC breakdown Floor 3</div>
+              <div class="ii-desc">Ticket MNT-2025-0142 · Assigned to Cooling Solutions Ltd</div>
+              <div class="ii-meta">
+                <span class="ii-time">⏱ 4 hours overdue</span>
+                <span class="ii-module tag tag-red">Maintenance</span>
+              </div>
+            </div>
+            <div class="ii-action"><button class="ii-btn ii-btn-red" onclick="alert('Opening MNT-2025-0142...')">Escalate</button></div>
+          </div>
+
+          <div class="inbox-item">
+            <div class="ii-dot" style="background:var(--red);"></div>
+            <div class="ii-body">
+              <div class="ii-title">Security — Guard absent at Main Gate</div>
+              <div class="ii-desc">HQ Building · Shift 1 · 2 guards below strength</div>
+              <div class="ii-meta">
+                <span class="ii-time">⏱ Since 8:00am</span>
+                <span class="ii-module tag tag-red">Security</span>
+              </div>
+            </div>
+            <div class="ii-action"><button class="ii-btn ii-btn-red" onclick="alert('Opening security alert...')">Act Now</button></div>
+          </div>
+
+          <div class="inbox-item">
+            <div class="ii-dot" style="background:var(--red);"></div>
+            <div class="ii-body">
+              <div class="ii-title">Bill approval overdue — ABC Security Ltd</div>
+              <div class="ii-desc">February 2025 bill · BDT 185,000 · 5 days overdue</div>
+              <div class="ii-meta">
+                <span class="ii-time">⏱ 5 days waiting</span>
+                <span class="ii-module tag tag-red">Finance</span>
+              </div>
+            </div>
+            <div class="ii-action"><button class="ii-btn ii-btn-red" onclick="alert('Opening bill approval...')">Review</button></div>
+          </div>
+
+          <!-- IMPORTANT -->
+          <div class="inbox-group-hdr ig-imp">
+            <div class="inbox-group-dot"></div>
+            <span class="inbox-group-label">Important — due today</span>
+            <span class="inbox-group-count">5</span>
+          </div>
+
+          <div class="inbox-item">
+            <div class="ii-dot" style="background:var(--amber);"></div>
+            <div class="ii-body">
+              <div class="ii-title">EHS Checklist due — HQ Building</div>
+              <div class="ii-desc">Monthly fire safety audit · Due by 5:00pm today</div>
+              <div class="ii-meta">
+                <span class="ii-time">Due in 3 hours</span>
+                <span class="ii-module tag tag-amber">EHS</span>
+              </div>
+            </div>
+            <div class="ii-action"><button class="ii-btn ii-btn-amber" onclick="alert('Opening EHS checklist...')">Open</button></div>
+          </div>
+
+          <div class="inbox-item">
+            <div class="ii-dot" style="background:var(--amber);"></div>
+            <div class="ii-body">
+              <div class="ii-title">3 service requests unassigned</div>
+              <div class="ii-desc">Plumbing, electrical, general · Raised 2 to 4 hours ago</div>
+              <div class="ii-meta">
+                <span class="ii-time">Waiting assignment</span>
+                <span class="ii-module tag tag-amber">Requests</span>
+              </div>
+            </div>
+            <div class="ii-action"><button class="ii-btn ii-btn-amber" onclick="alert('Opening unassigned requests...')">Assign</button></div>
+          </div>
+
+          <!-- IN PROGRESS -->
+          <div class="inbox-group-hdr ig-prog">
+            <div class="inbox-group-dot"></div>
+            <span class="inbox-group-label">In progress — monitoring</span>
+            <span class="inbox-group-count">8</span>
+          </div>
+
+          <div class="inbox-item">
+            <div class="ii-dot" style="background:var(--blue);"></div>
+            <div class="ii-body">
+              <div class="ii-title">Vendor onboarding — Fresh Foods Ltd</div>
+              <div class="ii-desc">Cafeteria vendor · Documents pending review</div>
+              <div class="ii-meta">
+                <span class="ii-time">Submitted 2 days ago</span>
+                <span class="ii-module tag tag-blue">Vendors</span>
+              </div>
+            </div>
+            <div class="ii-action"><button class="ii-btn ii-btn-blue" onclick="alert('Opening vendor onboarding...')">Review</button></div>
+          </div>
+
+          <div class="inbox-item">
+            <div class="ii-dot" style="background:var(--blue);"></div>
+            <div class="ii-body">
+              <div class="ii-title">Employee exit — Tanvir Ahmed</div>
+              <div class="ii-desc">Exit date: 28 March · 2 of 4 checklist items done</div>
+              <div class="ii-meta">
+                <span class="ii-time">3 days remaining</span>
+                <span class="ii-module tag tag-blue">HR</span>
+              </div>
+            </div>
+            <div class="ii-action"><button class="ii-btn ii-btn-blue" onclick="alert('Opening exit checklist...')">View</button></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- QUICK ACTIONS -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>⚡ Quick Actions</h2>
+          </div>
+          <div class="qa-grid">
+            <div class="qa-btn" onclick="alert('Add vendor form coming soon!')">
+              <div class="qa-icon" style="background:var(--amber-bg);">🏭</div>
+              <div><div class="qa-text">Add Vendor</div><div class="qa-sub">Onboard new vendor</div></div>
+            </div>
+            <div class="qa-btn" onclick="alert('Add user form coming soon!')">
+              <div class="qa-icon" style="background:var(--blue-bg);">👤</div>
+              <div><div class="qa-text">Add User</div><div class="qa-sub">Create account</div></div>
+            </div>
+            <div class="qa-btn" onclick="alert('Service request form coming soon!')">
+              <div class="qa-icon" style="background:var(--green-bg);">🎫</div>
+              <div><div class="qa-text">Raise Request</div><div class="qa-sub">New service ticket</div></div>
+            </div>
+            <div class="qa-btn" onclick="alert('Reports page coming soon!')">
+              <div class="qa-icon" style="background:var(--purple-bg);">📊</div>
+              <div><div class="qa-text">View Reports</div><div class="qa-sub">Analytics</div></div>
+            </div>
+            <div class="qa-btn" onclick="alert('Gate pass form coming soon!')">
+              <div class="qa-icon" style="background:var(--red-bg);">🚪</div>
+              <div><div class="qa-text">Gate Pass</div><div class="qa-sub">Approve movement</div></div>
+            </div>
+            <div class="qa-btn" onclick="alert('Settings page coming soon!')">
+              <div class="qa-icon" style="background:var(--bg);">⚙️</div>
+              <div><div class="qa-text">Settings</div><div class="qa-sub">Configure platform</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROPERTY STATUS -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>🏢 Property Status</h2>
+            <button class="panel-link">View all</button>
+          </div>
+          <div class="property-item" onclick="alert('Opening HQ dashboard...')">
+            <div class="prop-left">
+              <div class="prop-dot" style="background:var(--red);"></div>
+              <div>
+                <div class="prop-name">HQ Building — Dhaka</div>
+                <div class="prop-sub">5 floors · 320 employees</div>
+              </div>
+            </div>
+            <div class="prop-right">
+              <span class="prop-badge pb-red">🔴 Urgent</span>
+            </div>
+          </div>
+          <div class="property-item" onclick="alert('Opening Branch 1 dashboard...')">
+            <div class="prop-left">
+              <div class="prop-dot" style="background:#E09B1A;"></div>
+              <div>
+                <div class="prop-name">Branch 1 — Chittagong</div>
+                <div class="prop-sub">2 floors · 85 employees</div>
+              </div>
+            </div>
+            <div class="prop-right">
+              <span class="prop-badge pb-amber">🟡 Attention</span>
+            </div>
+          </div>
+          <div class="property-item" onclick="alert('Opening Branch 2 dashboard...')">
+            <div class="prop-left">
+              <div class="prop-dot" style="background:var(--green);"></div>
+              <div>
+                <div class="prop-name">Branch 2 — Sylhet</div>
+                <div class="prop-sub">1 floor · 42 employees</div>
+              </div>
+            </div>
+            <div class="prop-right">
+              <span class="prop-badge pb-green">🟢 Good</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ROW 3: BUDGET + VENDOR KPI + ACTIVITY -->
+    <div class="three-col">
+
+      <!-- BUDGET SNAPSHOT -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>💰 Budget — March 2025</h2>
+          <button class="panel-link">Full report</button>
+        </div>
+        <div class="budget-item">
+          <div class="budget-row">
+            <span class="budget-label">Security Services</span>
+            <span class="budget-val">BDT 185K / 200K</span>
+          </div>
+          <div class="budget-bar-wrap"><div class="budget-bar bar-amber" style="width:92%;"></div></div>
+          <div class="budget-pct" style="color:var(--amber);">92% used — 8% remaining</div>
+        </div>
+        <div class="budget-item">
+          <div class="budget-row">
+            <span class="budget-label">Cleaning Services</span>
+            <span class="budget-val">BDT 95K / 150K</span>
+          </div>
+          <div class="budget-bar-wrap"><div class="budget-bar bar-green" style="width:63%;"></div></div>
+          <div class="budget-pct" style="color:var(--green);">63% used — on track</div>
+        </div>
+        <div class="budget-item">
+          <div class="budget-row">
+            <span class="budget-label">Maintenance</span>
+            <span class="budget-val">BDT 210K / 200K</span>
+          </div>
+          <div class="budget-bar-wrap"><div class="budget-bar bar-red" style="width:100%;"></div></div>
+          <div class="budget-pct" style="color:var(--red);">105% — BDT 10K over budget</div>
+        </div>
+        <div class="budget-item">
+          <div class="budget-row">
+            <span class="budget-label">Fleet and Transport</span>
+            <span class="budget-val">BDT 120K / 250K</span>
+          </div>
+          <div class="budget-bar-wrap"><div class="budget-bar bar-green" style="width:48%;"></div></div>
+          <div class="budget-pct" style="color:var(--green);">48% used — good</div>
+        </div>
+        <div class="budget-item">
+          <div class="budget-row">
+            <span class="budget-label">Utilities</span>
+            <span class="budget-val">BDT 88K / 120K</span>
+          </div>
+          <div class="budget-bar-wrap"><div class="budget-bar bar-amber" style="width:73%;"></div></div>
+          <div class="budget-pct" style="color:var(--amber);">73% used — watch</div>
+        </div>
+      </div>
+
+      <!-- VENDOR KPI -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>🏭 Vendor KPI Scores</h2>
+          <button class="panel-link">View all</button>
+        </div>
+        <div class="vendor-item" onclick="alert('Opening vendor profile...')">
+          <div class="vendor-av" style="background:#1A5FAB;">AS</div>
+          <div>
+            <div class="vendor-name">ABC Security Ltd</div>
+            <div class="vendor-type">Security Services</div>
+          </div>
+          <div class="vendor-right">
+            <div class="vendor-score" style="color:var(--green);">94%</div>
+            <div class="vendor-trend">↑ from 91%</div>
+            <div class="kpi-bar"><div class="kpi-fill bar-green" style="width:94%;"></div></div>
+          </div>
+        </div>
+        <div class="vendor-item" onclick="alert('Opening vendor profile...')">
+          <div class="vendor-av" style="background:#5B45C7;">FF</div>
+          <div>
+            <div class="vendor-name">Fresh Foods Ltd</div>
+            <div class="vendor-type">Cafeteria Services</div>
+          </div>
+          <div class="vendor-right">
+            <div class="vendor-score" style="color:var(--green);">88%</div>
+            <div class="vendor-trend">↑ from 85%</div>
+            <div class="kpi-bar"><div class="kpi-fill bar-green" style="width:88%;"></div></div>
+          </div>
+        </div>
+        <div class="vendor-item" onclick="alert('Opening vendor profile...')">
+          <div class="vendor-av" style="background:#C47B1A;">CS</div>
+          <div>
+            <div class="vendor-name">Cooling Solutions</div>
+            <div class="vendor-type">HVAC Maintenance</div>
+          </div>
+          <div class="vendor-right">
+            <div class="vendor-score" style="color:var(--amber);">71%</div>
+            <div class="vendor-trend">↓ from 82%</div>
+            <div class="kpi-bar"><div class="kpi-fill bar-amber" style="width:71%;"></div></div>
+          </div>
+        </div>
+        <div class="vendor-item" onclick="alert('Opening vendor profile...')">
+          <div class="vendor-av" style="background:#D94F4F;">DT</div>
+          <div>
+            <div class="vendor-name">Dhaka Transport</div>
+            <div class="vendor-type">Fleet Services</div>
+          </div>
+          <div class="vendor-right">
+            <div class="vendor-score" style="color:var(--red);">62%</div>
+            <div class="vendor-trend">↓ from 74%</div>
+            <div class="kpi-bar"><div class="kpi-fill bar-red" style="width:62%;"></div></div>
+          </div>
+        </div>
+        <div class="vendor-item" onclick="alert('Opening vendor profile...')">
+          <div class="vendor-av" style="background:#1E8A5A;">GC</div>
+          <div>
+            <div class="vendor-name">Green Clean Co</div>
+            <div class="vendor-type">Cleaning Services</div>
+          </div>
+          <div class="vendor-right">
+            <div class="vendor-score" style="color:var(--green);">91%</div>
+            <div class="vendor-trend">↑ from 89%</div>
+            <div class="kpi-bar"><div class="kpi-fill bar-green" style="width:91%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY FEED -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>📋 Recent Activity</h2>
+          <button class="panel-link">View all</button>
+        </div>
+        <div class="scroll-area">
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--green-bg);">✅</div>
+            <div class="act-body">
+              <div class="act-title"><strong>Ahmed Hassan</strong> completed service request SRQ-0241 — Electrical repair Floor 2</div>
+              <div class="act-time">9 minutes ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--blue-bg);">👤</div>
+            <div class="act-body">
+              <div class="act-title"><strong>New employee</strong> Salma Begum joined — Onboarding checklist triggered for 4 managers</div>
+              <div class="act-time">32 minutes ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--amber-bg);">📦</div>
+            <div class="act-body">
+              <div class="act-title"><strong>Store Manager</strong> recorded wastage — 12 reams A4 paper expired — GL-6002</div>
+              <div class="act-time">1 hour ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--red-bg);">🚨</div>
+            <div class="act-body">
+              <div class="act-title"><strong>Security incident</strong> reported — Unauthorized access attempt Level B2 parking</div>
+              <div class="act-time">1 hour 20 mins ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--green-bg);">💰</div>
+            <div class="act-body">
+              <div class="act-title"><strong>Bill approved</strong> — Green Clean Co March 2025 — BDT 142,000 — awaiting payment</div>
+              <div class="act-time">2 hours ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--purple-bg);">🚗</div>
+            <div class="act-body">
+              <div class="act-title"><strong>Karim Rahman</strong> approved vehicle requisition for client visit — VEH-0089</div>
+              <div class="act-time">2 hours 45 mins ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--blue-bg);">🚪</div>
+            <div class="act-body">
+              <div class="act-title"><strong>Gate pass GP-0312</strong> approved — Laptop and equipment transfer to Chittagong branch</div>
+              <div class="act-time">3 hours ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:var(--green-bg);">📅</div>
+            <div class="act-body">
+              <div class="act-title"><strong>Conference Room A</strong> booked by Tanvir Ahmed for Board Meeting — 3pm today</div>
+              <div class="act-time">4 hours ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<script>
+// Toggle sidebar area sub-menus
+function toggleArea(el) {
+  el.classList.toggle('open');
+  const sub = el.nextElementSibling;
+  if (sub && sub.classList.contains('sb-sub-list')) {
+    sub.classList.toggle('open');
+  }
+}
+
+// Toggle user dropdown
+function toggleDD() {
+  document.getElementById('userDD').classList.toggle('open');
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.dd-wrap')) {
+    document.querySelectorAll('.dd-menu').forEach(m => m.classList.remove('open'));
+  }
+});
+
+// Animate budget bars on load
+window.addEventListener('load', function() {
+  document.querySelectorAll('.budget-bar').forEach(function(bar) {
+    const w = bar.style.width;
+    bar.style.width = '0';
+    setTimeout(function() { bar.style.width = w; }, 300);
+  });
+  document.querySelectorAll('.kpi-fill').forEach(function(bar) {
+    const w = bar.style.width;
+    bar.style.width = '0';
+    setTimeout(function() { bar.style.width = w; }, 400);
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Employee Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --red:#D94F4F;--red-bg:#FDF0F0;
+  --amber:#C47B1A;--amber-bg:#FDF5E6;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;
+  --green:#1E8A5A;--green-bg:#EAF7F1;
+  --purple:#5B45C7;--purple-bg:#F0EEFF;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,#1E8A5A,#2EAA70);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(100,200,150,.9);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+
+/* MAIN */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.breadcrumb span{color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;width:200px;}
+.search-bar:focus-within{border-color:var(--navy);background:#fff;}
+.search-bar input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.search-bar input::placeholder{color:var(--light);}
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;position:relative;}
+.top-btn:hover{border-color:var(--navy);}
+.notif-badge{position:absolute;top:-3px;right:-3px;width:16px;height:16px;background:var(--red);border-radius:50%;font-size:9px;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+
+/* CONTENT */
+.content{padding:24px 28px;flex:1;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+
+/* QUICK ACTIONS BAR */
+.qa-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:22px;}
+.qa-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px 12px;text-align:center;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.qa-card:hover{border-color:var(--navy);transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.1);}
+.qa-card:active{transform:translateY(-1px);}
+.qa-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.qa-label{font-size:12px;font-weight:600;color:var(--text);line-height:1.2;}
+.qa-sub{font-size:10.5px;color:var(--muted);}
+
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-bottom:16px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.two-col-eq{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2);}
+.panel-hdr h2{font-size:14px;font-weight:600;color:var(--text);}
+.panel-link{font-size:12px;color:var(--navy);font-weight:500;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
+.panel-link:hover{color:var(--gold);}
+
+/* TAGS */
+.tag{display:inline-flex;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-purple{background:var(--purple-bg);color:var(--purple);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+
+/* MY REQUESTS */
+.req-item{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.req-item:hover{background:var(--bg);}
+.req-item:last-child{border-bottom:none;}
+.req-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.req-body{flex:1;min-width:0;}
+.req-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;}
+.req-sub{font-size:11.5px;color:var(--muted);}
+.req-meta{display:flex;align-items:center;gap:6px;margin-top:5px;}
+.req-time{font-size:10.5px;color:var(--light);}
+
+/* APPROVAL TRACKER */
+.tracker-wrap{padding:14px 18px;border-bottom:1px solid var(--border2);}
+.tracker-wrap:last-child{border-bottom:none;}
+.tracker-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:10px;}
+.tracker-steps{display:flex;align-items:center;gap:0;}
+.step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;position:relative;}
+.step:not(:last-child)::after{content:'';position:absolute;top:13px;left:calc(50% + 13px);right:calc(-50% + 13px);height:2px;background:var(--border);}
+.step.done:not(:last-child)::after{background:var(--green);}
+.step.current:not(:last-child)::after{background:var(--border);}
+.step-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--border);background:var(--surface);color:var(--muted);z-index:1;flex-shrink:0;}
+.step.done .step-dot{background:var(--green);border-color:var(--green);color:#fff;}
+.step.current .step-dot{background:var(--amber);border-color:var(--amber);color:#fff;box-shadow:0 0 0 3px rgba(196,123,26,.2);}
+.step.overdue .step-dot{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 0 3px rgba(217,79,79,.2);}
+.step-label{font-size:10px;color:var(--muted);text-align:center;line-height:1.2;max-width:60px;}
+.step.done .step-label{color:var(--green);}
+.step.current .step-label{color:var(--amber);font-weight:600;}
+.step.overdue .step-label{color:var(--red);font-weight:600;}
+.tracker-meta{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+.tracker-meta-left{font-size:11px;color:var(--muted);}
+.send-reminder{font-size:11px;font-weight:600;color:var(--navy);background:none;border:none;font-family:'DM Sans',sans-serif;cursor:pointer;padding:3px 8px;border-radius:5px;transition:all .15s;}
+.send-reminder:hover{background:var(--blue-bg);color:var(--blue);}
+
+/* ATTENDANCE CARD */
+.att-card{padding:18px;}
+.att-status-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.att-big{font-size:32px;}
+.att-status-text h3{font-size:16px;font-weight:600;color:var(--text);}
+.att-status-text p{font-size:12px;color:var(--muted);margin-top:2px;}
+.att-time-row{display:flex;gap:12px;margin-bottom:16px;}
+.att-time-card{flex:1;background:var(--bg);border-radius:10px;padding:10px 12px;text-align:center;}
+.att-time-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.att-time-val{font-size:16px;font-weight:700;color:var(--text);}
+.att-month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.att-day{width:100%;aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;}
+.ad-present{background:var(--green-bg);color:var(--green);}
+.ad-wfh{background:var(--blue-bg);color:var(--blue);}
+.ad-leave{background:var(--amber-bg);color:var(--amber);}
+.ad-absent{background:var(--red-bg);color:var(--red);}
+.ad-weekend{background:var(--bg);color:var(--light);}
+.ad-today{border:2px solid var(--navy);}
+.ad-future{background:transparent;color:var(--light);}
+.att-legend{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;}
+.att-leg-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);}
+.att-leg-dot{width:8px;height:8px;border-radius:2px;}
+
+/* ROOM BOOKING */
+.room-item{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.room-item:hover{background:var(--bg);}
+.room-item:last-child{border-bottom:none;}
+.room-time{width:52px;text-align:center;flex-shrink:0;}
+.room-time-start{font-size:13px;font-weight:700;color:var(--text);}
+.room-time-dur{font-size:10px;color:var(--muted);}
+.room-body{flex:1;}
+.room-name{font-size:13px;font-weight:500;color:var(--text);}
+.room-sub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+.room-capacity{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px;}
+
+/* ENTITLEMENTS */
+.entitle-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.ent-item{padding:12px 18px;border-bottom:1px solid var(--border2);border-right:1px solid var(--border2);display:flex;align-items:center;gap:10px;}
+.ent-item:nth-child(2n){border-right:none;}
+.ent-item:nth-last-child(-n+2){border-bottom:none;}
+.ent-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.ent-label{font-size:12px;font-weight:500;color:var(--text);}
+.ent-val{font-size:11px;color:var(--muted);margin-top:1px;}
+
+/* ANNOUNCEMENTS */
+.ann-item{padding:12px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.ann-item:hover{background:var(--bg);}
+.ann-item:last-child{border-bottom:none;}
+.ann-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px;}
+.ann-body{font-size:12px;color:var(--muted);line-height:1.5;}
+.ann-meta{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.ann-time{font-size:10.5px;color:var(--light);}
+
+/* SCROLL */
+.scroll-area{overflow-y:auto;max-height:320px;}
+.scroll-area::-webkit-scrollbar{width:3px;}
+.scroll-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;display:none;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:600;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;padding:2px 6px;border-radius:5px;transition:all .15s;}
+.modal-close:hover{background:var(--bg);color:var(--text);}
+.modal-body{padding:20px 22px;}
+.form-field{margin-bottom:16px;}
+.form-field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--navy);background:#fff;}
+.form-field textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-secondary{padding:10px 20px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn-secondary:hover{border-color:var(--navy);}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.qa-bar{animation:fadeIn .4s .05s ease both;}
+.two-col{animation:fadeIn .4s .1s ease both;}
+.three-col{animation:fadeIn .4s .15s ease both;}
+.two-col-eq{animation:fadeIn .4s .2s ease both;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh</div></div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">AH</div>
+    <div><div class="sb-uname">Ahmed Hassan</div><div class="sb-urole">Employee — Finance Dept</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">My Workspace</span></div>
+    <a class="sb-item active" href="employee-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">My Dashboard</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">👤</div><span class="sb-item-text">My Profile</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">📋</div><span class="sb-item-text">My Attendance</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🔔</div><span class="sb-item-text">My Notifications</span><span style="margin-left:auto;background:#D94F4F;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;">2</span></a>
+    <div class="sb-section"><span class="sb-section-label">My Requests</span></div>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🎫</div><span class="sb-item-text">Service Requests</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">📅</div><span class="sb-item-text">Room Bookings</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🚗</div><span class="sb-item-text">Vehicle Requests</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">✈️</div><span class="sb-item-text">Travel Requests</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🚪</div><span class="sb-item-text">Gate Pass</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">💳</div><span class="sb-item-text">Expense Claims</span></a>
+    <div class="sb-section"><span class="sb-section-label">My Assets</span></div>
+    <a class="sb-item" href="#"><div class="sb-item-icon">💻</div><span class="sb-item-text">My Assets</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🅿</div><span class="sb-item-text">My Parking</span></a>
+    <div class="sb-section"><span class="sb-section-label">Services</span></div>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🍽</div><span class="sb-item-text">Cafeteria</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">📦</div><span class="sb-item-text">Stationery Request</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">📮</div><span class="sb-item-text">Courier</span></a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div>
+    <div class="sb-bottom-item"><span style="font-size:15px;">❓</span><span>Help and Support</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb"><span>SmartWorkplace</span><span style="color:var(--light)">›</span><span>My Dashboard</span></div>
+    <div class="topbar-right">
+      <div class="search-bar"><span style="color:var(--light);font-size:14px;">🔍</span><input type="text" placeholder="Search my requests..."></div>
+      <div class="top-btn">🔔<span class="notif-badge">2</span></div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;color:var(--text);">
+          <div style="width:26px;height:26px;background:#1E8A5A;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;">AH</div>
+          <span>Ahmed</span><span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div>
+          <div class="dd-item">⚙️ Preferences</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>Good morning, Ahmed 👋</h1>
+        <p>Wednesday, 25 March 2025 · Finance Department · HQ Building Floor 3</p>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS BAR -->
+    <div class="qa-bar">
+      <div class="qa-card" onclick="openModal('srModal')">
+        <div class="qa-icon" style="background:var(--amber-bg);">🎫</div>
+        <div class="qa-label">Raise Request</div>
+        <div class="qa-sub">Service or maintenance</div>
+      </div>
+      <div class="qa-card" onclick="openModal('roomModal')">
+        <div class="qa-icon" style="background:var(--blue-bg);">📅</div>
+        <div class="qa-label">Book a Room</div>
+        <div class="qa-sub">Meeting rooms</div>
+      </div>
+      <div class="qa-card" onclick="openModal('vehicleModal')">
+        <div class="qa-icon" style="background:var(--purple-bg);">🚗</div>
+        <div class="qa-label">Request Vehicle</div>
+        <div class="qa-sub">Pool or dedicated</div>
+      </div>
+      <div class="qa-card" onclick="openModal('gateModal')">
+        <div class="qa-icon" style="background:var(--green-bg);">🚪</div>
+        <div class="qa-label">Gate Pass</div>
+        <div class="qa-sub">Items in and out</div>
+      </div>
+      <div class="qa-card" onclick="openModal('travelModal')">
+        <div class="qa-icon" style="background:var(--red-bg);">✈️</div>
+        <div class="qa-label">Travel Request</div>
+        <div class="qa-sub">Local or international</div>
+      </div>
+      <div class="qa-card" onclick="alert('Updating attendance...')">
+        <div class="qa-icon" style="background:var(--bg);border:1.5px solid var(--border);">📍</div>
+        <div class="qa-label">My Attendance</div>
+        <div class="qa-sub">Update status</div>
+      </div>
+    </div>
+
+    <!-- ROW 1: MY REQUESTS + ATTENDANCE -->
+    <div class="two-col">
+
+      <!-- MY REQUESTS + APPROVAL TRACKER -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>📋 My Active Requests</h2>
+          <button class="panel-link">View all →</button>
+        </div>
+
+        <!-- APPROVAL TRACKER: REQUEST 1 -->
+        <div class="tracker-wrap">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div>
+              <div style="font-size:13px;font-weight:500;color:var(--text);">HVAC not cooling — my cabin</div>
+              <div style="font-size:11px;color:var(--muted);">SRQ-0245 · Raised 2 hrs ago · High priority</div>
+            </div>
+            <span class="tag tag-amber">With FM Manager</span>
+          </div>
+          <div class="tracker-steps">
+            <div class="step done"><div class="step-dot">✓</div><div class="step-label">Submitted</div></div>
+            <div class="step current"><div class="step-dot">2</div><div class="step-label">FM Manager</div></div>
+            <div class="step"><div class="step-dot">3</div><div class="step-label">Assigned</div></div>
+            <div class="step"><div class="step-dot">4</div><div class="step-label">In Progress</div></div>
+            <div class="step"><div class="step-dot">5</div><div class="step-label">Accept</div></div>
+          </div>
+          <div class="tracker-meta">
+            <span class="tracker-meta-left">⏱ With Karim Rahman · 2 hours</span>
+            <button class="send-reminder" onclick="alert('Reminder sent to Karim Rahman!')">Send reminder</button>
+          </div>
+        </div>
+
+        <!-- APPROVAL TRACKER: REQUEST 2 -->
+        <div class="tracker-wrap">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div>
+              <div style="font-size:13px;font-weight:500;color:var(--text);">Travel to Chittagong — client meeting</div>
+              <div style="font-size:11px;color:var(--muted);">TRV-0089 · Raised yesterday · 2 nights</div>
+            </div>
+            <span class="tag tag-red">Overdue</span>
+          </div>
+          <div class="tracker-steps">
+            <div class="step done"><div class="step-dot">✓</div><div class="step-label">Submitted</div></div>
+            <div class="step overdue"><div class="step-dot">!</div><div class="step-label">Line Manager</div></div>
+            <div class="step"><div class="step-dot">3</div><div class="step-label">Travel Desk</div></div>
+            <div class="step"><div class="step-dot">4</div><div class="step-label">Confirmed</div></div>
+          </div>
+          <div class="tracker-meta">
+            <span class="tracker-meta-left" style="color:var(--red);">⚠ With Tanvir Ahmed · 1 day overdue</span>
+            <button class="send-reminder" onclick="alert('Urgent reminder sent to Tanvir Ahmed!')" style="color:var(--red);">Send reminder</button>
+          </div>
+        </div>
+
+        <!-- APPROVAL TRACKER: REQUEST 3 -->
+        <div class="tracker-wrap">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div>
+              <div style="font-size:13px;font-weight:500;color:var(--text);">Gate pass — Laptop to client site</div>
+              <div style="font-size:11px;color:var(--muted);">GP-0312 · Raised this morning · Returnable</div>
+            </div>
+            <span class="tag tag-green">Approved</span>
+          </div>
+          <div class="tracker-steps">
+            <div class="step done"><div class="step-dot">✓</div><div class="step-label">Submitted</div></div>
+            <div class="step done"><div class="step-dot">✓</div><div class="step-label">Line Manager</div></div>
+            <div class="step done"><div class="step-dot">✓</div><div class="step-label">Security</div></div>
+            <div class="step done"><div class="step-dot">✓</div><div class="step-label">QR Ready</div></div>
+          </div>
+          <div class="tracker-meta">
+            <span class="tracker-meta-left" style="color:var(--green);">✓ Approved — QR code ready to use</span>
+            <button class="send-reminder" onclick="alert('Showing QR code for GP-0312...')" style="color:var(--green);">Show QR</button>
+          </div>
+        </div>
+
+        <!-- RECENT CLOSED -->
+        <div class="panel-hdr" style="border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);background:var(--bg);">
+          <h2 style="font-size:12px;color:var(--muted);font-weight:500;">Recently Completed</h2>
+        </div>
+        <div class="req-item" onclick="alert('Opening SRQ-0228...')">
+          <div class="req-icon" style="background:var(--green-bg);">✅</div>
+          <div class="req-body">
+            <div class="req-title">Stationery request — A4 paper and pens</div>
+            <div class="req-sub">SRQ-0228 · Delivered to desk · 22 March</div>
+          </div>
+          <span class="tag tag-green">Done</span>
+        </div>
+        <div class="req-item" onclick="alert('Opening TRV-0081...')">
+          <div class="req-icon" style="background:var(--green-bg);">✅</div>
+          <div class="req-body">
+            <div class="req-title">Travel to Dhaka — internal training</div>
+            <div class="req-sub">TRV-0081 · Completed · 18 March · Claim submitted</div>
+          </div>
+          <span class="tag tag-green">Done</span>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- ATTENDANCE -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>📍 My Attendance — March</h2>
+            <button class="panel-link">Full history</button>
+          </div>
+          <div class="att-card">
+            <div class="att-status-row">
+              <div class="att-big">🟢</div>
+              <div class="att-status-text">
+                <h3>Present — In Office</h3>
+                <p>Checked in at 9:02am · Floor 3 HQ</p>
+              </div>
+            </div>
+            <div class="att-time-row">
+              <div class="att-time-card"><div class="att-time-label">Check In</div><div class="att-time-val">9:02am</div></div>
+              <div class="att-time-card"><div class="att-time-label">Hours Today</div><div class="att-time-val">3h 28m</div></div>
+              <div class="att-time-card"><div class="att-time-label">Days Present</div><div class="att-time-val" style="color:var(--green);">18</div></div>
+            </div>
+            <!-- Month grid -->
+            <div class="att-month-grid">
+              <div class="att-day ad-weekend">S</div><div class="att-day ad-weekend">S</div><div class="att-day ad-present">P</div><div class="att-day ad-present">P</div><div class="att-day ad-present">P</div><div class="att-day ad-wfh">W</div><div class="att-day ad-weekend">S</div>
+              <div class="att-day ad-weekend">S</div><div class="att-day ad-present">P</div><div class="att-day ad-present">P</div><div class="att-day ad-leave">L</div><div class="att-day ad-leave">L</div><div class="att-day ad-present">P</div><div class="att-day ad-weekend">S</div>
+              <div class="att-day ad-weekend">S</div><div class="att-day ad-present">P</div><div class="att-day ad-wfh">W</div><div class="att-day ad-present">P</div><div class="att-day ad-present">P</div><div class="att-day ad-present">P</div><div class="att-day ad-weekend">S</div>
+              <div class="att-day ad-weekend">S</div><div class="att-day ad-present">P</div><div class="att-day ad-present">P</div><div class="att-day ad-today ad-present">P</div><div class="att-day ad-future">·</div><div class="att-day ad-future">·</div><div class="att-day ad-weekend">S</div>
+            </div>
+            <div class="att-legend">
+              <div class="att-leg-item"><div class="att-leg-dot" style="background:var(--green);"></div>Present</div>
+              <div class="att-leg-item"><div class="att-leg-dot" style="background:var(--blue);"></div>WFH</div>
+              <div class="att-leg-item"><div class="att-leg-dot" style="background:var(--amber);"></div>Leave</div>
+              <div class="att-leg-item"><div class="att-leg-dot" style="background:var(--red);"></div>Absent</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TODAY'S ROOM BOOKINGS -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>📅 My Bookings Today</h2>
+            <button class="panel-link" onclick="openModal('roomModal')">+ Book room</button>
+          </div>
+          <div class="room-item" onclick="alert('Opening booking details...')">
+            <div class="room-time"><div class="room-time-start">10:00</div><div class="room-time-dur">1 hour</div></div>
+            <div class="room-body">
+              <div class="room-name">Conference Room A</div>
+              <div class="room-sub">Finance quarterly review · 8 attendees</div>
+            </div>
+            <span class="tag tag-green">Confirmed</span>
+          </div>
+          <div class="room-item" onclick="alert('Opening booking details...')">
+            <div class="room-time"><div class="room-time-start">3:00</div><div class="room-time-dur">30 min</div></div>
+            <div class="room-body">
+              <div class="room-name">Meeting Pod 2</div>
+              <div class="room-sub">1-on-1 with line manager</div>
+            </div>
+            <span class="tag tag-green">Confirmed</span>
+          </div>
+          <div style="padding:10px 18px;background:var(--bg);border-top:1px solid var(--border2);">
+            <div style="font-size:12px;color:var(--muted);">Next available slot: <strong style="color:var(--navy);">Conference Room B at 2:00pm</strong></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ROW 2: ENTITLEMENTS + ANNOUNCEMENTS -->
+    <div class="two-col-eq">
+
+      <!-- MY ENTITLEMENTS -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>⭐ My Entitlements</h2>
+          <button class="panel-link">View full profile</button>
+        </div>
+        <div class="entitle-grid">
+          <div class="ent-item">
+            <div class="ent-icon" style="background:var(--blue-bg);">💻</div>
+            <div><div class="ent-label">Laptop</div><div class="ent-val">Dell XPS 15 · AST-0234</div></div>
+          </div>
+          <div class="ent-item">
+            <div class="ent-icon" style="background:var(--purple-bg);">📱</div>
+            <div><div class="ent-label">Mobile Phone</div><div class="ent-val">Samsung S23 · AST-0456</div></div>
+          </div>
+          <div class="ent-item">
+            <div class="ent-icon" style="background:var(--green-bg);">🅿</div>
+            <div><div class="ent-label">Parking Slot</div><div class="ent-val">Pool parking · HQ B1</div></div>
+          </div>
+          <div class="ent-item">
+            <div class="ent-icon" style="background:var(--amber-bg);">🚗</div>
+            <div><div class="ent-label">Vehicle</div><div class="ent-val">Pool access · Grade B</div></div>
+          </div>
+          <div class="ent-item">
+            <div class="ent-icon" style="background:var(--red-bg);">🏋</div>
+            <div><div class="ent-label">Gym Access</div><div class="ent-val">Registered · Active</div></div>
+          </div>
+          <div class="ent-item">
+            <div class="ent-icon" style="background:var(--bg);border:1px solid var(--border);">🔑</div>
+            <div><div class="ent-label">Access Card</div><div class="ent-val">RFID-2245 · Active</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANNOUNCEMENTS -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>📢 Announcements</h2>
+          <button class="panel-link">View all</button>
+        </div>
+        <div class="ann-item" onclick="alert('Opening announcement...')">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+            <span class="tag tag-red">Important</span>
+          </div>
+          <div class="ann-title">Office closure — 26 March 2025</div>
+          <div class="ann-body">The HQ office will be closed tomorrow for building maintenance. All staff are approved for WFH. Please ensure your work equipment is taken home today.</div>
+          <div class="ann-meta"><span class="ann-time">Posted 3 hours ago by Admin</span></div>
+        </div>
+        <div class="ann-item" onclick="alert('Opening announcement...')">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+            <span class="tag tag-blue">General</span>
+          </div>
+          <div class="ann-title">New cafeteria menu — April 2025</div>
+          <div class="ann-body">Fresh Foods Ltd has updated the cafeteria menu for April. New healthy options added. Register by 28 March to lock in your meal plan.</div>
+          <div class="ann-meta"><span class="ann-time">Posted yesterday by FM Manager</span></div>
+        </div>
+        <div class="ann-item" onclick="alert('Opening announcement...')">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+            <span class="tag tag-green">EHS</span>
+          </div>
+          <div class="ann-title">Fire drill — 28 March at 11:00am</div>
+          <div class="ann-body">Mandatory fire evacuation drill for all staff. Please ensure you are in the office. Assembly point: Car park level B1.</div>
+          <div class="ann-meta"><span class="ann-time">Posted 2 days ago by EHS Manager</span></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- MODALS -->
+
+<!-- Service Request Modal -->
+<div class="modal-overlay" id="srModal">
+  <div class="modal">
+    <div class="modal-hdr"><h3>🎫 Raise Service Request</h3><button class="modal-close" onclick="closeModal('srModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-field"><label>Service Category</label><select><option>Select category...</option><option>HVAC — Air conditioning</option><option>Electrical</option><option>Plumbing</option><option>Cleaning</option><option>General maintenance</option><option>Furniture</option></select></div>
+      <div class="form-field"><label>Location</label><select><option>My floor — Floor 3 HQ</option><option>Floor 1 — HQ</option><option>Floor 2 — HQ</option><option>Floor 4 — HQ</option><option>Floor 5 — HQ</option></select></div>
+      <div class="form-field"><label>Description</label><textarea placeholder="Describe the issue in detail..."></textarea></div>
+      <div class="form-row">
+        <div class="form-field"><label>Priority</label><select><option>Normal</option><option>Medium</option><option>High</option></select></div>
+        <div class="form-field"><label>Photo (optional)</label><input type="file" accept="image/*" style="padding:8px;font-size:12px;"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('srModal')">Cancel</button><button class="btn-primary" onclick="submitRequest('srModal','Service request')">Submit Request</button></div>
+  </div>
+</div>
+
+<!-- Room Booking Modal -->
+<div class="modal-overlay" id="roomModal">
+  <div class="modal">
+    <div class="modal-hdr"><h3>📅 Book a Meeting Room</h3><button class="modal-close" onclick="closeModal('roomModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-field"><label>Date</label><input type="date" value="2025-03-25"></div>
+        <div class="form-field"><label>Start Time</label><select><option>9:00am</option><option>9:30am</option><option>10:00am</option><option>10:30am</option><option>11:00am</option><option>2:00pm</option><option>3:00pm</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Duration</label><select><option>30 minutes</option><option>1 hour</option><option>1.5 hours</option><option>2 hours</option><option>Half day</option></select></div>
+        <div class="form-field"><label>Attendees</label><input type="number" value="4" min="1" max="20"></div>
+      </div>
+      <div class="form-field"><label>Meeting Purpose</label><input type="text" placeholder="e.g. Monthly team review"></div>
+      <div class="form-field"><label>Available Rooms (4 attendees)</label>
+        <select>
+          <option>Conference Room B — Floor 3 — 8 seats ✓</option>
+          <option>Meeting Pod 1 — Floor 2 — 4 seats ✓</option>
+          <option>Meeting Pod 3 — Floor 4 — 6 seats ✓</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('roomModal')">Cancel</button><button class="btn-primary" onclick="submitRequest('roomModal','Room booking')">Confirm Booking</button></div>
+  </div>
+</div>
+
+<!-- Vehicle Request Modal -->
+<div class="modal-overlay" id="vehicleModal">
+  <div class="modal">
+    <div class="modal-hdr"><h3>🚗 Request Vehicle</h3><button class="modal-close" onclick="closeModal('vehicleModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-field"><label>Date Required</label><input type="date" value="2025-03-25"></div>
+        <div class="form-field"><label>Time Required</label><input type="time" value="10:00"></div>
+      </div>
+      <div class="form-field"><label>From Location</label><input type="text" placeholder="e.g. HQ Building Dhaka" value="HQ Building Dhaka"></div>
+      <div class="form-field"><label>To Location</label><input type="text" placeholder="e.g. Gulshan 2, Dhaka"></div>
+      <div class="form-field"><label>Purpose</label><input type="text" placeholder="e.g. Client visit — ABC Bank"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Return Trip?</label><select><option>Yes — same day</option><option>Yes — different time</option><option>No — one way</option></select></div>
+        <div class="form-field"><label>Vehicle Type</label><select><option>Sedan — standard</option><option>SUV — premium</option><option>Microbus — group</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('vehicleModal')">Cancel</button><button class="btn-primary" onclick="submitRequest('vehicleModal','Vehicle request')">Submit Request</button></div>
+  </div>
+</div>
+
+<!-- Gate Pass Modal -->
+<div class="modal-overlay" id="gateModal">
+  <div class="modal">
+    <div class="modal-hdr"><h3>🚪 Raise Gate Pass</h3><button class="modal-close" onclick="closeModal('gateModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-field"><label>Gate Pass Type</label>
+        <select id="gpType" onchange="toggleReturnDate()">
+          <option value="perm">Permanent out — item leaves permanently</option>
+          <option value="ret">Returnable out — item will come back</option>
+          <option value="trans">Location transfer — moving to another office</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Item Name</label><input type="text" placeholder="e.g. Dell Laptop"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Quantity</label><input type="number" value="1" min="1"></div>
+        <div class="form-field"><label>Purpose</label><input type="text" placeholder="e.g. Client presentation"></div>
+      </div>
+      <div class="form-field" id="returnDateField"><label>Expected Return Date</label><input type="date"></div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('gateModal')">Cancel</button><button class="btn-primary" onclick="submitRequest('gateModal','Gate pass')">Submit for Approval</button></div>
+  </div>
+</div>
+
+<!-- Travel Request Modal -->
+<div class="modal-overlay" id="travelModal">
+  <div class="modal">
+    <div class="modal-hdr"><h3>✈️ Travel Request</h3><button class="modal-close" onclick="closeModal('travelModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-field"><label>Travel Type</label><select><option>Local — within Bangladesh</option><option>International</option></select></div>
+        <div class="form-field"><label>Destination</label><input type="text" placeholder="e.g. Chittagong"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Departure Date</label><input type="date"></div>
+        <div class="form-field"><label>Return Date</label><input type="date"></div>
+      </div>
+      <div class="form-field"><label>Purpose</label><input type="text" placeholder="e.g. Client meeting — XYZ Corp"></div>
+      <div class="form-field"><label>Services Needed</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--navy);"> Air ticket</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--navy);"> Hotel</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--navy);"> Ground transport</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--navy);"> Fleet support</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('travelModal')">Cancel</button><button class="btn-primary" onclick="submitRequest('travelModal','Travel request')">Submit for Approval</button></div>
+  </div>
+</div>
+
+<script>
+function toggleArea(el){el.classList.toggle('open');const s=el.nextElementSibling;if(s&&s.classList.contains('sb-sub-list'))s.classList.toggle('open');}
+function toggleDD(){document.getElementById('userDD').classList.toggle('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-menu').forEach(m=>m.classList.remove('open'));});
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+function submitRequest(modalId,type){
+  closeModal(modalId);
+  setTimeout(()=>{
+    alert('✅ '+type+' submitted successfully!\n\nYour request has been sent for approval.\nYou will be notified when it is reviewed.\n\nYou can track the approval status on your dashboard.');
+  },200);
+}
+function toggleReturnDate(){
+  const t=document.getElementById('gpType').value;
+  document.getElementById('returnDateField').style.display=t==='ret'?'block':'none';
+}
+toggleReturnDate();
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+</script>
+</body>
+</html>

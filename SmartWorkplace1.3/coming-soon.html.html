@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Coming Soon</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --green:#1E8A5A;--green-bg:#EAF7F1;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+
+/* SIDEBAR — same as all dashboards */
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(200,169,110,.8);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+.sb-chevron{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s;flex-shrink:0;}
+.sb-area-toggle.open .sb-chevron{transform:rotate(90deg);}
+.sb-sub-list{overflow:hidden;max-height:0;transition:max-height .25s ease;}
+.sb-sub-list.open{max-height:400px;}
+.sb-sub{padding-left:58px;}
+.sb-sub-item{display:flex;align-items:center;gap:6px;padding:6px 18px 6px 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);transition:color .15s;text-decoration:none;}
+.sb-sub-item:hover{color:rgba(255,255,255,.85);}
+.sb-sub-item::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+
+/* MAIN */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.breadcrumb span{color:var(--text);}
+
+/* COMING SOON CONTENT */
+.cs-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 28px;}
+.cs-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:52px 48px;text-align:center;max-width:560px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.06);animation:pop .5s cubic-bezier(.16,1,.3,1) both;}
+
+.cs-icon-wrap{width:80px;height:80px;background:var(--bg);border:2px solid var(--border);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:36px;}
+
+.cs-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(200,169,110,.12);border:1px solid rgba(200,169,110,.2);border-radius:20px;padding:5px 14px;margin-bottom:20px;}
+.cs-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 1.5s ease infinite;}
+.cs-tag span{font-size:11px;font-weight:600;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;}
+
+.cs-title{font-family:'DM Serif Display',serif;font-size:32px;color:var(--navy);letter-spacing:-.5px;margin-bottom:12px;line-height:1.1;}
+.cs-title span{color:var(--gold);}
+.cs-desc{font-size:14.5px;color:var(--muted);line-height:1.7;margin-bottom:32px;max-width:400px;margin-left:auto;margin-right:auto;}
+
+/* PROGRESS */
+.cs-progress{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:28px;text-align:left;}
+.cs-prog-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.cs-prog-label{font-size:13px;font-weight:600;color:var(--text);}
+.cs-prog-pct{font-size:13px;font-weight:700;color:var(--navy);}
+.cs-prog-bar-bg{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.cs-prog-bar{height:100%;background:linear-gradient(90deg,var(--navy),var(--blue));border-radius:4px;transition:width 1.2s cubic-bezier(.16,1,.3,1);}
+.cs-prog-sub{font-size:12px;color:var(--muted);margin-top:8px;}
+
+/* MODULES BEING BUILT */
+.cs-modules{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:28px;}
+.cs-module{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);border-radius:9px;text-align:left;background:var(--bg);}
+.cs-mod-icon{font-size:15px;flex-shrink:0;}
+.cs-mod-text{font-size:12px;font-weight:500;color:var(--text);}
+.cs-mod-status{margin-left:auto;font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;flex-shrink:0;}
+.ms-building{background:var(--blue-bg);color:var(--blue);}
+.ms-next{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.ms-done{background:var(--green-bg);color:var(--green);}
+
+/* ACTIONS */
+.cs-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-back{display:flex;align-items:center;gap:7px;padding:11px 22px;background:var(--navy);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-back:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-dashboard{display:flex;align-items:center;gap:7px;padding:11px 22px;background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn-dashboard:hover{border-color:var(--navy);transform:translateY(-1px);}
+
+.cs-footer{margin-top:24px;font-size:12px;color:var(--light);}
+.cs-footer a{color:var(--navy);font-weight:500;text-decoration:none;}
+.cs-footer a:hover{color:var(--gold);}
+
+@keyframes pop{from{opacity:0;transform:scale(.96) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh</div></div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">DH</div>
+    <div><div class="sb-uname">SmartWorkplace</div><div class="sb-urole">Platform Demo</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">Main</span></div>
+    <a class="sb-item" href="admin-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">Dashboard</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">🔔</div><span class="sb-item-text">Priority Inbox</span></a>
+
+    <div class="sb-section"><span class="sb-section-label">Area 1 — Workplace</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🏢</div><span class="sb-item-text">Workplace Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Service Requests</a>
+      <a class="sb-sub-item" href="coming-soon.html">Meeting Rooms</a>
+      <a class="sb-sub-item" href="coming-soon.html">Cafeteria</a>
+      <a class="sb-sub-item" href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Parking</a>
+      <a class="sb-sub-item" href="coming-soon.html">Courier</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 2 — Assets</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🏗</div><span class="sb-item-text">Real Estate and Assets</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Asset Register</a>
+      <a class="sb-sub-item" href="coming-soon.html">Maintenance</a>
+      <a class="sb-sub-item" href="coming-soon.html">Utilities</a>
+      <a class="sb-sub-item" href="coming-soon.html">Licenses</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 3 — Security</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🔒</div><span class="sb-item-text">Security and EHS</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Security Operations</a>
+      <a class="sb-sub-item" href="coming-soon.html">Access Control</a>
+      <a class="sb-sub-item" href="coming-soon.html">Gate Pass</a>
+      <a class="sb-sub-item" href="coming-soon.html">Incidents</a>
+      <a class="sb-sub-item" href="coming-soon.html">EHS Compliance</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 4 — Vendors</span></div>
+    <div class="sb-item sb-area-toggle open" onclick="toggleArea(this)"><div class="sb-item-icon">💼</div><span class="sb-item-text">Vendor and Finance</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list open"><div class="sb-sub">
+      <a class="sb-sub-item" href="vendor-list.html">Vendor Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Contracts</a>
+      <a class="sb-sub-item" href="coming-soon.html">GRN Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Billing and Payments</a>
+      <a class="sb-sub-item" href="coming-soon.html">Penalty Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Vendor Performance</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 5 — Fleet</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🚗</div><span class="sb-item-text">Fleet Management</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Fleet Inventory</a>
+      <a class="sb-sub-item" href="coming-soon.html">Vehicle Requisition</a>
+      <a class="sb-sub-item" href="coming-soon.html">Fuel Tracking</a>
+      <a class="sb-sub-item" href="coming-soon.html">Compliance</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 6 — Inventory</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">📦</div><span class="sb-item-text">Inventory and Supply</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Store Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Stock Levels</a>
+      <a class="sb-sub-item" href="coming-soon.html">Requisitions</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 7 — Admin</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">✈️</div><span class="sb-item-text">Admin Support</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Travel Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Cleaning Services</a>
+      <a class="sb-sub-item" href="coming-soon.html">Employee Admin</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Platform</span></div>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📊</div><span class="sb-item-text">Reports and Analytics</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">💰</div><span class="sb-item-text">Budget Management</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">👥</div><span class="sb-item-text">User Management</span></a>
+    <a class="sb-item active" href="coming-soon.html"><div class="sb-item-icon">⏳</div><span class="sb-item-text">Coming Soon</span></a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div>
+    <div class="sb-bottom-item"><span style="font-size:15px;">❓</span><span>Help and Support</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <span>SmartWorkplace</span>
+      <span style="color:var(--light)">›</span>
+      <span id="moduleName">Module</span>
+      <span style="color:var(--light)">›</span>
+      <span>Coming Soon</span>
+    </div>
+  </header>
+
+  <div class="cs-wrap">
+    <div class="cs-card">
+
+      <div class="cs-icon-wrap" id="csIcon">🏗</div>
+
+      <div class="cs-tag">
+        <div class="cs-tag-dot"></div>
+        <span>Actively Building</span>
+      </div>
+
+      <h1 class="cs-title">This module is<br><span>coming soon</span></h1>
+
+      <p class="cs-desc">
+        This screen is being built right now as part of the SmartWorkplace prototype.
+        All 45+ modules will be live shortly — one area at a time.
+      </p>
+
+      <!-- BUILD PROGRESS -->
+      <div class="cs-progress">
+        <div class="cs-prog-hdr">
+          <span class="cs-prog-label">Overall prototype progress</span>
+          <span class="cs-prog-pct">22%</span>
+        </div>
+        <div class="cs-prog-bar-bg">
+          <div class="cs-prog-bar" id="progBar" style="width:0%"></div>
+        </div>
+        <div class="cs-prog-sub">9 of 40+ screens complete · Building Area 4 next</div>
+      </div>
+
+      <!-- WHAT'S BEING BUILT -->
+      <div class="cs-modules">
+        <div class="cs-module">
+          <span class="cs-mod-icon">🔐</span>
+          <span class="cs-mod-text">Login Page</span>
+          <span class="cs-mod-status ms-done">Done</span>
+        </div>
+        <div class="cs-module">
+          <span class="cs-mod-icon">📊</span>
+          <span class="cs-mod-text">All 8 Dashboards</span>
+          <span class="cs-mod-status ms-done">Done</span>
+        </div>
+        <div class="cs-module">
+          <span class="cs-mod-icon">💼</span>
+          <span class="cs-mod-text">Vendor Management</span>
+          <span class="cs-mod-status ms-building">Building now</span>
+        </div>
+        <div class="cs-module">
+          <span class="cs-mod-icon">📦</span>
+          <span class="cs-mod-text">GRN Management</span>
+          <span class="cs-mod-status ms-next">Next</span>
+        </div>
+        <div class="cs-module">
+          <span class="cs-mod-icon">💰</span>
+          <span class="cs-mod-text">Billing and Payments</span>
+          <span class="cs-mod-status ms-next">Next</span>
+        </div>
+        <div class="cs-module">
+          <span class="cs-mod-icon">🏢</span>
+          <span class="cs-mod-text">Service Requests</span>
+          <span class="cs-mod-status ms-next">Next</span>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="cs-actions">
+        <button class="btn-back" onclick="history.back()">
+          ← Go Back
+        </button>
+        <button class="btn-dashboard" onclick="window.location.href='admin-dashboard.html'">
+          🏠 Back to Dashboard
+        </button>
+      </div>
+
+      <div class="cs-footer">
+        SmartWorkplace by <a href="#">bEnabler Bangladesh Limited</a> · Prototype v1.0
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+// Read module name from URL param if provided
+const params = new URLSearchParams(window.location.search);
+const mod = params.get('module') || 'Module';
+const icon = params.get('icon') || '🏗';
+document.getElementById('moduleName').textContent = mod;
+document.getElementById('csIcon').textContent = icon;
+
+// Animate progress bar
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    document.getElementById('progBar').style.width = '22%';
+  }, 300);
+});
+
+function toggleArea(el) {
+  el.classList.toggle('open');
+  const sub = el.nextElementSibling;
+  if (sub && sub.classList.contains('sb-sub-list')) sub.classList.toggle('open');
+}
+</script>
+</body>
+</html>
