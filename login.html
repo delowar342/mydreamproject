@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F8F7F4;--surface:#FFFFFF;--border:#E8E4DC;
+  --text:#1A2540;--muted:#7A8BA8;--light:#B0BDD0;
+  --red:#D94F4F;--green:#2E9E6B;--ib:#DDD9D0;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 25% 25%,rgba(200,169,110,.07) 0%,transparent 55%),radial-gradient(circle at 75% 75%,rgba(10,22,40,.04) 0%,transparent 55%);pointer-events:none;}
+
+/* CARD */
+.card{position:relative;z-index:1;background:var(--surface);border-radius:20px;border:1px solid var(--border);box-shadow:0 2px 4px rgba(0,0,0,.04),0 12px 40px rgba(0,0,0,.09);width:100%;max-width:436px;overflow:hidden;animation:cardIn .5s cubic-bezier(.16,1,.3,1) both;}
+.card-stripe{height:3px;background:linear-gradient(90deg,var(--navy) 0%,var(--gold) 50%,var(--navy) 100%);}
+.card-body{padding:38px 44px 34px;}
+
+/* BRAND */
+.brand{display:flex;align-items:center;gap:11px;margin-bottom:34px;animation:fd .5s .1s ease both;}
+.brand-mark{width:38px;height:38px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.brand-mark svg{width:20px;height:20px;}
+.brand-name{font-family:'DM Serif Display',serif;font-size:18px;color:var(--navy);letter-spacing:-.2px;line-height:1.1;}
+.brand-sub{font-size:10.5px;color:var(--gold);letter-spacing:.3px;margin-top:1px;}
+
+/* HEADINGS */
+.ph{margin-bottom:30px;animation:fd .5s .15s ease both;}
+.ph h1{font-family:'DM Serif Display',serif;font-size:27px;color:var(--navy);letter-spacing:-.5px;margin-bottom:5px;}
+.ph p{font-size:14px;color:var(--muted);line-height:1.5;}
+
+/* FIELDS */
+.form-anim{animation:fd .5s .2s ease both;}
+.field{margin-bottom:17px;}
+.field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;}
+.fw{position:relative;}
+.fw input{width:100%;padding:13px 16px;border:1.5px solid var(--ib);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s,box-shadow .18s,background .18s;-webkit-appearance:none;}
+.fw input:focus{border-color:var(--navy);background:#fff;box-shadow:0 0 0 3px rgba(10,22,40,.07);}
+.fw input::placeholder{color:var(--light);}
+.fw input.err{border-color:var(--red);}
+.fw input.err:focus{box-shadow:0 0 0 3px rgba(217,79,79,.08);}
+.eye-btn{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--light);padding:4px;line-height:1;transition:color .18s;}
+.eye-btn:hover{color:var(--navy);}
+.eye-btn svg{width:18px;height:18px;display:block;}
+
+/* META */
+.meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.remember{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+.remember input{width:16px;height:16px;accent-color:var(--navy);cursor:pointer;}
+.remember span{font-size:13px;color:var(--muted);}
+.fgbtn{font-size:13px;font-weight:500;color:var(--navy);background:none;border:none;font-family:'DM Sans',sans-serif;cursor:pointer;transition:color .18s;}
+.fgbtn:hover{color:var(--gold);}
+
+/* ALERTS */
+.alert{display:none;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:9px;font-size:13px;line-height:1.5;margin-bottom:16px;}
+.alert.show{display:flex;}
+.a-err{background:rgba(217,79,79,.07);border:1px solid rgba(217,79,79,.2);color:#B83535;}
+.a-ok{background:rgba(46,158,107,.07);border:1px solid rgba(46,158,107,.2);color:#1F7A52;}
+.alert-ico{font-size:14px;margin-top:1px;flex-shrink:0;}
+
+/* PRIMARY BUTTON */
+.btnp{width:100%;padding:13.5px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .18s,transform .14s,box-shadow .18s;letter-spacing:.05px;}
+.btnp:hover{background:var(--navy2);transform:translateY(-1px);box-shadow:0 8px 20px rgba(10,22,40,.22);}
+.btnp:active{transform:translateY(0);box-shadow:none;}
+.btnp:disabled{opacity:.65;cursor:not-allowed;transform:none;box-shadow:none;}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none;}
+.btnp.loading .btxt{display:none;}
+.btnp.loading .spin{display:block;}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:12px;margin:18px 0 15px;}
+.divider hr{flex:1;border:none;border-top:1px solid var(--border);}
+.divider span{font-size:12px;color:var(--light);white-space:nowrap;}
+
+/* DEMO GRID */
+.demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.dbtn{padding:9px 5px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .18s;text-align:center;line-height:1.35;}
+.dbtn:hover{border-color:var(--navy);color:var(--navy);background:#fff;}
+
+/* FOOTER */
+.cfoot{margin-top:22px;padding-top:18px;border-top:1px solid var(--border);text-align:center;animation:fd .5s .3s ease both;}
+.cfoot span{font-size:12px;color:var(--light);}
+.cfoot a{font-size:12px;color:var(--navy);font-weight:500;text-decoration:none;margin-left:4px;}
+.cfoot a:hover{color:var(--gold);}
+
+/* PANELS */
+.panel{display:none;}
+.panel.active{display:block;animation:si .28s ease both;}
+
+/* PANEL COMMON */
+.pico{width:54px;height:54px;border-radius:15px;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 15px;font-size:24px;}
+.ptitle{font-family:'DM Serif Display',serif;font-size:25px;color:var(--navy);text-align:center;margin-bottom:6px;letter-spacing:-.3px;}
+.psub{font-size:13.5px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:26px;}
+.psub strong{color:var(--navy);font-weight:600;}
+
+/* OTP */
+.otp-row{display:flex;gap:8px;justify-content:center;margin-bottom:14px;}
+.ob{width:48px;height:54px;text-align:center;font-size:22px;font-weight:600;font-family:'DM Sans',sans-serif;border:2px solid var(--ib);border-radius:10px;color:var(--navy);background:var(--bg);outline:none;transition:all .18s;caret-color:var(--navy);}
+.ob:focus{border-color:var(--navy);background:#fff;box-shadow:0 0 0 3px rgba(10,22,40,.07);}
+.ob.filled{border-color:var(--navy);background:rgba(10,22,40,.03);}
+.ob.ok{border-color:var(--green);background:rgba(46,158,107,.05);color:var(--green);}
+.ob.shake{animation:shake .38s ease;}
+
+/* RESEND */
+.resend{text-align:center;font-size:13px;color:var(--muted);margin-bottom:22px;}
+.rbtn{color:var(--navy);font-weight:600;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13px;transition:color .18s;}
+.rbtn:hover{color:var(--gold);}
+.rbtn:disabled{color:var(--light);cursor:default;}
+
+/* BACK */
+.back{text-align:center;margin-top:15px;}
+.back button{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:color .18s;}
+.back button:hover{color:var(--navy);}
+
+/* ANIMATIONS */
+@keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fd{from{opacity:0;transform:translateY(-9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes si{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+@media(max-width:480px){
+  .card-body{padding:28px 22px 22px;}
+  .ob{width:40px;height:48px;font-size:18px;}
+  .demo-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-stripe"></div>
+  <div class="card-body">
+
+    <!-- BRAND -->
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">SmartWorkplace</div>
+        <div class="brand-sub">by bEnabler Bangladesh Limited</div>
+      </div>
+    </div>
+
+    <!-- PANEL 1: LOGIN -->
+    <div class="panel active" id="pLogin">
+      <div class="ph">
+        <h1>Welcome back</h1>
+        <p>Sign in to your SmartWorkplace account</p>
+      </div>
+      <div class="form-anim">
+        <div class="alert a-err" id="loginErr"><span class="alert-ico">⚠</span><span id="loginErrTxt">Invalid email or password.</span></div>
+
+        <div class="field">
+          <label>Email Address</label>
+          <div class="fw"><input type="email" id="eml" placeholder="you@company.com" autocomplete="email" oninput="clrErr()" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="fw">
+            <input type="password" id="pw" placeholder="Enter your password" autocomplete="current-password" style="padding-right:44px" oninput="clrErr()" onkeydown="if(event.key==='Enter')doLogin()">
+            <button class="eye-btn" onclick="tpw()" type="button" id="eyeBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="meta">
+          <label class="remember"><input type="checkbox" id="rem"><span>Remember me</span></label>
+          <button class="fgbtn" onclick="gp('pForgot')">Forgot password?</button>
+        </div>
+
+        <button class="btnp" id="btnLogin" onclick="doLogin()">
+          <span class="btxt">Sign In</span><div class="spin"></div>
+        </button>
+
+        <div class="divider"><hr><span>or try a demo account</span><hr></div>
+
+        <div class="demo-grid">
+          <button class="dbtn" onclick="fd2('admin@acme.com.bd','Demo@1234')">👔<br>Admin</button>
+          <button class="dbtn" onclick="fd2('fm@acme.com.bd','Demo@1234')">🛠<br>FM Manager</button>
+          <button class="dbtn" onclick="fd2('emp@acme.com.bd','Demo@1234')">👤<br>Employee</button>
+          <button class="dbtn" onclick="fd2('vendor@acme.com.bd','Demo@1234')">🏭<br>Vendor</button>
+          <button class="dbtn" onclick="fd2('security@acme.com.bd','Demo@1234')">🛡<br>Security</button>
+          <button class="dbtn" onclick="fd2('fleet@acme.com.bd','Demo@1234')">🚗<br>Fleet Mgr</button>
+        </div>
+      </div>
+      <div class="cfoot"><span>Need access?</span><a href="#">Contact your administrator</a></div>
+    </div>
+
+    <!-- PANEL 2: 2FA -->
+    <div class="panel" id="p2FA">
+      <div class="pico">🔐</div>
+      <div class="ptitle">Verify your identity</div>
+      <div class="psub">We sent a 6-digit code to<br><strong id="phoneMask">+880 1XX-XXXX-5678</strong></div>
+      <div class="alert a-ok show" id="otpSent" style="margin-bottom:18px;"><span class="alert-ico">✓</span><span>Verification code sent successfully</span></div>
+      <div class="alert a-err" id="otpErr"><span class="alert-ico">⚠</span><span>Incorrect code. Please try again.</span></div>
+      <div class="otp-row">
+        <input class="ob" id="o1" maxlength="1" type="text" inputmode="numeric" oninput="oi(this,1)" onkeydown="ok(event,1)">
+        <input class="ob" id="o2" maxlength="1" type="text" inputmode="numeric" oninput="oi(this,2)" onkeydown="ok(event,2)">
+        <input class="ob" id="o3" maxlength="1" type="text" inputmode="numeric" oninput="oi(this,3)" onkeydown="ok(event,3)">
+        <input class="ob" id="o4" maxlength="1" type="text" inputmode="numeric" oninput="oi(this,4)" onkeydown="ok(event,4)">
+        <input class="ob" id="o5" maxlength="1" type="text" inputmode="numeric" oninput="oi(this,5)" onkeydown="ok(event,5)">
+        <input class="ob" id="o6" maxlength="1" type="text" inputmode="numeric" oninput="oi(this,6)" onkeydown="ok(event,6)">
+      </div>
+      <div class="resend">Didn't receive it? <button class="rbtn" id="rbtn" onclick="resend()">Resend code</button><span id="rtimer" style="display:none">in <span id="rtN">30</span>s</span></div>
+      <button class="btnp" id="btnVerify" onclick="verify()"><span class="btxt">Verify and Sign In</span><div class="spin"></div></button>
+      <div class="back"><button onclick="gp('pLogin')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Back to sign in</button></div>
+    </div>
+
+    <!-- PANEL 3: FORGOT -->
+    <div class="panel" id="pForgot">
+      <div class="pico">🔑</div>
+      <div class="ptitle">Reset password</div>
+      <div class="psub">Enter your email and we will send you a secure reset link</div>
+      <div class="alert a-ok" id="resetOk"><span class="alert-ico">✓</span><span>Reset link sent! Check your inbox.</span></div>
+      <div class="field" style="margin-top:4px;">
+        <label>Email Address</label>
+        <div class="fw"><input type="email" id="resetEml" placeholder="you@company.com" onkeydown="if(event.key==='Enter')sendReset()"></div>
+      </div>
+      <button class="btnp" onclick="sendReset()"><span class="btxt">Send Reset Link</span><div class="spin"></div></button>
+      <div class="back"><button onclick="gp('pLogin')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Back to sign in</button></div>
+    </div>
+
+    <!-- PANEL 4: SUCCESS -->
+    <div class="panel" id="pOK">
+      <div style="text-align:center;padding:10px 0 6px;">
+        <div class="pico" style="background:rgba(46,158,107,.1);border-color:rgba(46,158,107,.25);">✅</div>
+        <div class="ptitle">Signed in!</div>
+        <div class="psub" id="okMsg" style="margin-bottom:20px;">Redirecting to your dashboard...</div>
+        <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden;">
+          <div id="prog" style="height:100%;width:0;background:var(--navy);border-radius:4px;transition:width 2s linear;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const demos={
+  'admin@acme.com.bd':    {role:'Company Admin',  name:'Delowar Hossain',  dash:'admin-dashboard.html'},
+  'fm@acme.com.bd':       {role:'FM Manager',     name:'Karim Rahman',     dash:'fm-dashboard.html'},
+  'emp@acme.com.bd':      {role:'Employee',       name:'Ahmed Hassan',     dash:'employee-dashboard.html'},
+  'vendor@acme.com.bd':   {role:'Vendor',         name:'ABC Services Ltd', dash:'vendor-dashboard.html'},
+  'security@acme.com.bd': {role:'Security Mgr',   name:'Rahim Chowdhury', dash:'security-dashboard.html'},
+  'fleet@acme.com.bd':    {role:'Fleet Manager',  name:'Nasim Ahmed',      dash:'fleet-dashboard.html'},
+};
+let cu=null, rt=null;
+
+function gp(id){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function clrErr(){document.getElementById('loginErr').classList.remove('show');document.getElementById('eml').classList.remove('err');document.getElementById('pw').classList.remove('err');}
+function fd2(e,p){document.getElementById('eml').value=e;document.getElementById('pw').value=p;clrErr();}
+
+function tpw(){
+  const i=document.getElementById('pw'),b=document.getElementById('eyeBtn'),h=i.type==='password';
+  i.type=h?'text':'password';
+  b.innerHTML=h
+    ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+    :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+}
+
+function doLogin(){
+  const e=document.getElementById('eml').value.trim().toLowerCase();
+  const p=document.getElementById('pw').value;
+  document.getElementById('loginErr').classList.remove('show');
+  if(!e){showErr('Please enter your email address.');document.getElementById('eml').classList.add('err');document.getElementById('eml').focus();return;}
+  if(!p){showErr('Please enter your password.');document.getElementById('pw').classList.add('err');document.getElementById('pw').focus();return;}
+  const btn=document.getElementById('btnLogin');
+  btn.classList.add('loading');btn.disabled=true;
+  setTimeout(()=>{
+    btn.classList.remove('loading');btn.disabled=false;
+    cu=demos[e]||{role:'Company Admin',name:e.split('@')[0],dash:'admin-dashboard.html'};
+    cu.email=e;
+    gp('p2FA');resetOTP();startRT();
+    setTimeout(()=>document.getElementById('o1').focus(),80);
+  },1100);
+}
+
+function showErr(m){document.getElementById('loginErrTxt').textContent=m;document.getElementById('loginErr').classList.add('show');}
+
+function oi(el,n){
+  el.value=el.value.replace(/\D/g,'');
+  if(el.value){el.classList.add('filled');if(n<6)document.getElementById('o'+(n+1)).focus();if(getCode().length===6)setTimeout(verify,320);}
+  else{el.classList.remove('filled');}
+  document.getElementById('otpErr').classList.remove('show');
+}
+function ok(e,n){
+  if(e.key==='Backspace'){const el=document.getElementById('o'+n);if(!el.value&&n>1){const p=document.getElementById('o'+(n-1));p.value='';p.classList.remove('filled');p.focus();}}
+  if(e.key==='ArrowLeft'&&n>1)document.getElementById('o'+(n-1)).focus();
+  if(e.key==='ArrowRight'&&n<6)document.getElementById('o'+(n+1)).focus();
+}
+function getCode(){let c='';for(let i=1;i<=6;i++)c+=document.getElementById('o'+i).value;return c;}
+function resetOTP(){for(let i=1;i<=6;i++){const el=document.getElementById('o'+i);el.value='';el.classList.remove('filled','ok','shake');}document.getElementById('otpErr').classList.remove('show');document.getElementById('otpSent').classList.add('show');}
+
+function verify(){
+  const code=getCode();if(code.length<6)return;
+  const btn=document.getElementById('btnVerify');btn.classList.add('loading');btn.disabled=true;
+  setTimeout(()=>{
+    btn.classList.remove('loading');btn.disabled=false;
+    if(code==='000000'){
+      document.getElementById('otpErr').classList.add('show');
+      for(let i=1;i<=6;i++){const el=document.getElementById('o'+i);el.classList.add('shake');el.value='';el.classList.remove('filled');setTimeout(()=>el.classList.remove('shake'),400);}
+      setTimeout(()=>document.getElementById('o1').focus(),80);
+    } else {
+      for(let i=1;i<=6;i++)document.getElementById('o'+i).classList.add('ok');
+      clearInterval(rt);
+      setTimeout(doSuccess,450);
+    }
+  },850);
+}
+
+function doSuccess(){
+  gp('pOK');
+  document.getElementById('okMsg').textContent='Welcome back, '+(cu?cu.name:'User')+'! Role: '+(cu?cu.role:'')+'. Redirecting...';
+  setTimeout(()=>document.getElementById('prog').style.width='100%',80);
+  setTimeout(()=>{
+    const d=cu?cu.dash:'admin-dashboard.html';
+    alert('✅ Login successful!\n\nName: '+(cu?cu.name:'')+'\nRole: '+(cu?cu.role:'')+'\nRedirecting to: '+d+'\n\n— In production this will redirect automatically to the correct dashboard based on the user\'s role.');
+  },2100);
+}
+
+function resend(){resetOTP();document.getElementById('rbtn').style.display='none';document.getElementById('rtimer').style.display='inline';startRT();setTimeout(()=>document.getElementById('o1').focus(),80);}
+function startRT(){
+  clearInterval(rt);let t=30;
+  document.getElementById('rtN').textContent=t;
+  document.getElementById('rbtn').style.display='none';
+  document.getElementById('rtimer').style.display='inline';
+  rt=setInterval(()=>{t--;document.getElementById('rtN').textContent=t;if(t<=0){clearInterval(rt);document.getElementById('rbtn').style.display='inline';document.getElementById('rtimer').style.display='none';}},1000);
+}
+
+function sendReset(){
+  const e=document.getElementById('resetEml').value.trim();
+  if(!e){document.getElementById('resetEml').focus();return;}
+  document.getElementById('resetOk').classList.add('show');
+  setTimeout(()=>{document.getElementById('resetOk').classList.remove('show');gp('pLogin');},2400);
+}
+</script>
+</body>
+</html>

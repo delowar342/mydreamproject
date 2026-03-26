@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Workplace Digitalization Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--navy3:#162340;
+  --gold:#C8A96E;--gold2:#E2C08A;--gold3:#F0D4A0;
+  --white:#FFFFFF;--off:#F8F7F4;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);overflow-x:hidden;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--navy);}
+::-webkit-scrollbar-thumb{background:rgba(200,169,110,.3);border-radius:2px;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 60px;height:70px;display:flex;align-items:center;justify-content:space-between;transition:all .3s;}
+nav.scrolled{background:rgba(10,22,40,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(200,169,110,.1);}
+.nav-brand{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.nav-logo{width:38px;height:38px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.3);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.nav-logo svg{width:20px;height:20px;}
+.nav-name{font-family:'DM Serif Display',serif;font-size:20px;color:var(--white);}
+.nav-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.nav-links{display:flex;align-items:center;gap:32px;}
+.nav-link{font-size:13.5px;color:rgba(255,255,255,.6);text-decoration:none;transition:color .2s;}
+.nav-link:hover{color:var(--white);}
+.nav-cta{display:flex;align-items:center;gap:10px;}
+.btn-login{padding:9px 20px;border:1.5px solid rgba(200,169,110,.4);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--gold);background:none;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block;}
+.btn-login:hover{border-color:var(--gold);background:rgba(200,169,110,.08);}
+.btn-demo{padding:9px 22px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block;}
+.btn-demo:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(200,169,110,.3);}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 40px 80px;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;z-index:0;}
+.hero-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(200,169,110,.08) 0%,transparent 70%);}
+.hero-bg::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(200,169,110,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(200,169,110,.04) 1px,transparent 1px);background-size:80px 80px;}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+.orb1{width:500px;height:500px;background:rgba(200,169,110,.06);top:-100px;left:-100px;animation:drift 12s ease-in-out infinite;}
+.orb2{width:400px;height:400px;background:rgba(26,95,171,.08);bottom:-80px;right:-80px;animation:drift 15s ease-in-out infinite reverse;}
+.orb3{width:300px;height:300px;background:rgba(200,169,110,.05);top:40%;left:60%;animation:drift 10s ease-in-out infinite;}
+@keyframes drift{0%,100%{transform:translate(0,0);}50%{transform:translate(30px,-20px);}}
+
+.hero-content{position:relative;z-index:1;max-width:860px;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(200,169,110,.1);border:1px solid rgba(200,169,110,.2);border-radius:20px;padding:6px 16px;margin-bottom:32px;animation:fadeUp .6s ease both;}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:blink 2s ease infinite;}
+.badge-text{font-size:11.5px;font-weight:600;color:var(--gold);letter-spacing:1px;text-transform:uppercase;}
+.hero-h1{font-family:'DM Serif Display',serif;font-size:clamp(48px,7vw,84px);color:var(--white);line-height:1.0;letter-spacing:-2.5px;margin-bottom:28px;animation:fadeUp .7s .1s ease both;}
+.hero-h1 .gold{color:var(--gold);}
+.hero-h1 .italic{font-style:italic;}
+.hero-sub{font-size:clamp(16px,2vw,19px);color:rgba(255,255,255,.5);line-height:1.75;max-width:560px;margin:0 auto 48px;font-weight:300;animation:fadeUp .7s .2s ease both;}
+.hero-actions{display:flex;align-items:center;gap:14px;justify-content:center;animation:fadeUp .7s .3s ease both;flex-wrap:wrap;}
+.btn-hero-primary{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--navy);cursor:pointer;transition:all .2s;text-decoration:none;}
+.btn-hero-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(200,169,110,.35);}
+.btn-hero-secondary{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;color:rgba(255,255,255,.8);cursor:pointer;transition:all .2s;text-decoration:none;}
+.btn-hero-secondary:hover{background:rgba(255,255,255,.1);}
+.hero-trust{margin-top:60px;animation:fadeUp .7s .4s ease both;}
+.trust-label{font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:18px;}
+.trust-items{display:flex;align-items:center;justify-content:center;gap:36px;flex-wrap:wrap;}
+.trust-item{display:flex;align-items:center;gap:7px;font-size:13px;color:rgba(255,255,255,.4);}
+
+/* STATS */
+.stats-strip{background:rgba(200,169,110,.06);border-top:1px solid rgba(200,169,110,.1);border-bottom:1px solid rgba(200,169,110,.1);padding:44px 60px;}
+.stats-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);}
+.stat-item{text-align:center;padding:0 20px;border-right:1px solid rgba(200,169,110,.1);}
+.stat-item:last-child{border-right:none;}
+.stat-num{font-family:'DM Serif Display',serif;font-size:44px;color:var(--gold);line-height:1;margin-bottom:7px;}
+.stat-label{font-size:11.5px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.8px;}
+
+/* SECTIONS */
+section{padding:100px 60px;}
+.section-inner{max-width:1100px;margin:0 auto;}
+.section-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(200,169,110,.1);border:1px solid rgba(200,169,110,.15);border-radius:20px;padding:5px 14px;margin-bottom:20px;}
+.section-tag span{font-size:11px;font-weight:600;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;}
+.section-h2{font-family:'DM Serif Display',serif;font-size:clamp(34px,4vw,54px);color:var(--white);line-height:1.06;letter-spacing:-1.5px;margin-bottom:16px;}
+.section-h2 .gold{color:var(--gold);}
+.section-sub{font-size:17px;color:rgba(255,255,255,.45);line-height:1.75;max-width:520px;font-weight:300;}
+
+/* PREVIEW */
+.preview-section{background:linear-gradient(180deg,var(--navy2) 0%,var(--navy) 100%);padding:80px 60px;}
+.preview-inner{max-width:1100px;margin:0 auto;text-align:center;}
+.preview-frame{margin-top:48px;background:rgba(255,255,255,.04);border:1px solid rgba(200,169,110,.15);border-radius:16px;padding:4px;}
+.preview-bar{background:rgba(255,255,255,.06);border-radius:12px 12px 0 0;padding:12px 16px;display:flex;align-items:center;gap:8px;}
+.p-dots{display:flex;gap:6px;}
+.p-dot{width:10px;height:10px;border-radius:50%;}
+.preview-url{flex:1;background:rgba(255,255,255,.05);border-radius:6px;padding:5px 12px;font-size:12px;color:rgba(255,255,255,.25);text-align:center;}
+.preview-content{padding:20px;display:grid;grid-template-columns:180px 1fr;gap:14px;min-height:280px;}
+.mock-sb{background:rgba(8,16,32,.9);border-radius:8px;padding:14px 10px;}
+.m-logo{display:flex;align-items:center;gap:7px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.05);}
+.m-logo-ico{width:22px;height:22px;background:rgba(200,169,110,.2);border-radius:5px;font-size:10px;display:flex;align-items:center;justify-content:center;}
+.m-logo-txt{font-size:10px;font-weight:600;color:rgba(255,255,255,.7);}
+.m-item{display:flex;align-items:center;gap:6px;padding:4px 7px;border-radius:4px;margin-bottom:2px;}
+.m-item.on{background:rgba(200,169,110,.1);}
+.m-dot2{width:14px;height:14px;border-radius:3px;flex-shrink:0;}
+.m-txt2{font-size:9.5px;color:rgba(255,255,255,.4);}
+.m-item.on .m-txt2{color:rgba(255,255,255,.85);}
+.mock-main2{display:flex;flex-direction:column;gap:10px;}
+.m-topbar{background:rgba(255,255,255,.04);border-radius:7px;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;}
+.m-topbar-t{font-size:10px;font-weight:600;color:rgba(255,255,255,.65);}
+.m-topbar-r{display:flex;gap:6px;}
+.m-tb-btn2{width:22px;height:22px;border-radius:4px;background:rgba(255,255,255,.05);}
+.m-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.m-card{background:rgba(255,255,255,.04);border-radius:7px;padding:10px;border-top:2px solid;}
+.mc1{border-color:rgba(217,79,79,.5);}
+.mc2{border-color:rgba(26,95,171,.5);}
+.mc3{border-color:rgba(30,138,90,.5);}
+.mc4{border-color:rgba(200,169,110,.5);}
+.m-num{font-family:'DM Serif Display',serif;font-size:20px;color:rgba(255,255,255,.75);margin-bottom:2px;}
+.m-lbl{font-size:8.5px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.4px;}
+.m-row2{display:grid;grid-template-columns:1fr 140px;gap:8px;}
+.m-panel{background:rgba(255,255,255,.03);border-radius:7px;padding:10px;}
+.m-phdr{font-size:9px;font-weight:600;color:rgba(255,255,255,.4);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.04);}
+.m-line{height:5px;background:rgba(255,255,255,.05);border-radius:3px;margin-bottom:5px;}
+.m-line.s{width:55%;}
+.m-line.m{width:75%;}
+.m-br{display:flex;align-items:center;gap:5px;margin-bottom:4px;}
+.m-bl{font-size:8px;color:rgba(255,255,255,.25);width:36px;flex-shrink:0;}
+.m-bbg{flex:1;height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;}
+.m-bf{height:100%;border-radius:2px;}
+
+/* AREAS */
+.areas-section{background:var(--navy);}
+.areas-hdr{text-align:center;margin-bottom:56px;}
+.areas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.area-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:24px;cursor:default;transition:all .25s;position:relative;overflow:hidden;}
+.area-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .3s;}
+.area-card:hover{background:rgba(200,169,110,.05);border-color:rgba(200,169,110,.2);transform:translateY(-4px);}
+.area-card:hover::before{opacity:1;}
+.area-num{font-size:10.5px;font-weight:700;color:rgba(200,169,110,.45);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;}
+.area-icon{font-size:26px;margin-bottom:12px;}
+.area-title{font-size:14.5px;font-weight:600;color:var(--white);margin-bottom:7px;}
+.area-desc{font-size:12px;color:rgba(255,255,255,.4);line-height:1.65;}
+.area-mods{margin-top:12px;display:flex;flex-wrap:wrap;gap:5px;}
+.area-mod{font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.05);}
+
+/* FEATURES */
+.features-section{background:linear-gradient(180deg,var(--navy) 0%,var(--navy2) 100%);}
+.features-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+.feats-right{display:flex;flex-direction:column;gap:14px;}
+.feat-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:20px 22px;display:flex;gap:16px;transition:all .2s;}
+.feat-card:hover{background:rgba(200,169,110,.04);border-color:rgba(200,169,110,.15);}
+.feat-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.feat-body h3{font-size:14px;font-weight:600;color:var(--white);margin-bottom:5px;}
+.feat-body p{font-size:12.5px;color:rgba(255,255,255,.4);line-height:1.65;}
+
+/* ROLES */
+.roles-section{background:var(--navy2);}
+.roles-hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:48px;flex-wrap:wrap;gap:20px;}
+.roles-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.role-card{border-radius:14px;padding:22px 18px;cursor:pointer;transition:all .2s;border:1px solid rgba(255,255,255,.06);}
+.role-card:hover{transform:translateY(-3px);}
+.rc1{background:linear-gradient(135deg,rgba(200,169,110,.12),rgba(200,169,110,.03));}
+.rc2{background:linear-gradient(135deg,rgba(26,95,171,.15),rgba(26,95,171,.03));}
+.rc3{background:linear-gradient(135deg,rgba(30,138,90,.14),rgba(30,138,90,.03));}
+.rc4{background:linear-gradient(135deg,rgba(91,69,199,.14),rgba(91,69,199,.03));}
+.rc5{background:linear-gradient(135deg,rgba(217,79,79,.14),rgba(217,79,79,.03));}
+.rc6{background:linear-gradient(135deg,rgba(196,123,26,.14),rgba(196,123,26,.03));}
+.rc7{background:linear-gradient(135deg,rgba(26,138,154,.12),rgba(26,138,154,.03));}
+.rc8{background:linear-gradient(135deg,rgba(200,169,110,.2),rgba(200,169,110,.06));border:1px solid rgba(200,169,110,.2);}
+.role-icon{font-size:24px;margin-bottom:11px;}
+.role-name{font-size:14px;font-weight:600;color:var(--white);margin-bottom:5px;}
+.role-desc{font-size:11.5px;color:rgba(255,255,255,.4);line-height:1.55;}
+
+/* CAPABILITIES */
+.caps-section{background:var(--navy);}
+.caps-grid{display:grid;grid-template-columns:repeat(3,1fr);margin-top:50px;border:1px solid rgba(200,169,110,.08);border-radius:16px;overflow:hidden;}
+.cap-item{padding:28px;background:rgba(255,255,255,.02);transition:background .2s;border-right:1px solid rgba(200,169,110,.06);border-bottom:1px solid rgba(200,169,110,.06);}
+.cap-item:nth-child(3n){border-right:none;}
+.cap-item:nth-last-child(-n+3){border-bottom:none;}
+.cap-item:hover{background:rgba(200,169,110,.04);}
+.cap-icon{font-size:22px;margin-bottom:12px;}
+.cap-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:6px;}
+.cap-desc{font-size:12.5px;color:rgba(255,255,255,.38);line-height:1.65;}
+
+/* CTA */
+.cta-section{background:var(--navy2);padding:100px 60px;}
+.cta-inner{max-width:800px;margin:0 auto;text-align:center;}
+.cta-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:44px 0 24px;}
+.cta-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:28px;cursor:pointer;transition:all .2s;}
+.cta-card:hover{border-color:rgba(200,169,110,.3);transform:translateY(-3px);}
+.cta-card-icon{font-size:30px;margin-bottom:12px;}
+.cta-card-title{font-size:16px;font-weight:600;color:var(--white);margin-bottom:8px;}
+.cta-card-desc{font-size:13px;color:rgba(255,255,255,.4);line-height:1.65;margin-bottom:18px;}
+.cta-card-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;border:none;}
+.b-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);}
+.b-gold:hover{box-shadow:0 8px 20px rgba(200,169,110,.3);}
+.b-wh{background:none;border:1.5px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);}
+.b-wh:hover{border-color:rgba(255,255,255,.5);}
+
+/* FOOTER */
+footer{background:var(--navy);border-top:1px solid rgba(200,169,110,.1);padding:36px 60px;}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;}
+.footer-brand{display:flex;align-items:center;gap:10px;}
+.footer-brand-name{font-family:'DM Serif Display',serif;font-size:16px;color:var(--white);}
+.footer-brand-sub{font-size:11px;color:rgba(200,169,110,.55);margin-top:1px;}
+.footer-links{display:flex;gap:24px;}
+.footer-link{font-size:13px;color:rgba(255,255,255,.35);text-decoration:none;transition:color .2s;}
+.footer-link:hover{color:rgba(255,255,255,.8);}
+.footer-right{font-size:12px;color:rgba(255,255,255,.2);}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.rd1{transition-delay:.1s;}
+.rd2{transition-delay:.2s;}
+.rd3{transition-delay:.3s;}
+
+@media(max-width:900px){
+  nav{padding:0 20px;}
+  .nav-links{display:none;}
+  section,.preview-section,.cta-section{padding:60px 20px;}
+  .stats-strip{padding:32px 20px;}
+  .stats-inner{grid-template-columns:repeat(3,1fr);}
+  .areas-grid,.roles-grid{grid-template-columns:1fr 1fr;}
+  .features-grid,.cta-cards{grid-template-columns:1fr;}
+  .caps-grid{grid-template-columns:1fr 1fr;}
+  footer{padding:28px 20px;}
+  .preview-content{grid-template-columns:1fr;}
+  .mock-sb{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a class="nav-brand" href="#">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="nav-name">SmartWorkplace</div>
+      <div class="nav-by">by bEnabler Bangladesh Limited</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="#areas">Modules</a>
+    <a class="nav-link" href="#features">Features</a>
+    <a class="nav-link" href="#roles">Who It's For</a>
+    <a class="nav-link" href="#platform">Platform</a>
+  </div>
+  <div class="nav-cta">
+    <a class="btn-login" href="login.html">Sign In</a>
+    <a class="btn-demo" href="login.html">Try Demo →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <div class="badge-dot"></div>
+      <span class="badge-text">Now Live — Version 1.0</span>
+    </div>
+    <h1 class="hero-h1">
+      Every service.<br>Every <span class="gold italic">workplace.</span><br>One platform.
+    </h1>
+    <p class="hero-sub">
+      SmartWorkplace digitalizes your entire facilities management operation —
+      from vendor billing to space management — in one intelligent, self-service platform built for corporate Bangladesh.
+    </p>
+    <div class="hero-actions">
+      <a class="btn-hero-primary" href="login.html">🚀 Try the Live Demo</a>
+      <a class="btn-hero-secondary" href="#areas">Explore Features ↓</a>
+    </div>
+    <div class="hero-trust">
+      <div class="trust-label">Built for enterprise facilities teams</div>
+      <div class="trust-items">
+        <div class="trust-item">🏢 Multi-property</div>
+        <div class="trust-item">👥 Multi-tenant SaaS</div>
+        <div class="trust-item">🔒 Role-based access</div>
+        <div class="trust-item">📊 Live dashboards</div>
+        <div class="trust-item">💰 Full financial control</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-item reveal"><div class="stat-num">7</div><div class="stat-label">Core Areas</div></div>
+    <div class="stat-item reveal rd1"><div class="stat-num">45+</div><div class="stat-label">Modules</div></div>
+    <div class="stat-item reveal rd2"><div class="stat-num">12</div><div class="stat-label">User Roles</div></div>
+    <div class="stat-item reveal rd3"><div class="stat-num">99.5%</div><div class="stat-label">Uptime SLA</div></div>
+    <div class="stat-item reveal rd3"><div class="stat-num">100%</div><div class="stat-label">GRN-backed billing</div></div>
+  </div>
+</div>
+
+<!-- DASHBOARD PREVIEW -->
+<div class="preview-section">
+  <div class="preview-inner">
+    <div class="section-tag reveal" style="display:inline-flex;"><span>Live Platform</span></div>
+    <h2 class="section-h2 reveal" style="margin-top:12px;">See it working right now</h2>
+    <p style="font-size:16px;color:rgba(255,255,255,.42);margin-top:12px;line-height:1.7;" class="reveal">A fully interactive prototype — every dashboard and module live.</p>
+    <div class="preview-frame reveal" style="margin-top:44px;">
+      <div class="preview-bar">
+        <div class="p-dots">
+          <div class="p-dot" style="background:rgba(217,79,79,.5);"></div>
+          <div class="p-dot" style="background:rgba(196,123,26,.5);"></div>
+          <div class="p-dot" style="background:rgba(30,138,90,.5);"></div>
+        </div>
+        <div class="preview-url">smartworkplace.netlify.app / admin-dashboard</div>
+      </div>
+      <div class="preview-content">
+        <div class="mock-sb">
+          <div class="m-logo"><div class="m-logo-ico">🏠</div><div class="m-logo-txt">SmartWorkplace</div></div>
+          <div class="m-item on"><div class="m-dot2" style="background:rgba(200,169,110,.35);"></div><span class="m-txt2">Dashboard</span></div>
+          <div class="m-item"><div class="m-dot2" style="background:rgba(255,255,255,.08);"></div><span class="m-txt2">Workplace Services</span></div>
+          <div class="m-item"><div class="m-dot2" style="background:rgba(255,255,255,.08);"></div><span class="m-txt2">Assets and Maintenance</span></div>
+          <div class="m-item"><div class="m-dot2" style="background:rgba(255,255,255,.08);"></div><span class="m-txt2">Security and EHS</span></div>
+          <div class="m-item"><div class="m-dot2" style="background:rgba(255,255,255,.08);"></div><span class="m-txt2">Vendor and Finance</span></div>
+          <div class="m-item"><div class="m-dot2" style="background:rgba(255,255,255,.08);"></div><span class="m-txt2">Fleet Management</span></div>
+          <div class="m-item"><div class="m-dot2" style="background:rgba(255,255,255,.08);"></div><span class="m-txt2">Inventory</span></div>
+          <div class="m-item"><div class="m-dot2" style="background:rgba(255,255,255,.08);"></div><span class="m-txt2">Admin Support</span></div>
+        </div>
+        <div class="mock-main2">
+          <div class="m-topbar"><div class="m-topbar-t">Good morning, Delowar 👋 — Wednesday 25 March 2025</div><div class="m-topbar-r"><div class="m-tb-btn2"></div><div class="m-tb-btn2"></div></div></div>
+          <div class="m-cards">
+            <div class="m-card mc1"><div class="m-num">24</div><div class="m-lbl">Open requests</div></div>
+            <div class="m-card mc2"><div class="m-num">12</div><div class="m-lbl">Visitors today</div></div>
+            <div class="m-card mc3"><div class="m-num">87%</div><div class="m-lbl">SLA compliance</div></div>
+            <div class="m-card mc4"><div class="m-num">18</div><div class="m-lbl">Active vendors</div></div>
+          </div>
+          <div class="m-row2">
+            <div class="m-panel">
+              <div class="m-phdr">Priority Inbox — 5 urgent</div>
+              <div class="m-line"></div><div class="m-line s"></div><div class="m-line m"></div><div class="m-line s"></div><div class="m-line"></div><div class="m-line m"></div>
+            </div>
+            <div class="m-panel">
+              <div class="m-phdr">Budget — March</div>
+              <div class="m-br"><span class="m-bl">Security</span><div class="m-bbg"><div class="m-bf" style="width:92%;background:rgba(196,123,26,.7);"></div></div></div>
+              <div class="m-br"><span class="m-bl">Cleaning</span><div class="m-bbg"><div class="m-bf" style="width:63%;background:rgba(30,138,90,.7);"></div></div></div>
+              <div class="m-br"><span class="m-bl">Maint.</span><div class="m-bbg"><div class="m-bf" style="width:100%;background:rgba(217,79,79,.7);"></div></div></div>
+              <div class="m-br"><span class="m-bl">Fleet</span><div class="m-bbg"><div class="m-bf" style="width:48%;background:rgba(30,138,90,.7);"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:28px;" class="reveal">
+      <a class="btn-hero-primary" href="login.html">Open Live Demo →</a>
+    </div>
+  </div>
+</div>
+
+<!-- 7 AREAS -->
+<section class="areas-section" id="areas">
+  <div class="section-inner">
+    <div class="areas-hdr">
+      <div class="section-tag reveal" style="display:inline-flex;"><span>7 Core Areas · 45+ Modules</span></div>
+      <h2 class="section-h2 reveal" style="margin-top:14px;">Everything your workplace needs.<br><span class="gold">All in one place.</span></h2>
+      <p class="section-sub reveal" style="margin:12px auto 0;text-align:center;">Fully integrated, fully automated — from employee self-service to vendor financial control.</p>
+    </div>
+    <div class="areas-grid">
+      <div class="area-card reveal"><div class="area-num">Area 01</div><div class="area-icon">🏢</div><div class="area-title">Workplace Services</div><div class="area-desc">Self-service requests, room bookings, visitor management, cafeteria and courier.</div><div class="area-mods"><span class="area-mod">Service Requests</span><span class="area-mod">Room Booking</span><span class="area-mod">Visitor Mgmt</span><span class="area-mod">Cafeteria</span><span class="area-mod">Parking</span></div></div>
+      <div class="area-card reveal rd1"><div class="area-num">Area 02</div><div class="area-icon">🏗</div><div class="area-title">Real Estate and Assets</div><div class="area-desc">Lease management, asset registry, preventive and reactive maintenance, utilities.</div><div class="area-mods"><span class="area-mod">Asset Register</span><span class="area-mod">Maintenance</span><span class="area-mod">Utilities</span><span class="area-mod">Licenses</span></div></div>
+      <div class="area-card reveal rd2"><div class="area-num">Area 03</div><div class="area-icon">🔒</div><div class="area-title">Security and EHS</div><div class="area-desc">Guard deployment, access control, gate pass, incidents and EHS compliance.</div><div class="area-mods"><span class="area-mod">Access Control</span><span class="area-mod">Gate Pass</span><span class="area-mod">Incidents</span><span class="area-mod">EHS</span></div></div>
+      <div class="area-card reveal rd3"><div class="area-num">Area 04</div><div class="area-icon">💼</div><div class="area-title">Vendor and Finance</div><div class="area-desc">Complete vendor lifecycle — onboarding, GRN-backed billing, KPI scoring and penalties.</div><div class="area-mods"><span class="area-mod">Vendor Mgmt</span><span class="area-mod">GRN</span><span class="area-mod">Billing</span><span class="area-mod">KPI</span></div></div>
+      <div class="area-card reveal"><div class="area-num">Area 05</div><div class="area-icon">🚗</div><div class="area-title">Fleet Management</div><div class="area-desc">Vehicle inventory, driver management, VTS integration, fuel and KM billing.</div><div class="area-mods"><span class="area-mod">Fleet Inventory</span><span class="area-mod">Requisitions</span><span class="area-mod">VTS</span><span class="area-mod">KM Billing</span></div></div>
+      <div class="area-card reveal rd1"><div class="area-num">Area 06</div><div class="area-icon">📦</div><div class="area-title">Inventory and Supply</div><div class="area-desc">Store management, stock levels, requisitions and consumption analytics.</div><div class="area-mods"><span class="area-mod">Store Mgmt</span><span class="area-mod">Stock</span><span class="area-mod">Requisitions</span><span class="area-mod">Wastage</span></div></div>
+      <div class="area-card reveal rd2" style="grid-column:span 2;"><div class="area-num">Area 07</div><div class="area-icon">✈️</div><div class="area-title">Admin Support Services</div><div class="area-desc">Travel management, employee admin requests, ID cards and stationery — everything your admin team handles, now digitalized end to end.</div><div class="area-mods"><span class="area-mod">Travel Mgmt</span><span class="area-mod">Employee Admin</span><span class="area-mod">ID Cards</span><span class="area-mod">Stationery</span><span class="area-mod">Expense Claims</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+  <div class="section-inner">
+    <div class="features-grid">
+      <div>
+        <div class="section-tag reveal" style="display:inline-flex;"><span>Platform Intelligence</span></div>
+        <h2 class="section-h2 reveal" style="margin-top:14px;">Built different.<br><span class="gold">Engineered to scale.</span></h2>
+        <p class="section-sub reveal" style="margin-top:14px;">Not just a helpdesk. A complete operating system for your workplace — with automation, intelligence and financial control at every layer.</p>
+        <div class="reveal" style="margin-top:36px;"><a class="btn-hero-primary" href="login.html">Explore the Platform →</a></div>
+      </div>
+      <div class="feats-right">
+        <div class="feat-card reveal"><div class="feat-ico" style="background:rgba(200,169,110,.1);">⚡</div><div class="feat-body"><h3>Centralized Ticketing Engine</h3><p>All service requests auto-generate unique tickets with SLA tracking, priority levels and auto-escalation.</p></div></div>
+        <div class="feat-card reveal rd1"><div class="feat-ico" style="background:rgba(26,95,171,.1);">🔄</div><div class="feat-body"><h3>Workflow Automation</h3><p>Multi-level approvals, auto-notifications via Email, SMS and WhatsApp, configurable per company.</p></div></div>
+        <div class="feat-card reveal rd2"><div class="feat-ico" style="background:rgba(30,138,90,.1);">💰</div><div class="feat-body"><h3>GRN-Backed Financial Control</h3><p>Zero manual bills. All vendor payments auto-generated from approved GRN. 100% auditable.</p></div></div>
+        <div class="feat-card reveal rd3"><div class="feat-ico" style="background:rgba(91,69,199,.1);">📊</div><div class="feat-body"><h3>Real-Time Dashboards</h3><p>Live dashboards for every role — Admin, FM, Employee, Vendor, Security and Fleet.</p></div></div>
+        <div class="feat-card reveal"><div class="feat-ico" style="background:rgba(196,123,26,.1);">🏢</div><div class="feat-body"><h3>Multi-Tenant SaaS</h3><p>One platform serving many companies. Data fully isolated with company-level configuration.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROLES -->
+<section class="roles-section" id="roles">
+  <div class="section-inner">
+    <div class="roles-hdr">
+      <div>
+        <div class="section-tag reveal" style="display:inline-flex;"><span>12 User Roles</span></div>
+        <h2 class="section-h2 reveal" style="margin-top:14px;">Every user gets<br><span class="gold">their own experience.</span></h2>
+      </div>
+      <p class="section-sub reveal" style="max-width:300px;">Personalized dashboards and permissions — assigned automatically on login.</p>
+    </div>
+    <div class="roles-grid">
+      <div class="role-card rc1 reveal" onclick="window.location.href='login.html'"><div class="role-icon">👔</div><div class="role-name">Company Admin</div><div class="role-desc">Full platform control — users, vendors, budgets and approvals.</div></div>
+      <div class="role-card rc2 reveal rd1" onclick="window.location.href='login.html'"><div class="role-icon">🛠</div><div class="role-name">FM Manager</div><div class="role-desc">SLA tracking, vendor assignment and maintenance scheduling.</div></div>
+      <div class="role-card rc3 reveal rd2" onclick="window.location.href='login.html'"><div class="role-icon">👤</div><div class="role-name">Employee</div><div class="role-desc">Self-service requests, room bookings, travel and gate pass.</div></div>
+      <div class="role-card rc4 reveal rd3" onclick="window.location.href='login.html'"><div class="role-icon">🏭</div><div class="role-name">Vendor</div><div class="role-desc">Attendance, job confirmation, billing and documents.</div></div>
+      <div class="role-card rc5 reveal" onclick="window.location.href='login.html'"><div class="role-icon">🛡</div><div class="role-name">Security Manager</div><div class="role-desc">Guard deployment, gate pass approvals and incidents.</div></div>
+      <div class="role-card rc6 reveal rd1" onclick="window.location.href='login.html'"><div class="role-icon">🚗</div><div class="role-name">Fleet Manager</div><div class="role-desc">Vehicle assignment, KM billing and driver ratings.</div></div>
+      <div class="role-card rc7 reveal rd2" onclick="window.location.href='login.html'"><div class="role-icon">🔧</div><div class="role-name">Technician</div><div class="role-desc">Personal job queue, checklists and work history.</div></div>
+      <div class="role-card rc8 reveal rd3" onclick="window.location.href='login.html'"><div class="role-icon">⚡</div><div class="role-name">Super Admin</div><div class="role-desc">Platform owner — all companies, billing and system health.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section class="caps-section" id="platform">
+  <div class="section-inner">
+    <div style="text-align:center;">
+      <div class="section-tag reveal" style="display:inline-flex;"><span>Platform Capabilities</span></div>
+      <h2 class="section-h2 reveal" style="margin-top:14px;text-align:center;">The backbone that<br><span class="gold">runs everything.</span></h2>
+      <p class="section-sub reveal" style="margin:12px auto 0;text-align:center;">Cross-functional capabilities powering all 45+ modules simultaneously.</p>
+    </div>
+    <div class="caps-grid">
+      <div class="cap-item reveal"><div class="cap-icon">🎫</div><div class="cap-title">Centralized Ticketing</div><div class="cap-desc">Auto-generated tickets with unique IDs, SLA tracking and escalation across all modules.</div></div>
+      <div class="cap-item reveal rd1"><div class="cap-icon">🔔</div><div class="cap-title">Omni-channel Notifications</div><div class="cap-desc">Email, SMS and WhatsApp notifications with user-configurable preferences and DND.</div></div>
+      <div class="cap-item reveal rd2"><div class="cap-icon">📊</div><div class="cap-title">Analytics and Reporting</div><div class="cap-desc">Role-based live dashboards. All reports downloadable as PDF and Excel instantly.</div></div>
+      <div class="cap-item reveal"><div class="cap-icon">✅</div><div class="cap-title">Multi-Level Approvals</div><div class="cap-desc">Configurable approval chains with value-based routing and parallel approvals.</div></div>
+      <div class="cap-item reveal rd1"><div class="cap-icon">🔒</div><div class="cap-title">Role-Based Access Control</div><div class="cap-desc">12 roles with granular permissions — field level, module level and report level.</div></div>
+      <div class="cap-item reveal rd2"><div class="cap-icon">📅</div><div class="cap-title">Activity Calendar</div><div class="cap-desc">Annual planning for maintenance, compliance and events — linked to execution tracking.</div></div>
+      <div class="cap-item reveal"><div class="cap-icon">📋</div><div class="cap-title">Policy and Knowledge Hub</div><div class="cap-desc">Central repository for SOPs, policies, forms and templates with version control.</div></div>
+      <div class="cap-item reveal rd1"><div class="cap-icon">💾</div><div class="cap-title">Full Audit Trail</div><div class="cap-desc">Every action logged with user, timestamp and change. Complete data immutability.</div></div>
+      <div class="cap-item reveal rd2"><div class="cap-icon">📱</div><div class="cap-title">Phase 2 — Mobile App</div><div class="cap-desc">iOS and Android with push notifications and offline mode for technicians in the field.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <div class="section-tag reveal" style="display:inline-flex;"><span>Get Started Today</span></div>
+    <h2 class="section-h2 reveal" style="margin-top:14px;text-align:center;">Ready to transform<br><span class="gold">your workplace?</span></h2>
+    <p style="font-size:16px;color:rgba(255,255,255,.42);margin-top:14px;line-height:1.75;" class="reveal">Try the live prototype — no sign up required. Or talk to our team about your specific requirements.</p>
+    <div class="cta-cards reveal">
+      <div class="cta-card">
+        <div class="cta-card-icon">🚀</div>
+        <div class="cta-card-title">Try the Live Demo</div>
+        <div class="cta-card-desc">Explore all 8 dashboards and live modules. Use any demo account to see the full platform experience instantly.</div>
+        <a class="cta-card-btn b-gold" href="login.html">Open Demo Now →</a>
+      </div>
+      <div class="cta-card">
+        <div class="cta-card-icon">💬</div>
+        <div class="cta-card-title">Talk to Our Team</div>
+        <div class="cta-card-desc">Have specific requirements? We will show you how SmartWorkplace can be configured for your organization.</div>
+        <button class="cta-card-btn b-wh" onclick="alert('Contact: bEnabler Bangladesh Limited\nEmail: hello@benabler.com.bd\nPhone: +880 1XXX-XXXXXX')">Contact Us →</button>
+      </div>
+    </div>
+    <p style="font-size:12px;color:rgba(255,255,255,.18);" class="reveal">Multi-tenant SaaS · Custom pricing per company · Full onboarding and support included</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="nav-logo" style="width:30px;height:30px;">
+        <svg viewBox="0 0 24 24" fill="none" width="15" height="15">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="footer-brand-name">SmartWorkplace</div><div class="footer-brand-sub">by bEnabler Bangladesh Limited</div></div>
+    </div>
+    <div class="footer-links">
+      <a class="footer-link" href="#areas">Modules</a>
+      <a class="footer-link" href="#features">Features</a>
+      <a class="footer-link" href="#roles">Roles</a>
+      <a class="footer-link" href="login.html">Sign In</a>
+    </div>
+    <div class="footer-right">© 2025 bEnabler Bangladesh Limited · All rights reserved</div>
+  </div>
+</footer>
+
+<script>
+window.addEventListener('scroll',function(){
+  document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>40);
+});
+const obs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:0.08});
+document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+</script>
+</body>
+</html>

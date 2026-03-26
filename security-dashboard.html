@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Security Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --red:#D94F4F;--red-bg:#FDF0F0;--red-bd:#F5CECE;
+  --amber:#C47B1A;--amber-bg:#FDF5E6;--amber-bd:#F0D9A8;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;--blue-bd:#BDDBF7;
+  --green:#1E8A5A;--green-bg:#EAF7F1;--green-bd:#A8DFC5;
+  --purple:#5B45C7;--purple-bg:#F0EEFF;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,#D94F4F,#E87070);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(240,150,150,.9);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+.sb-badge{margin-left:auto;background:#D94F4F;color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+
+/* MAIN */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.breadcrumb span{color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;width:200px;}
+.search-bar:focus-within{border-color:var(--navy);background:#fff;}
+.search-bar input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.search-bar input::placeholder{color:var(--light);}
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;position:relative;}
+.top-btn:hover{border-color:var(--navy);}
+.notif-badge{position:absolute;top:-3px;right:-3px;width:16px;height:16px;background:var(--red);border-radius:50%;font-size:9px;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+
+/* CONTENT */
+.content{padding:24px 28px;flex:1;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+.page-hdr-right{display:flex;gap:8px;align-items:center;}
+.btn-act{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-act:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-danger{background:var(--red);}
+.btn-danger:hover{background:#B83535;}
+.btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);border-color:var(--navy);transform:translateY(-1px);}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;cursor:pointer;transition:all .18s;}
+.stat-card:hover{border-color:var(--navy);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.sc-red::before{background:var(--red);}
+.sc-amber::before{background:#E09B1A;}
+.sc-blue::before{background:var(--blue);}
+.sc-green::before{background:var(--green);}
+.sc-navy::before{background:var(--navy);}
+.stat-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.stat-num{font-family:'DM Serif Display',serif;font-size:28px;color:var(--text);line-height:1;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:4px;}
+.stat-icon{position:absolute;right:14px;top:14px;font-size:20px;opacity:.35;}
+
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px;}
+.two-col-eq{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2);}
+.panel-hdr h2{font-size:14px;font-weight:600;color:var(--text);}
+.panel-hdr-right{display:flex;align-items:center;gap:8px;}
+.panel-link{font-size:12px;color:var(--navy);font-weight:500;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
+.panel-link:hover{color:var(--gold);}
+
+/* TAGS */
+.tag{display:inline-flex;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-navy{background:rgba(10,22,40,.08);color:var(--navy);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+
+/* ALERT BANNER */
+.alert-banner{border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;}
+.ab-red{background:var(--red-bg);border:1.5px solid var(--red-bd);}
+.ab-icon{font-size:24px;flex-shrink:0;}
+.ab-body{flex:1;}
+.ab-title{font-size:14px;font-weight:700;color:var(--red);margin-bottom:3px;}
+.ab-desc{font-size:13px;color:var(--text);}
+.ab-btn{padding:8px 16px;background:var(--red);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;}
+.ab-btn:hover{background:#B83535;}
+
+/* DEPLOYMENT STATUS */
+.deploy-item{padding:12px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.deploy-item:hover{background:var(--bg);}
+.deploy-item:last-child{border-bottom:none;}
+.deploy-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.deploy-location{font-size:13px;font-weight:600;color:var(--text);}
+.deploy-strength{font-size:12px;font-weight:500;}
+.deploy-guards{display:flex;gap:6px;flex-wrap:wrap;}
+.guard-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:500;border:1px solid;}
+.gp-present{background:var(--green-bg);border-color:var(--green-bd);color:var(--green);}
+.gp-absent{background:var(--red-bg);border-color:var(--red-bd);color:var(--red);}
+.gp-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+
+/* INCIDENTS */
+.incident-item{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.incident-item:hover{background:var(--bg);}
+.incident-item:last-child{border-bottom:none;}
+.inc-sev{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.inc-body{flex:1;min-width:0;}
+.inc-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;}
+.inc-sub{font-size:11.5px;color:var(--muted);}
+.inc-meta{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap;}
+.inc-time{font-size:10.5px;color:var(--light);}
+.inc-action{flex-shrink:0;}
+.inc-btn{font-size:11px;font-weight:600;padding:5px 11px;border-radius:7px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.ib-red{background:var(--red-bg);color:var(--red);}
+.ib-red:hover{background:var(--red);color:#fff;}
+.ib-amber{background:var(--amber-bg);color:var(--amber);}
+.ib-amber:hover{background:#E09B1A;color:#fff;}
+.ib-blue{background:var(--blue-bg);color:var(--blue);}
+.ib-blue:hover{background:var(--blue);color:#fff;}
+.ib-green{background:var(--green-bg);color:var(--green);}
+.ib-green:hover{background:var(--green);color:#fff;}
+
+/* GATE PASSES */
+.gp-item{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.gp-item:hover{background:var(--bg);}
+.gp-item:last-child{border-bottom:none;}
+.gp-ref{font-size:11.5px;font-family:monospace;font-weight:700;color:var(--navy);width:80px;flex-shrink:0;}
+.gp-body{flex:1;}
+.gp-title{font-size:13px;font-weight:500;color:var(--text);}
+.gp-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.gp-action{flex-shrink:0;}
+.approve-btn{font-size:11px;font-weight:600;padding:5px 11px;border-radius:7px;cursor:pointer;border:1.5px solid var(--green);font-family:'DM Sans',sans-serif;color:var(--green);background:none;transition:all .15s;}
+.approve-btn:hover{background:var(--green);color:#fff;}
+.reject-btn{font-size:11px;font-weight:600;padding:5px 11px;border-radius:7px;cursor:pointer;border:1.5px solid var(--red);font-family:'DM Sans',sans-serif;color:var(--red);background:none;transition:all .15s;margin-left:5px;}
+.reject-btn:hover{background:var(--red);color:#fff;}
+
+/* VISITOR LOG */
+.visitor-item{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.visitor-item:hover{background:var(--bg);}
+.visitor-item:last-child{border-bottom:none;}
+.vis-av{width:32px;height:32px;border-radius:8px;background:rgba(10,22,40,.08);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.vis-body{flex:1;}
+.vis-name{font-size:13px;font-weight:500;color:var(--text);}
+.vis-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.vis-time{font-size:11px;color:var(--muted);text-align:right;flex-shrink:0;}
+.vis-checkin{font-size:12px;font-weight:600;color:var(--green);}
+.vis-out{color:var(--muted);}
+
+/* ACCESS REQUESTS */
+.access-item{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.access-item:hover{background:var(--bg);}
+.access-item:last-child{border-bottom:none;}
+.acc-av{width:32px;height:32px;border-radius:8px;background:var(--purple-bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--purple);flex-shrink:0;}
+.acc-body{flex:1;}
+.acc-name{font-size:13px;font-weight:500;color:var(--text);}
+.acc-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+
+/* GUARD STRENGTH BAR */
+.strength-wrap{padding:14px 18px;border-bottom:1px solid var(--border2);}
+.strength-row{display:flex;justify-content:space-between;margin-bottom:6px;}
+.strength-label{font-size:13px;font-weight:500;color:var(--text);}
+.strength-val{font-size:13px;font-weight:600;}
+.strength-bar-bg{height:7px;background:var(--bg);border-radius:4px;overflow:hidden;}
+.strength-bar{height:100%;border-radius:4px;transition:width .8s ease;}
+.bar-green{background:var(--green);}
+.bar-amber{background:#E09B1A;}
+.bar-red{background:var(--red);}
+.strength-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* SCROLL */
+.scroll-area{overflow-y:auto;max-height:340px;}
+.scroll-area::-webkit-scrollbar{width:3px;}
+.scroll-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:500px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:600;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:20px 22px;max-height:65vh;overflow-y:auto;}
+.form-field{margin-bottom:15px;}
+.form-field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--navy);background:#fff;}
+.form-field textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-secondary{padding:10px 20px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--navy);}
+.btn-danger-solid{padding:10px 20px;background:var(--red);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-danger-solid:hover{background:#B83535;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.alert-banner{animation:fadeIn .3s ease both;}
+.stat-grid{animation:fadeIn .4s .05s ease both;}
+.two-col{animation:fadeIn .4s .1s ease both;}
+.two-col-eq{animation:fadeIn .4s .15s ease both;}
+.three-col{animation:fadeIn .4s .2s ease both;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh</div></div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">RC</div>
+    <div><div class="sb-uname">Rahim Chowdhury</div><div class="sb-urole">Security Manager</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">Operations</span></div>
+    <a class="sb-item active" href="security-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">Dashboard</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🚨</div><span class="sb-item-text">Incidents</span><span class="sb-badge">2</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🚪</div><span class="sb-item-text">Gate Pass Approvals</span><span class="sb-badge">4</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">👥</div><span class="sb-item-text">Visitor Management</span></a>
+    <div class="sb-section"><span class="sb-section-label">Security</span></div>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🔒</div><span class="sb-item-text">Access Control</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🛡</div><span class="sb-item-text">Guard Deployment</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">📋</div><span class="sb-item-text">Attendance Approvals</span><span class="sb-badge">3</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🚫</div><span class="sb-item-text">Blacklist</span></a>
+    <div class="sb-section"><span class="sb-section-label">Vendors</span></div>
+    <a class="sb-item" href="#"><div class="sb-item-icon">🏭</div><span class="sb-item-text">Security Vendors</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">📦</div><span class="sb-item-text">GRN Approvals</span></a>
+    <div class="sb-section"><span class="sb-section-label">EHS</span></div>
+    <a class="sb-item" href="#"><div class="sb-item-icon">⚠️</div><span class="sb-item-text">EHS Compliance</span></a>
+    <a class="sb-item" href="#"><div class="sb-item-icon">📅</div><span class="sb-item-text">EHS Calendar</span></a>
+    <div class="sb-section"><span class="sb-section-label">Reports</span></div>
+    <a class="sb-item" href="#"><div class="sb-item-icon">📊</div><span class="sb-item-text">Security Reports</span></a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div>
+    <div class="sb-bottom-item"><span style="font-size:15px;">❓</span><span>Help and Support</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb"><span>SmartWorkplace</span><span style="color:var(--light)">›</span><span>Security Dashboard</span></div>
+    <div class="topbar-right">
+      <div class="search-bar"><span style="color:var(--light);font-size:14px;">🔍</span><input type="text" placeholder="Search gate pass, incident..."></div>
+      <div class="top-btn">🔔<span class="notif-badge">5</span></div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;color:var(--text);">
+          <div style="width:26px;height:26px;background:#D94F4F;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;">RC</div>
+          <span>Rahim</span><span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>Security Operations — 25 March 2025</h1>
+        <p>All properties · Wednesday · Day shift active</p>
+      </div>
+      <div class="page-hdr-right">
+        <button class="btn-act btn-outline" onclick="alert('Opening shift handover report...')">📋 Shift Report</button>
+        <button class="btn-act btn-danger" onclick="openModal('incidentModal')">🚨 Report Incident</button>
+      </div>
+    </div>
+
+    <!-- CRITICAL ALERT BANNER -->
+    <div class="alert-banner ab-red">
+      <div class="ab-icon">🚨</div>
+      <div class="ab-body">
+        <div class="ab-title">Critical Incident Active — INC-0088</div>
+        <div class="ab-desc">Unauthorized access attempt at Car Park B2 · Reported 2 hours ago · Investigation not yet started · Immediate action required</div>
+      </div>
+      <button class="ab-btn" onclick="openModal('investigateModal')">Investigate Now</button>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid">
+      <div class="stat-card sc-red" onclick="openModal('investigateModal')">
+        <span class="stat-icon">🚨</span>
+        <div class="stat-label">Active Incidents</div>
+        <div class="stat-num" style="color:var(--red);">2</div>
+        <div class="stat-sub" style="color:var(--red);">1 critical · needs action</div>
+      </div>
+      <div class="stat-card sc-amber" onclick="alert('Opening gate pass queue...')">
+        <span class="stat-icon">🚪</span>
+        <div class="stat-label">Gate Pass Pending</div>
+        <div class="stat-num">4</div>
+        <div class="stat-sub">Waiting your approval</div>
+      </div>
+      <div class="stat-card sc-blue" onclick="alert('Opening visitor log...')">
+        <span class="stat-icon">👥</span>
+        <div class="stat-label">Visitors Inside</div>
+        <div class="stat-num">7</div>
+        <div class="stat-sub">Currently checked in</div>
+      </div>
+      <div class="stat-card sc-green" onclick="alert('Opening deployment status...')">
+        <span class="stat-icon">🛡</span>
+        <div class="stat-label">Guards on Duty</div>
+        <div class="stat-num">11<span style="font-size:16px;color:var(--muted);">/12</span></div>
+        <div class="stat-sub" style="color:var(--amber);">1 absent — below strength</div>
+      </div>
+      <div class="stat-card sc-navy" onclick="alert('Opening access requests...')">
+        <span class="stat-icon">🔑</span>
+        <div class="stat-label">Access Requests</div>
+        <div class="stat-num">3</div>
+        <div class="stat-sub">Pending card issuance</div>
+      </div>
+    </div>
+
+    <!-- ROW 1: DEPLOYMENT + INCIDENTS -->
+    <div class="two-col">
+
+      <!-- GUARD DEPLOYMENT STATUS -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>🛡 Guard Deployment — Today</h2>
+          <div class="panel-hdr-right">
+            <span class="tag tag-amber">1 below strength</span>
+            <button class="panel-link">Manage deployment</button>
+          </div>
+        </div>
+        <div class="scroll-area">
+
+          <div class="deploy-item" onclick="alert('Opening HQ Main Gate deployment...')">
+            <div class="deploy-hdr">
+              <span class="deploy-location">🏢 HQ Building — Main Gate</span>
+              <span class="deploy-strength" style="color:var(--green);">2 / 2 ✓ Full strength</span>
+            </div>
+            <div class="deploy-guards">
+              <div class="guard-pill gp-present"><div class="gp-dot"></div>Rahim Khan</div>
+              <div class="guard-pill gp-present"><div class="gp-dot"></div>Masud Ali</div>
+            </div>
+          </div>
+
+          <div class="deploy-item" onclick="alert('Opening Reception deployment...')">
+            <div class="deploy-hdr">
+              <span class="deploy-location">🏢 HQ Building — Reception</span>
+              <span class="deploy-strength" style="color:var(--red);">0 / 1 ⚠ Guard absent</span>
+            </div>
+            <div class="deploy-guards">
+              <div class="guard-pill gp-absent"><div class="gp-dot"></div>Shahid Hossain — Absent</div>
+            </div>
+          </div>
+
+          <div class="deploy-item" onclick="alert('Opening Car Park deployment...')">
+            <div class="deploy-hdr">
+              <span class="deploy-location">🚗 HQ Building — Car Park</span>
+              <span class="deploy-strength" style="color:var(--green);">2 / 2 ✓ Full strength</span>
+            </div>
+            <div class="deploy-guards">
+              <div class="guard-pill gp-present"><div class="gp-dot"></div>Jahir Ahmed</div>
+              <div class="guard-pill gp-present"><div class="gp-dot"></div>Nazrul Islam</div>
+            </div>
+          </div>
+
+          <div class="deploy-item" onclick="alert('Opening Branch 1 deployment...')">
+            <div class="deploy-hdr">
+              <span class="deploy-location">🏢 Branch 1 — Chittagong</span>
+              <span class="deploy-strength" style="color:var(--green);">3 / 3 ✓ Full strength</span>
+            </div>
+            <div class="deploy-guards">
+              <div class="guard-pill gp-present"><div class="gp-dot"></div>Kamal Hossain</div>
+              <div class="guard-pill gp-present"><div class="gp-dot"></div>Faruk Ahmed</div>
+              <div class="guard-pill gp-present"><div class="gp-dot"></div>Ratan Mia</div>
+            </div>
+          </div>
+
+          <div class="deploy-item" onclick="alert('Opening Branch 2 deployment...')">
+            <div class="deploy-hdr">
+              <span class="deploy-location">🏢 Branch 2 — Sylhet</span>
+              <span class="deploy-strength" style="color:var(--green);">2 / 2 ✓ Full strength</span>
+            </div>
+            <div class="deploy-guards">
+              <div class="guard-pill gp-present"><div class="gp-dot"></div>Tariq Islam</div>
+              <div class="guard-pill gp-present"><div class="gp-dot"></div>Hanif Ali</div>
+            </div>
+          </div>
+
+        </div>
+        <!-- Strength summary -->
+        <div style="padding:12px 18px;border-top:1px solid var(--border2);">
+          <div class="strength-row">
+            <span class="strength-label">Overall deployment strength</span>
+            <span class="strength-val" style="color:var(--amber);">11 / 12 guards</span>
+          </div>
+          <div class="strength-bar-bg"><div class="strength-bar bar-amber" style="width:91.6%;"></div></div>
+          <div class="strength-sub">HQ Reception below strength — notify vendor to provide replacement</div>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDE -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- ACTIVE INCIDENTS -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>🚨 Active Incidents</h2>
+            <span class="tag tag-red">2 open</span>
+          </div>
+
+          <div class="incident-item" onclick="openModal('investigateModal')">
+            <div class="inc-sev" style="background:var(--red-bg);">🚨</div>
+            <div class="inc-body">
+              <div class="inc-title">Unauthorized access — Car Park B2</div>
+              <div class="inc-sub">INC-0088 · Reported by guard Jahir Ahmed</div>
+              <div class="inc-meta">
+                <span class="inc-time">2 hours ago</span>
+                <span class="tag tag-red">Critical</span>
+                <span class="tag tag-red">Not started</span>
+              </div>
+            </div>
+            <div class="inc-action"><button class="inc-btn ib-red" onclick="event.stopPropagation();openModal('investigateModal')">Investigate</button></div>
+          </div>
+
+          <div class="incident-item" onclick="alert('Opening INC-0085 investigation...')">
+            <div class="inc-sev" style="background:var(--amber-bg);">⚠️</div>
+            <div class="inc-body">
+              <div class="inc-title">Visitor refused entry — reception area</div>
+              <div class="inc-sub">INC-0085 · Under investigation by RC</div>
+              <div class="inc-meta">
+                <span class="inc-time">Yesterday</span>
+                <span class="tag tag-amber">Medium</span>
+                <span class="tag tag-blue">In progress</span>
+              </div>
+            </div>
+            <div class="inc-action"><button class="inc-btn ib-blue" onclick="event.stopPropagation();alert('Opening investigation details...')">Update</button></div>
+          </div>
+
+          <div style="padding:10px 18px;background:var(--bg);border-top:1px solid var(--border2);">
+            <div style="font-size:12px;color:var(--muted);">Last 30 days: <strong style="color:var(--text);">8 total incidents</strong> · 6 closed · 2 active</div>
+          </div>
+        </div>
+
+        <!-- GATE PASS APPROVALS -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>🚪 Gate Pass — Pending Approval</h2>
+            <span class="tag tag-amber">4 waiting</span>
+          </div>
+
+          <div class="gp-item">
+            <div class="gp-ref">GP-0315</div>
+            <div class="gp-body">
+              <div class="gp-title">Ahmed Hassan — Laptop (returnable)</div>
+              <div class="gp-sub">To client site · Returns today · LM approved</div>
+            </div>
+            <div class="gp-action">
+              <button class="approve-btn" onclick="approveGP(this,'GP-0315')">Approve</button>
+              <button class="reject-btn" onclick="rejectGP(this,'GP-0315')">Reject</button>
+            </div>
+          </div>
+
+          <div class="gp-item">
+            <div class="gp-ref">GP-0314</div>
+            <div class="gp-body">
+              <div class="gp-title">Salma Begum — Projector (transfer)</div>
+              <div class="gp-sub">To Branch 1 Chittagong · Permanent transfer</div>
+            </div>
+            <div class="gp-action">
+              <button class="approve-btn" onclick="approveGP(this,'GP-0314')">Approve</button>
+              <button class="reject-btn" onclick="rejectGP(this,'GP-0314')">Reject</button>
+            </div>
+          </div>
+
+          <div class="gp-item">
+            <div class="gp-ref">GP-0313</div>
+            <div class="gp-body">
+              <div class="gp-title">Karim Rahman — Server equipment</div>
+              <div class="gp-sub">Permanent out · Disposal approved by Admin</div>
+            </div>
+            <div class="gp-action">
+              <button class="approve-btn" onclick="approveGP(this,'GP-0313')">Approve</button>
+              <button class="reject-btn" onclick="rejectGP(this,'GP-0313')">Reject</button>
+            </div>
+          </div>
+
+          <div style="padding:8px 18px;background:var(--bg);border-top:1px solid var(--border2);">
+            <a href="#" style="font-size:12px;color:var(--navy);font-weight:500;">+ 1 more gate pass waiting →</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ROW 2: VISITORS + ACCESS REQUESTS + ATTENDANCE APPROVALS -->
+    <div class="three-col">
+
+      <!-- VISITOR LOG -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>👥 Visitors Today</h2>
+          <div class="panel-hdr-right">
+            <span class="tag tag-blue">7 inside</span>
+            <button class="panel-link">Full log →</button>
+          </div>
+        </div>
+        <div class="scroll-area">
+          <div class="visitor-item" onclick="alert('Opening visitor profile...')">
+            <div class="vis-av">MR</div>
+            <div class="vis-body">
+              <div class="vis-name">Mohammed Rashid</div>
+              <div class="vis-sub">XYZ Corp · Visiting Tanvir Ahmed</div>
+            </div>
+            <div class="vis-time"><div class="vis-checkin">● IN 9:45am</div><div style="font-size:10.5px;color:var(--muted);">Floor 3</div></div>
+          </div>
+          <div class="visitor-item" onclick="alert('Opening visitor profile...')">
+            <div class="vis-av">SK</div>
+            <div class="vis-body">
+              <div class="vis-name">Sumaiya Khan</div>
+              <div class="vis-sub">Freelancer · Visiting HR Dept</div>
+            </div>
+            <div class="vis-time"><div class="vis-checkin">● IN 10:15am</div><div style="font-size:10.5px;color:var(--muted);">Floor 2</div></div>
+          </div>
+          <div class="visitor-item" onclick="alert('Opening visitor profile...')">
+            <div class="vis-av">RA</div>
+            <div class="vis-body">
+              <div class="vis-name">Rina Akter</div>
+              <div class="vis-sub">Dhaka Bank · Visiting Finance</div>
+            </div>
+            <div class="vis-time"><div class="vis-checkin">● IN 11:00am</div><div style="font-size:10.5px;color:var(--muted);">Floor 3</div></div>
+          </div>
+          <div class="visitor-item" onclick="alert('Opening visitor profile...')">
+            <div class="vis-av">TB</div>
+            <div class="vis-body">
+              <div class="vis-name">Tariq Bin Ziad</div>
+              <div class="vis-sub">ABC Suppliers · Delivery</div>
+            </div>
+            <div class="vis-time"><div class="vis-checkin">● IN 11:30am</div><div style="font-size:10.5px;color:var(--muted);">Reception</div></div>
+          </div>
+          <div class="visitor-item" style="opacity:.6;" onclick="alert('Visitor has left...')">
+            <div class="vis-av" style="opacity:.5;">KM</div>
+            <div class="vis-body">
+              <div class="vis-name" style="color:var(--muted);">Kamrul Miah</div>
+              <div class="vis-sub">IT Vendor · Visit completed</div>
+            </div>
+            <div class="vis-time"><div class="vis-out">OUT 10:45am</div></div>
+          </div>
+        </div>
+        <div style="padding:10px 18px;background:var(--bg);border-top:1px solid var(--border2);">
+          <div style="font-size:12px;color:var(--muted);">Today total: <strong style="color:var(--text);">12 visitors</strong> · 7 inside · 5 checked out</div>
+        </div>
+      </div>
+
+      <!-- ACCESS CARD REQUESTS -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>🔑 Access Card Requests</h2>
+          <span class="tag tag-blue">3 pending</span>
+        </div>
+        <div class="access-item" onclick="openModal('accessModal')">
+          <div class="acc-av">SB</div>
+          <div class="acc-body">
+            <div class="acc-name">Salma Begum — New card</div>
+            <div class="acc-sub">New employee · Joining today · Finance dept · Floor 3 access</div>
+          </div>
+          <div style="flex-shrink:0;"><button class="approve-btn" onclick="event.stopPropagation();issueCard(this,'Salma Begum')">Issue Card</button></div>
+        </div>
+        <div class="access-item" onclick="openModal('accessModal')">
+          <div class="acc-av">JH</div>
+          <div class="acc-body">
+            <div class="acc-name">Jalal Hossain — Replacement</div>
+            <div class="acc-sub">Lost card reported · Old card deactivated · IT dept · Floor 4</div>
+          </div>
+          <div style="flex-shrink:0;"><button class="approve-btn" onclick="event.stopPropagation();issueCard(this,'Jalal Hossain')">Issue Card</button></div>
+        </div>
+        <div class="access-item" onclick="openModal('accessModal')">
+          <div class="acc-av">NR</div>
+          <div class="acc-body">
+            <div class="acc-name">Nipa Roy — Extra access</div>
+            <div class="acc-sub">Requesting server room access · IT Manager approved</div>
+          </div>
+          <div style="flex-shrink:0;"><button class="approve-btn" onclick="event.stopPropagation();issueCard(this,'Nipa Roy')">Grant Access</button></div>
+        </div>
+        <div style="padding:10px 18px;background:var(--bg);border-top:1px solid var(--border2);">
+          <div style="font-size:12px;color:var(--muted);">Active cards in system: <strong style="color:var(--text);">247</strong> permanent · 3 temporary today</div>
+        </div>
+      </div>
+
+      <!-- ATTENDANCE CORRECTION APPROVALS -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>📋 Attendance Corrections</h2>
+          <span class="tag tag-amber">3 pending</span>
+        </div>
+        <div class="incident-item">
+          <div class="inc-sev" style="background:var(--amber-bg);font-size:14px;">✏️</div>
+          <div class="inc-body">
+            <div class="inc-title">ABC Security — Shahid Hossain</div>
+            <div class="inc-sub">23 March · Marked absent · Vendor says Present</div>
+            <div class="inc-meta"><span class="tag tag-amber">Correction request</span></div>
+          </div>
+          <div class="inc-action" style="display:flex;gap:5px;">
+            <button class="inc-btn ib-green" onclick="approveCorrn(this)">✓</button>
+            <button class="inc-btn ib-red" onclick="rejectCorrn(this)">✗</button>
+          </div>
+        </div>
+        <div class="incident-item">
+          <div class="inc-sev" style="background:var(--amber-bg);font-size:14px;">✏️</div>
+          <div class="inc-body">
+            <div class="inc-title">ABC Security — Masud Ali</div>
+            <div class="inc-sub">22 March · Late marked · Vendor says On Time</div>
+            <div class="inc-meta"><span class="tag tag-amber">Correction request</span></div>
+          </div>
+          <div class="inc-action" style="display:flex;gap:5px;">
+            <button class="inc-btn ib-green" onclick="approveCorrn(this)">✓</button>
+            <button class="inc-btn ib-red" onclick="rejectCorrn(this)">✗</button>
+          </div>
+        </div>
+        <div class="incident-item" style="border-bottom:none;">
+          <div class="inc-sev" style="background:var(--amber-bg);font-size:14px;">✏️</div>
+          <div class="inc-body">
+            <div class="inc-title">XYZ Guards Ltd — Faruk Miah</div>
+            <div class="inc-sub">21 March · Absent · Vendor says Medical leave</div>
+            <div class="inc-meta"><span class="tag tag-amber">Correction request</span></div>
+          </div>
+          <div class="inc-action" style="display:flex;gap:5px;">
+            <button class="inc-btn ib-green" onclick="approveCorrn(this)">✓</button>
+            <button class="inc-btn ib-red" onclick="rejectCorrn(this)">✗</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- REPORT INCIDENT MODAL -->
+<div class="modal-overlay" id="incidentModal">
+  <div class="modal">
+    <div class="modal-hdr"><h3>🚨 Report New Incident</h3><button class="modal-close" onclick="closeModal('incidentModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-field"><label>Incident Type</label>
+          <select>
+            <option>Unauthorized access</option>
+            <option>Theft or attempted theft</option>
+            <option>Physical altercation</option>
+            <option>Safety hazard</option>
+            <option>Fire or emergency</option>
+            <option>Vandalism</option>
+            <option>Suspicious activity</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Severity</label>
+          <select>
+            <option>Low</option>
+            <option>Medium</option>
+            <option selected>High</option>
+            <option>Critical</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Location</label>
+          <select>
+            <option>HQ — Main Gate</option>
+            <option>HQ — Reception</option>
+            <option>HQ — Car Park B1</option>
+            <option selected>HQ — Car Park B2</option>
+            <option>HQ — Floor 1</option>
+            <option>Branch 1 — Chittagong</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Date and Time</label><input type="datetime-local" value="2025-03-25T12:30"></div>
+      </div>
+      <div class="form-field"><label>Description</label><textarea placeholder="Describe what happened in detail..."></textarea></div>
+      <div class="form-field"><label>Immediate action taken</label><textarea placeholder="What was done immediately after the incident..."></textarea></div>
+      <div class="form-field"><label>Photo evidence (optional)</label><input type="file" accept="image/*" style="padding:8px;font-size:12px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('incidentModal')">Cancel</button>
+      <button class="btn-primary" onclick="submitIncident()">Submit Incident Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVESTIGATE MODAL -->
+<div class="modal-overlay" id="investigateModal">
+  <div class="modal">
+    <div class="modal-hdr"><h3>🔍 Investigate — INC-0088</h3><button class="modal-close" onclick="closeModal('investigateModal')">×</button></div>
+    <div class="modal-body">
+      <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:4px;">🚨 Critical Incident — Unauthorized Access</div>
+        <div style="font-size:12.5px;color:var(--text);">Location: HQ Car Park B2 · Reported: 25 March 10:30am · Reported by: Jahir Ahmed (Guard)</div>
+      </div>
+      <div class="form-field"><label>Assign investigation to</label>
+        <select>
+          <option selected>Myself — Rahim Chowdhury</option>
+          <option>FM Manager — Karim Rahman</option>
+          <option>External — Police authority</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Investigation findings</label><textarea placeholder="Describe what was found during investigation..."></textarea></div>
+      <div class="form-field"><label>Root cause</label><textarea placeholder="What caused this incident?"></textarea></div>
+      <div class="form-field"><label>Corrective action required</label><textarea placeholder="What needs to be done to prevent recurrence?"></textarea></div>
+      <div class="form-field"><label>Evidence upload</label><input type="file" accept="image/*,video/*" style="padding:8px;font-size:12px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('investigateModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveInvestigation()">Save Investigation</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACCESS CARD MODAL -->
+<div class="modal-overlay" id="accessModal">
+  <div class="modal">
+    <div class="modal-hdr"><h3>🔑 Issue Access Card</h3><button class="modal-close" onclick="closeModal('accessModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-field"><label>Employee Name</label><input type="text" value="Salma Begum" readonly style="background:var(--bg);"></div>
+      <div class="form-row">
+        <div class="form-field"><label>RFID Card Number</label><input type="text" placeholder="Scan or enter card number"></div>
+        <div class="form-field"><label>Card Type</label><select><option>Permanent</option><option>Temporary</option></select></div>
+      </div>
+      <div class="form-field"><label>Access Level</label>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;"><input type="checkbox" checked style="accent-color:var(--navy);">Common areas — all floors</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;"><input type="checkbox" checked style="accent-color:var(--navy);">Finance department — Floor 3</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;"><input type="checkbox" style="accent-color:var(--navy);">Server room — Floor 5</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;"><input type="checkbox" style="accent-color:var(--navy);">Car park — B1</label>
+        </div>
+      </div>
+      <div class="form-field"><label>Notes</label><input type="text" placeholder="Any special instructions..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('accessModal')">Cancel</button>
+      <button class="btn-primary" onclick="confirmCardIssue()">Confirm Card Issued</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleDD(){document.getElementById('userDD').classList.toggle('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-menu').forEach(m=>m.classList.remove('open'));});
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+
+function approveGP(btn,ref){
+  const row=btn.closest('.gp-item');
+  row.style.opacity='.5';
+  row.style.pointerEvents='none';
+  btn.textContent='✓ Approved';
+  btn.style.background='var(--green)';
+  btn.style.color='#fff';
+  alert('✅ Gate Pass '+ref+' approved!\nQR code sent to employee.\nGuard notified to allow exit.');
+}
+function rejectGP(btn,ref){
+  const row=btn.closest('.gp-item');
+  row.style.opacity='.5';
+  row.style.pointerEvents='none';
+  alert('❌ Gate Pass '+ref+' rejected.\nEmployee notified with reason.');
+}
+function approveCorrn(btn){
+  const row=btn.closest('.incident-item');
+  row.style.opacity='.5';
+  row.style.pointerEvents='none';
+  alert('✅ Attendance correction approved!\nAttendance record has been updated.\nVendor and FM Manager notified.');
+}
+function rejectCorrn(btn){
+  const row=btn.closest('.incident-item');
+  row.style.opacity='.5';
+  row.style.pointerEvents='none';
+  alert('❌ Correction request rejected.\nOriginal attendance record retained.\nVendor notified.');
+}
+function issueCard(btn,name){
+  openModal('accessModal');
+}
+function submitIncident(){
+  closeModal('incidentModal');
+  setTimeout(()=>alert('✅ Incident reported successfully!\n\nReference: INC-0089\nFM Manager and Admin have been notified.\nYou can track progress in the Incidents section.'),200);
+}
+function saveInvestigation(){
+  closeModal('investigateModal');
+  setTimeout(()=>alert('✅ Investigation saved!\n\nINC-0088 status updated to: IN INVESTIGATION\nFM Manager notified.\nCorrective actions assigned.'),200);
+}
+function confirmCardIssue(){
+  closeModal('accessModal');
+  setTimeout(()=>alert('✅ Access card issued successfully!\n\nCard assigned and activated.\nEmployee access is now live.\nOnboarding checklist item marked complete.'),200);
+}
+window.addEventListener('load',function(){
+  document.querySelectorAll('.strength-bar').forEach(function(b){
+    const w=b.style.width;b.style.width='0';
+    setTimeout(function(){b.style.width=w;},400);
+  });
+});
+</script>
+</body>
+</html>
