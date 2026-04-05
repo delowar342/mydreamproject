@@ -501,5 +501,24 @@ const obs=new IntersectionObserver(function(entries){
 document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script>
+  const supabaseUrl = "https://btjzepcnfhxecptyopfj.supabase.co";
+  const supabaseKey = "sb_publishable_d_HBk3L_KT7MKq3LRP4cMg_kLbroxrE";
+
+  // Create connection
+  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+  // Function to get vendor data
+  async function getVendors() {
+    const { data, error } = await supabase
+      .from('vendors')   // table name
+      .select('*');      // get all data
+
+    console.log(data);   // show in console
+  }
+
+  // Run the function
+  getVendors();
+</script>
 </body>
 </html>
