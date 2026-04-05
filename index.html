@@ -509,7 +509,7 @@ document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
   if (!window.mySupabase) {
   window.mySupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 }
-const supabase = window.mySupabase;
+
 
   // Function to get vendor data
   async function getVendors() {
