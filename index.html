@@ -513,7 +513,7 @@ document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
 
   // Function to get vendor data
   async function getVendors() {
-    const { data, error } = await supabase
+    const { data, error } = await window.mySupabase
       .from('vendors')   // table name
       .select('*');      // get all data
 
