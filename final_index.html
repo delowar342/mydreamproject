@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Workplace Digitalization Platform</title>
+</head>
+<body>
+
+<h1>SmartWorkplace</h1>
+<p>Basic working version with Supabase connection</p>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script>
+  const supabaseUrl = "https://btjzepcnfhxecptyopfj.supabase.co";
+  const supabaseKey = "sb_publishable_d_HBk3L_KT7MKq3LRP4cMg_kLbroxrE";
+
+  const client = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+  async function getVendors() {
+    const { data, error } = await client
+      .from('vendors')
+      .select('*');
+
+    console.log("DATA:", data);
+
+    if (error) {
+      console.error("ERROR:", error);
+    }
+  }
+
+  getVendors();
+</script>
+
+</body>
+</html>
