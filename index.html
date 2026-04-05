@@ -506,7 +506,7 @@ document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
   const supabaseKey = "sb_publishable_d_HBk3L_KT7MKq3LRP4cMg_kLbroxrE";
 
   // Create connection
-  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  let supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   // Function to get vendor data
   async function getVendors() {
