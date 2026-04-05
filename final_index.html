@@ -23,7 +23,7 @@
       .from('vendors')
       .select('*');
 
-    console.log("DATA:", data);
+    document.getElementById("vendorList").innerHTML = JSON.stringify(data);
 
     if (error) {
       console.error("ERROR:", error);
@@ -32,6 +32,7 @@
 
   getVendors();
 </script>
+<div id="vendorList"></div>
 
 </body>
 </html>
