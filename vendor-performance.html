@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Vendor Performance</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --red:#D94F4F;--red-bg:#FDF0F0;--red-bd:#F5CECE;
+  --amber:#C47B1A;--amber-bg:#FDF5E6;--amber-bd:#F0D9A8;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;--blue-bd:#BDDBF7;
+  --green:#1E8A5A;--green-bg:#EAF7F1;--green-bd:#A8DFC5;
+  --purple:#5B45C7;--purple-bg:#F0EEFF;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(200,169,110,.8);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+.sb-chevron{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s;flex-shrink:0;}
+.sb-area-toggle.open .sb-chevron{transform:rotate(90deg);}
+.sb-sub-list{overflow:hidden;max-height:0;transition:max-height .25s ease;}
+.sb-sub-list.open{max-height:400px;}
+.sb-sub{padding-left:58px;}
+.sb-sub-item{display:flex;align-items:center;gap:6px;padding:6px 18px 6px 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);transition:color .15s;text-decoration:none;}
+.sb-sub-item:hover{color:rgba(255,255,255,.85);}
+.sb-sub-item.active{color:var(--gold);}
+.sb-sub-item::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.breadcrumb span{color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;width:220px;}
+.search-bar:focus-within{border-color:var(--navy);background:#fff;}
+.search-bar input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.search-bar input::placeholder{color:var(--light);}
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;}
+.top-btn:hover{border-color:var(--navy);}
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+.content{padding:24px 28px;flex:1;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+.page-hdr-right{display:flex;gap:8px;align-items:center;}
+.btn-act{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-act:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);border-color:var(--navy);}
+
+/* PERIOD TOGGLE */
+.period-toggle{display:flex;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:4px;}
+.pt-btn{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;color:var(--muted);background:none;transition:all .15s;}
+.pt-btn.active{background:var(--navy);color:#fff;}
+.pt-btn:hover:not(.active){background:var(--surface);color:var(--text);}
+
+/* LEADERBOARD */
+.leaderboard{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+.leader-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;cursor:pointer;transition:all .2s;}
+.leader-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.leader-card.gold{border-color:var(--gold);background:linear-gradient(135deg,rgba(200,169,110,.06),rgba(200,169,110,.02));}
+.leader-card.silver{border-color:rgba(150,150,160,.4);background:linear-gradient(135deg,rgba(150,150,160,.05),transparent);}
+.leader-card.bronze{border-color:rgba(180,120,80,.4);background:linear-gradient(135deg,rgba(180,120,80,.05),transparent);}
+.leader-rank{position:absolute;top:14px;right:16px;font-size:24px;}
+.leader-av{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;margin-bottom:12px;}
+.leader-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.leader-type{font-size:11.5px;color:var(--muted);margin-bottom:14px;}
+.leader-score{font-family:'DM Serif Display',serif;font-size:38px;line-height:1;margin-bottom:4px;}
+.leader-trend{font-size:12px;color:var(--muted);}
+.score-bar-wrap{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:10px;}
+.score-bar{height:100%;border-radius:3px;transition:width .8s ease;}
+.bar-gold{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.bar-green{background:var(--green);}
+.bar-amber{background:#E09B1A;}
+.bar-red{background:var(--red);}
+
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-bottom:16px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2);}
+.panel-hdr h2{font-size:14px;font-weight:600;color:var(--text);}
+.panel-hdr-right{display:flex;align-items:center;gap:8px;}
+.panel-link{font-size:12px;color:var(--navy);font-weight:500;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
+.panel-link:hover{color:var(--gold);}
+
+/* TAGS */
+.tag{display:inline-flex;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.tag-gold{background:rgba(200,169,110,.15);color:#8B6914;}
+
+/* VENDOR TABLE */
+.vp-table{width:100%;border-collapse:collapse;}
+.vp-table th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);background:var(--bg);}
+.vp-table td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border2);vertical-align:middle;}
+.vp-table tr:last-child td{border-bottom:none;}
+.vp-table tr:hover td{background:rgba(242,240,235,.5);cursor:pointer;}
+
+/* KPI INLINE */
+.kpi-inline{display:flex;align-items:center;gap:8px;}
+.kpi-score{font-size:14px;font-weight:700;width:36px;}
+.kpi-bar-bg{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;}
+.kpi-bar{height:100%;border-radius:3px;transition:width .8s ease;}
+
+/* FEEDBACK ITEMS */
+.feedback-item{padding:12px 18px;border-bottom:1px solid var(--border2);}
+.feedback-item:last-child{border-bottom:none;}
+.fb-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.fb-vendor{font-size:13px;font-weight:500;color:var(--text);}
+.fb-stars{font-size:14px;color:var(--gold);}
+.fb-text{font-size:12.5px;color:var(--muted);line-height:1.6;}
+.fb-meta{display:flex;gap:10px;margin-top:6px;font-size:11px;color:var(--light);}
+
+/* KPI BREAKDOWN */
+.kpi-breakdown{padding:14px 18px;border-bottom:1px solid var(--border2);}
+.kpi-breakdown:last-child{border-bottom:none;}
+.kbd-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.kbd-label{font-size:13px;font-weight:500;color:var(--text);}
+.kbd-score{font-size:13px;font-weight:700;}
+.kbd-bar{height:7px;background:var(--bg);border-radius:4px;overflow:hidden;margin-bottom:4px;}
+.kbd-bar-fill{height:100%;border-radius:4px;transition:width .8s ease;}
+.kbd-sub{font-size:11px;color:var(--muted);}
+
+/* TREND CHART MOCK */
+.trend-chart{padding:16px 18px;}
+.trend-months{display:flex;gap:0;align-items:flex-end;height:80px;border-bottom:1px solid var(--border2);margin-bottom:8px;}
+.trend-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.trend-bar{width:28px;border-radius:3px 3px 0 0;transition:height .8s ease;}
+.trend-month-label{font-size:10px;color:var(--muted);margin-top:6px;}
+
+/* ACTION BUTTONS */
+.act-btn{font-size:11px;font-weight:600;padding:5px 11px;border-radius:7px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+.ab-blue{background:var(--blue-bg);color:var(--blue);}
+.ab-blue:hover{background:var(--blue);color:#fff;}
+.ab-amber{background:var(--amber-bg);color:var(--amber);}
+.ab-amber:hover{background:#E09B1A;color:#fff;}
+.ab-red{background:var(--red-bg);color:var(--red);}
+.ab-red:hover{background:var(--red);color:#fff;}
+.ab-green{background:var(--green-bg);color:var(--green);}
+.ab-green:hover{background:var(--green);color:#fff;}
+
+/* ALERT BANNER */
+.alert-banner{border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;font-size:13px;}
+.ab-red-b{background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);}
+.ab-amber-b{background:var(--amber-bg);border:1px solid var(--amber-bd);color:var(--amber);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-md{max-width:560px;}
+.modal-lg{max-width:740px;}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:600;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:22px;max-height:75vh;overflow-y:auto;}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);margin:-22px -22px 20px;}
+.modal-tab{padding:12px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
+.modal-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.form-field{margin-bottom:15px;}
+.form-field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--navy);background:#fff;}
+.form-field textarea{resize:vertical;min-height:80px;}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-secondary{padding:10px 20px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--navy);}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.leaderboard{animation:fadeIn .4s .05s ease both;}
+.two-col{animation:fadeIn .4s .1s ease both;}
+.three-col{animation:fadeIn .4s .15s ease both;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh Limited</div></div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">DH</div>
+    <div><div class="sb-uname">Delowar Hossain</div><div class="sb-urole">Company Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">Main</span></div>
+    <a class="sb-item " href="admin-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">Dashboard</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">🔔</div><span class="sb-item-text">Priority Inbox</span></a>
+
+    <div class="sb-section"><span class="sb-section-label">Area 1 — Workplace Services</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🏢</div><span class="sb-item-text">Workplace Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Service Requests</a>
+      <a class="sb-sub-item " href="coming-soon.html">Meeting Room Booking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Cafeteria and Pantry</a>
+      <a class="sb-sub-item " href="coming-soon.html">Parking Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Courier and Dispatch</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 2 — Real Estate and Assets</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🏗</div><span class="sb-item-text">Real Estate and Assets</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="asset-register.html">Asset Register</a>
+      <a class="sb-sub-item " href="maintenance.html">Maintenance</a>
+      <a class="sb-sub-item " href="coming-soon.html">Lease Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Space Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Utility Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">License Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Asset Transfer</a>
+      <a class="sb-sub-item " href="coming-soon.html">Asset Disposal</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 3 — Security and EHS</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🔒</div><span class="sb-item-text">Security and EHS</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Security Operations</a>
+      <a class="sb-sub-item " href="coming-soon.html">Access Control</a>
+      <a class="sb-sub-item " href="coming-soon.html">Gate Pass Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Incident Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">EHS Compliance</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 4 — Vendor and Finance</span></div>
+    <div class="sb-item sb-area-toggle open" onclick="toggleArea(this)"><div class="sb-item-icon">💼</div><span class="sb-item-text">Vendor and Finance</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list open"><div class="sb-sub">
+      <a class="sb-sub-item " href="vendor-list.html">Vendor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Contract Management</a>
+      <a class="sb-sub-item active" href="vendor-performance.html">Vendor Performance</a>
+      <a class="sb-sub-item " href="grn-management.html">GRN Management</a>
+      <a class="sb-sub-item " href="billing.html">Billing and Payments</a>
+      <a class="sb-sub-item " href="penalty-management.html">Penalty Management</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 5 — Fleet Management</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🚗</div><span class="sb-item-text">Fleet Management</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Fleet Inventory</a>
+      <a class="sb-sub-item " href="coming-soon.html">Vehicle Requisition</a>
+      <a class="sb-sub-item " href="coming-soon.html">Fuel Tracking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Fleet Maintenance</a>
+      <a class="sb-sub-item " href="coming-soon.html">GPS and Route Tracking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Compliance Tracking</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 6 — Inventory and Supply</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">📦</div><span class="sb-item-text">Inventory and Supply</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Store Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Stock Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Requisition Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Goods Movement</a>
+      <a class="sb-sub-item " href="coming-soon.html">Consumption Tracking</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 7 — Admin Support</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">✈️</div><span class="sb-item-text">Admin Support Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Travel Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Employee Admin Services</a>
+      <a class="sb-sub-item " href="coming-soon.html">Stationery and Supplies</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Platform</span></div>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📊</div><span class="sb-item-text">Reports and Analytics</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📅</div><span class="sb-item-text">Activity Calendar</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📋</div><span class="sb-item-text">Policy and Knowledge Hub</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">👥</div><span class="sb-item-text">User Management</span></a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div>
+    <div class="sb-bottom-item" onclick="alert('Help and support coming soon!')"><span style="font-size:15px;">❓</span><span>Help and Support</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <span>Area 4</span><span style="color:var(--light)">›</span>
+      <span>Vendor and Finance</span><span style="color:var(--light)">›</span>
+      <span>Vendor Performance</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar"><span style="color:var(--light);font-size:14px;">🔍</span><input type="text" placeholder="Search vendors..."></div>
+      <div class="top-btn">🔔</div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;color:var(--text);">
+          <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);">DH</div>
+          <span>Delowar</span><span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>Vendor Performance</h1>
+        <p>Area 4 · KPI scores driven by SLA compliance, attendance, feedback and EHS · March 2025</p>
+      </div>
+      <div class="page-hdr-right">
+        <div class="period-toggle">
+          <button class="pt-btn active" onclick="switchPeriod(this,'mar')">March</button>
+          <button class="pt-btn" onclick="switchPeriod(this,'q1')">Q1 2025</button>
+          <button class="pt-btn" onclick="switchPeriod(this,'ytd')">YTD</button>
+        </div>
+        <button class="btn-act btn-outline" onclick="alert('Exporting performance report...')">⬇ Export Report</button>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="alert-banner ab-red-b">
+      <span style="font-size:18px;">🚨</span>
+      <div><strong>Dhaka Transport Co</strong> has dropped below the 65% KPI threshold. Contract review may be required. Current score: 62%</div>
+      <button class="act-btn ab-red" style="margin-left:auto;flex-shrink:0;" onclick="openVendorDetail('Dhaka Transport Co','DT','#D94F4F')">Review Now</button>
+    </div>
+    <div class="alert-banner ab-amber-b" style="margin-top:-8px;">
+      <span style="font-size:18px;">⚠</span>
+      <div><strong>Cooling Solutions Ltd</strong> KPI has dropped 11 points this month due to SLA breaches. Trend is declining.</div>
+      <button class="act-btn ab-amber" style="margin-left:auto;flex-shrink:0;" onclick="openVendorDetail('Cooling Solutions Ltd','CS','#C47B1A')">View Details</button>
+    </div>
+
+    <!-- LEADERBOARD TOP 3 -->
+    <div class="leaderboard">
+      <!-- 1st -->
+      <div class="leader-card gold" onclick="openVendorDetail('ABC Security Ltd','AS','#1A5FAB')">
+        <div class="leader-rank">🥇</div>
+        <div class="leader-av" style="background:#1A5FAB;">AS</div>
+        <div class="leader-name">ABC Security Ltd</div>
+        <div class="leader-type">Security Services</div>
+        <div class="leader-score" style="color:var(--green);">94%</div>
+        <div class="leader-trend">↑ +3 from last month · Top performer</div>
+        <div class="score-bar-wrap"><div class="score-bar bar-green" style="width:94%;"></div></div>
+      </div>
+      <!-- 2nd -->
+      <div class="leader-card silver" onclick="openVendorDetail('Green Clean Co','GC','#1E8A5A')">
+        <div class="leader-rank">🥈</div>
+        <div class="leader-av" style="background:#1E8A5A;">GC</div>
+        <div class="leader-name">Green Clean Co</div>
+        <div class="leader-type">Cleaning Services</div>
+        <div class="leader-score" style="color:var(--green);">91%</div>
+        <div class="leader-trend">↑ +2 from last month · Consistent</div>
+        <div class="score-bar-wrap"><div class="score-bar bar-green" style="width:91%;"></div></div>
+      </div>
+      <!-- 3rd -->
+      <div class="leader-card bronze" onclick="openVendorDetail('Fresh Foods Ltd','FF','#5B45C7')">
+        <div class="leader-rank">🥉</div>
+        <div class="leader-av" style="background:#5B45C7;">FF</div>
+        <div class="leader-name">Fresh Foods Ltd</div>
+        <div class="leader-type">Catering Services</div>
+        <div class="leader-score" style="color:var(--green);">88%</div>
+        <div class="leader-trend">↑ +3 from last month · Improving</div>
+        <div class="score-bar-wrap"><div class="score-bar bar-green" style="width:88%;"></div></div>
+      </div>
+    </div>
+
+    <!-- ALL VENDORS TABLE -->
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>📊 All Vendor KPI Scores — March 2025</h2>
+          <div class="panel-hdr-right">
+            <span class="tag tag-green">3 performing</span>
+            <span class="tag tag-red">2 at risk</span>
+          </div>
+        </div>
+        <table class="vp-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Vendor</th>
+              <th>Overall KPI</th>
+              <th>SLA</th>
+              <th>Attendance</th>
+              <th>Feedback</th>
+              <th>Trend</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr onclick="openVendorDetail('ABC Security Ltd','AS','#1A5FAB')">
+              <td><span style="font-size:18px;">🥇</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;background:#1A5FAB;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">AS</div>
+                  <div><div style="font-size:13px;font-weight:500;">ABC Security Ltd</div><div style="font-size:11px;color:var(--muted);">Security</div></div>
+                </div>
+              </td>
+              <td>
+                <div class="kpi-inline">
+                  <span class="kpi-score" style="color:var(--green);">94%</span>
+                  <div class="kpi-bar-bg"><div class="kpi-bar bar-green" style="width:94%;"></div></div>
+                </div>
+              </td>
+              <td><span class="tag tag-green">96%</span></td>
+              <td><span class="tag tag-amber">87%</span></td>
+              <td><span class="tag tag-green">4.6★</span></td>
+              <td style="color:var(--green);font-weight:600;font-size:13px;">↑ +3</td>
+              <td onclick="event.stopPropagation()"><button class="act-btn ab-blue" onclick="openVendorDetail('ABC Security Ltd','AS','#1A5FAB')">View</button></td>
+            </tr>
+            <tr onclick="openVendorDetail('Green Clean Co','GC','#1E8A5A')">
+              <td><span style="font-size:18px;">🥈</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;background:#1E8A5A;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">GC</div>
+                  <div><div style="font-size:13px;font-weight:500;">Green Clean Co</div><div style="font-size:11px;color:var(--muted);">Cleaning</div></div>
+                </div>
+              </td>
+              <td>
+                <div class="kpi-inline">
+                  <span class="kpi-score" style="color:var(--green);">91%</span>
+                  <div class="kpi-bar-bg"><div class="kpi-bar bar-green" style="width:91%;"></div></div>
+                </div>
+              </td>
+              <td><span class="tag tag-green">93%</span></td>
+              <td><span class="tag tag-green">95%</span></td>
+              <td><span class="tag tag-green">4.4★</span></td>
+              <td style="color:var(--green);font-weight:600;font-size:13px;">↑ +2</td>
+              <td onclick="event.stopPropagation()"><button class="act-btn ab-blue" onclick="openVendorDetail('Green Clean Co','GC','#1E8A5A')">View</button></td>
+            </tr>
+            <tr onclick="openVendorDetail('Fresh Foods Ltd','FF','#5B45C7')">
+              <td><span style="font-size:18px;">🥉</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;background:#5B45C7;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">FF</div>
+                  <div><div style="font-size:13px;font-weight:500;">Fresh Foods Ltd</div><div style="font-size:11px;color:var(--muted);">Catering</div></div>
+                </div>
+              </td>
+              <td>
+                <div class="kpi-inline">
+                  <span class="kpi-score" style="color:var(--green);">88%</span>
+                  <div class="kpi-bar-bg"><div class="kpi-bar bar-green" style="width:88%;"></div></div>
+                </div>
+              </td>
+              <td><span class="tag tag-green">90%</span></td>
+              <td><span class="tag tag-green">92%</span></td>
+              <td><span class="tag tag-green">4.3★</span></td>
+              <td style="color:var(--green);font-weight:600;font-size:13px;">↑ +3</td>
+              <td onclick="event.stopPropagation()"><button class="act-btn ab-blue" onclick="openVendorDetail('Fresh Foods Ltd','FF','#5B45C7')">View</button></td>
+            </tr>
+            <tr onclick="openVendorDetail('Cooling Solutions Ltd','CS','#C47B1A')">
+              <td><span style="font-size:16px;">4</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;background:#C47B1A;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">CS</div>
+                  <div><div style="font-size:13px;font-weight:500;">Cooling Solutions Ltd</div><div style="font-size:11px;color:var(--muted);">Maintenance</div></div>
+                </div>
+              </td>
+              <td>
+                <div class="kpi-inline">
+                  <span class="kpi-score" style="color:var(--amber);">71%</span>
+                  <div class="kpi-bar-bg"><div class="kpi-bar bar-amber" style="width:71%;"></div></div>
+                </div>
+              </td>
+              <td><span class="tag tag-red">68%</span></td>
+              <td><span class="tag tag-amber">78%</span></td>
+              <td><span class="tag tag-amber">3.8★</span></td>
+              <td style="color:var(--red);font-weight:600;font-size:13px;">↓ –11</td>
+              <td onclick="event.stopPropagation()"><button class="act-btn ab-amber" onclick="openVendorDetail('Cooling Solutions Ltd','CS','#C47B1A')">Review</button></td>
+            </tr>
+            <tr onclick="openVendorDetail('Dhaka Transport Co','DT','#D94F4F')">
+              <td><span style="font-size:16px;">5</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;background:#D94F4F;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">DT</div>
+                  <div><div style="font-size:13px;font-weight:500;">Dhaka Transport Co</div><div style="font-size:11px;color:var(--muted);">Transport</div></div>
+                </div>
+              </td>
+              <td>
+                <div class="kpi-inline">
+                  <span class="kpi-score" style="color:var(--red);">62%</span>
+                  <div class="kpi-bar-bg"><div class="kpi-bar bar-red" style="width:62%;"></div></div>
+                </div>
+              </td>
+              <td><span class="tag tag-red">58%</span></td>
+              <td><span class="tag tag-amber">72%</span></td>
+              <td><span class="tag tag-red">3.1★</span></td>
+              <td style="color:var(--red);font-weight:600;font-size:13px;">↓ –12</td>
+              <td onclick="event.stopPropagation()"><button class="act-btn ab-red" onclick="openVendorDetail('Dhaka Transport Co','DT','#D94F4F')">⚠ Review</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- RIGHT: RECENT FEEDBACK -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>⭐ Recent Feedback</h2>
+            <button class="panel-link">View all →</button>
+          </div>
+          <div class="feedback-item">
+            <div class="fb-hdr"><span class="fb-vendor">ABC Security Ltd</span><span class="fb-stars">★★★★★</span></div>
+            <div class="fb-text">Guards are always professional and on time. Shahid's absence was handled with a quick replacement the next day.</div>
+            <div class="fb-meta"><span>Ahmed Hassan · 24 Mar</span><span class="tag tag-green" style="font-size:10px;">5 stars</span></div>
+          </div>
+          <div class="feedback-item">
+            <div class="fb-hdr"><span class="fb-vendor">Green Clean Co</span><span class="fb-stars">★★★★★</span></div>
+            <div class="fb-text">Cafeteria deep clean was excellent. Team was efficient and thorough. No complaints this month.</div>
+            <div class="fb-meta"><span>Karim Rahman · 22 Mar</span><span class="tag tag-green" style="font-size:10px;">5 stars</span></div>
+          </div>
+          <div class="feedback-item">
+            <div class="fb-hdr"><span class="fb-vendor">Cooling Solutions Ltd</span><span class="fb-stars">★★★☆☆</span></div>
+            <div class="fb-text">AC repair on Floor 3 took too long. Our team was uncomfortable for an entire day. Need faster response.</div>
+            <div class="fb-meta"><span>Tanvir Ahmed · 25 Mar</span><span class="tag tag-amber" style="font-size:10px;">3 stars</span></div>
+          </div>
+          <div class="feedback-item">
+            <div class="fb-hdr"><span class="fb-vendor">Dhaka Transport Co</span><span class="fb-stars">★★☆☆☆</span></div>
+            <div class="fb-text">Driver was 45 minutes late for the airport pickup. Very unprofessional and caused us to miss a client meeting.</div>
+            <div class="fb-meta"><span>Salma Begum · 22 Mar</span><span class="tag tag-red" style="font-size:10px;">2 stars</span></div>
+          </div>
+        </div>
+
+        <!-- KPI THRESHOLD BOX -->
+        <div class="panel">
+          <div class="panel-hdr"><h2>⚙ KPI Thresholds</h2><button class="panel-link" onclick="openModal('thresholdModal')">Edit →</button></div>
+          <div style="padding:14px 18px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2);">
+              <span style="font-size:13px;color:var(--text);">Excellent</span>
+              <span style="font-size:13px;font-weight:600;color:var(--green);">90% and above</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2);">
+              <span style="font-size:13px;color:var(--text);">Good</span>
+              <span style="font-size:13px;font-weight:600;color:var(--blue);">75% – 89%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2);">
+              <span style="font-size:13px;color:var(--text);">Watch</span>
+              <span style="font-size:13px;font-weight:600;color:var(--amber);">65% – 74%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+              <span style="font-size:13px;color:var(--text);">At Risk — contract review</span>
+              <span style="font-size:13px;font-weight:600;color:var(--red);">Below 65%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- VENDOR DETAIL MODAL -->
+<div class="modal-overlay" id="vendorDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div id="vdAv" style="width:40px;height:40px;background:#1A5FAB;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;">AS</div>
+        <div><h3 id="vdName">ABC Security Ltd</h3><div style="font-size:12px;color:var(--muted);margin-top:2px;">Security Services · KPI Score: March 2025</div></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('vendorDetailModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="modal-tab active" onclick="switchTab(this,'vd1')">KPI Breakdown</button>
+        <button class="modal-tab" onclick="switchTab(this,'vd2')">3-Month Trend</button>
+        <button class="modal-tab" onclick="switchTab(this,'vd3')">Feedback History</button>
+        <button class="modal-tab" onclick="switchTab(this,'vd4')">Action Plan</button>
+      </div>
+
+      <!-- KPI Breakdown -->
+      <div class="tab-content active" id="vd1">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+          <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--green);">94%</div>
+            <div style="font-size:11px;color:var(--green);">Overall KPI</div>
+          </div>
+          <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--green);">96%</div>
+            <div style="font-size:11px;color:var(--green);">SLA Compliance</div>
+          </div>
+          <div style="background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--amber);">87%</div>
+            <div style="font-size:11px;color:var(--amber);">Attendance</div>
+          </div>
+          <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--green);">4.6</div>
+            <div style="font-size:11px;color:var(--green);">User Rating</div>
+          </div>
+        </div>
+        <div class="kpi-breakdown">
+          <div class="kbd-hdr"><span class="kbd-label">SLA Compliance</span><span class="kbd-score" style="color:var(--green);">96%</span></div>
+          <div class="kbd-bar"><div class="kbd-bar-fill bar-green" style="width:96%;"></div></div>
+          <div class="kbd-sub">48 of 50 tickets resolved within SLA · 2 breaches this month</div>
+        </div>
+        <div class="kpi-breakdown">
+          <div class="kbd-hdr"><span class="kbd-label">Guard Attendance Rate</span><span class="kbd-score" style="color:var(--amber);">87%</span></div>
+          <div class="kbd-bar"><div class="kbd-bar-fill bar-amber" style="width:87%;"></div></div>
+          <div class="kbd-sub">Shahid Hossain: 3 absent days · Masud Ali: 5 late arrivals this month</div>
+        </div>
+        <div class="kpi-breakdown">
+          <div class="kbd-hdr"><span class="kbd-label">EHS Compliance</span><span class="kbd-score" style="color:var(--green);">100%</span></div>
+          <div class="kbd-bar"><div class="kbd-bar-fill bar-green" style="width:100%;"></div></div>
+          <div class="kbd-sub">No EHS violations reported · Safety gear compliance 100%</div>
+        </div>
+        <div class="kpi-breakdown">
+          <div class="kbd-hdr"><span class="kbd-label">User Feedback Score</span><span class="kbd-score" style="color:var(--green);">4.6 / 5</span></div>
+          <div class="kbd-bar"><div class="kbd-bar-fill bar-green" style="width:92%;"></div></div>
+          <div class="kbd-sub">18 feedback responses · Average 4.6 stars · 2 negative reviews</div>
+        </div>
+      </div>
+
+      <!-- 3-Month Trend -->
+      <div class="tab-content" id="vd2">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Performance trend over the last 3 months</div>
+        <div class="trend-chart">
+          <div class="trend-months">
+            <div class="trend-bar-col">
+              <div class="trend-bar" style="height:62px;background:var(--blue);width:28px;"></div>
+              <div class="trend-month-label">Jan</div>
+            </div>
+            <div class="trend-bar-col">
+              <div class="trend-bar" style="height:55px;background:var(--blue);width:28px;"></div>
+              <div class="trend-month-label">Feb</div>
+            </div>
+            <div class="trend-bar-col">
+              <div class="trend-bar" style="height:67px;background:var(--green);width:28px;"></div>
+              <div class="trend-month-label">Mar</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:8px;">
+          <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">January 2025</div>
+            <div style="font-size:20px;font-weight:700;color:var(--blue);">91%</div>
+          </div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">February 2025</div>
+            <div style="font-size:20px;font-weight:700;color:var(--blue);">91%</div>
+          </div>
+          <div style="background:var(--green-bg);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--green-bd);">
+            <div style="font-size:11px;color:var(--green);margin-bottom:4px;">March 2025</div>
+            <div style="font-size:20px;font-weight:700;color:var(--green);">94% ↑</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback History -->
+      <div class="tab-content" id="vd3">
+        <div class="feedback-item">
+          <div class="fb-hdr"><span class="fb-vendor">Ahmed Hassan</span><span class="fb-stars">★★★★★</span></div>
+          <div class="fb-text">Guards are always professional and on time. No issues this month. Very satisfied with the service level.</div>
+          <div class="fb-meta"><span>24 March 2025</span><span>Service: Security patrol</span></div>
+        </div>
+        <div class="feedback-item">
+          <div class="fb-hdr"><span class="fb-vendor">Karim Rahman</span><span class="fb-stars">★★★★☆</span></div>
+          <div class="fb-text">Good overall performance. Reception guard was absent for 3 days which created issues. Otherwise excellent.</div>
+          <div class="fb-meta"><span>20 March 2025</span><span>Service: Guard deployment</span></div>
+        </div>
+        <div class="feedback-item">
+          <div class="fb-hdr"><span class="fb-vendor">Rahim Chowdhury</span><span class="fb-stars">★★★★★</span></div>
+          <div class="fb-text">Excellent response to the unauthorized access incident. Team was on-site within 10 minutes. Very professional.</div>
+          <div class="fb-meta"><span>15 March 2025</span><span>Service: Incident response</span></div>
+        </div>
+      </div>
+
+      <!-- Action Plan -->
+      <div class="tab-content" id="vd4">
+        <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--green);">
+          ✓ This vendor is performing well. No immediate action required.
+        </div>
+        <div class="form-field">
+          <label>Add Improvement Target</label>
+          <select><option>Attendance — target 95%</option><option>SLA compliance — maintain 95%+</option><option>Reduce late arrivals to zero</option><option>Improve feedback score</option></select>
+        </div>
+        <div class="form-field">
+          <label>Review Date</label>
+          <input type="date">
+        </div>
+        <div class="form-field">
+          <label>Notes for Vendor</label>
+          <textarea placeholder="Any specific areas for improvement to communicate to vendor..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="alert('Downloading performance report as PDF...')">⬇ Download Report</button>
+      <button class="btn-secondary" onclick="closeModal('vendorDetailModal')">Close</button>
+      <button class="btn-primary" onclick="saveActionPlan()">Save Action Plan</button>
+    </div>
+  </div>
+</div>
+
+<!-- THRESHOLD MODAL -->
+<div class="modal-overlay" id="thresholdModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>⚙ Edit KPI Thresholds</h3><button class="modal-close" onclick="closeModal('thresholdModal')">×</button></div>
+    <div class="modal-body">
+      <div style="background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);">ℹ Thresholds determine which alerts are triggered and what actions are recommended.</div>
+      <div class="form-field"><label>Excellent threshold (%)</label><input type="number" value="90"></div>
+      <div class="form-field"><label>Good threshold (%)</label><input type="number" value="75"></div>
+      <div class="form-field"><label>Watch threshold (%)</label><input type="number" value="65"></div>
+      <div class="form-field"><label>At Risk — contract review (%)</label><input type="number" value="65"></div>
+      <div class="form-field"><label>KPI score weights</label>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;">SLA Compliance</span><input type="number" value="40" style="width:70px;padding:6px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;text-align:center;">%</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;">Attendance Rate</span><input type="number" value="30" style="width:70px;padding:6px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;text-align:center;">%</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;">User Feedback</span><input type="number" value="20" style="width:70px;padding:6px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;text-align:center;">%</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;">EHS Compliance</span><input type="number" value="10" style="width:70px;padding:6px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;text-align:center;">%</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('thresholdModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveThresholds()">Save Thresholds</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleArea(el){el.classList.toggle('open');const s=el.nextElementSibling;if(s&&s.classList.contains('sb-sub-list'))s.classList.toggle('open');}
+function toggleDD(){document.getElementById('userDD').classList.toggle('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-menu').forEach(m=>m.classList.remove('open'));});
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+
+function switchTab(btn,id){
+  const mb=btn.closest('.modal-body');
+  mb.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  mb.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+function switchPeriod(btn,period){
+  document.querySelectorAll('.pt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  alert('Switching to: '+period.toUpperCase()+' view\n\nIn production this will reload all KPI data for the selected period.');
+}
+
+function openVendorDetail(name,initials,color){
+  document.getElementById('vdName').textContent=name;
+  document.getElementById('vdAv').textContent=initials;
+  document.getElementById('vdAv').style.background=color;
+  document.querySelectorAll('#vendorDetailModal .modal-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#vendorDetailModal .tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelector('#vendorDetailModal .modal-tab').classList.add('active');
+  document.getElementById('vd1').classList.add('active');
+  openModal('vendorDetailModal');
+}
+
+function saveActionPlan(){
+  closeModal('vendorDetailModal');
+  setTimeout(()=>alert('✅ Action plan saved!\n\nTargets set for vendor.\nReview date scheduled.\nVendor will be notified.'),200);
+}
+
+function saveThresholds(){
+  closeModal('thresholdModal');
+  setTimeout(()=>alert('✅ KPI thresholds updated!\n\nNew thresholds apply immediately.\nAlerts will recalculate based on new settings.'),200);
+}
+
+window.addEventListener('load',function(){
+  document.querySelectorAll('.score-bar,.kpi-bar').forEach(function(b){
+    const w=b.style.width;b.style.width='0';
+    setTimeout(function(){b.style.width=w;},400);
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Utility Management</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --red:#D94F4F;--red-bg:#FDF0F0;--red-bd:#F5CECE;
+  --amber:#C47B1A;--amber-bg:#FDF5E6;--amber-bd:#F0D9A8;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;--blue-bd:#BDDBF7;
+  --green:#1E8A5A;--green-bg:#EAF7F1;--green-bd:#A8DFC5;
+  --purple:#5B45C7;--purple-bg:#F0EEFF;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(200,169,110,.8);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{width:2px;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+.sb-chevron{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s;flex-shrink:0;}
+.sb-area-toggle.open .sb-chevron{transform:rotate(90deg);}
+.sb-sub-list{overflow:hidden;max-height:0;transition:max-height .3s ease;}
+.sb-sub-list.open{max-height:500px;}
+.sb-sub{padding-left:58px;}
+.sb-sub-item{display:flex;align-items:center;gap:6px;padding:6px 18px 6px 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);transition:color .15s;text-decoration:none;}
+.sb-sub-item:hover{color:rgba(255,255,255,.85);}
+.sb-sub-item.active{color:var(--gold);}
+.sb-sub-item::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;width:200px;}
+.search-bar:focus-within{border-color:var(--navy);background:#fff;}
+.search-bar input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.search-bar input::placeholder{color:var(--light);}
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;}
+.top-btn:hover{border-color:var(--navy);}
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+.content{padding:24px 28px;flex:1;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+.page-hdr-right{display:flex;gap:8px;align-items:center;}
+.btn-act{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-act:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);border-color:var(--navy);}
+
+/* UTILITY TYPE TOGGLE */
+.util-toggle{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
+.util-btn{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:2px solid var(--border);background:var(--surface);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.util-btn:hover{border-color:var(--navy);}
+.util-btn.active{border-color:var(--navy);background:var(--navy);}
+.util-btn.active .util-label{color:#fff;}
+.util-btn.active .util-val{color:var(--gold);}
+.util-icon{font-size:20px;}
+.util-info{text-align:left;}
+.util-label{font-size:12px;font-weight:600;color:var(--text);transition:color .2s;}
+.util-val{font-size:11px;color:var(--muted);margin-top:1px;transition:color .2s;}
+
+/* SUM CARDS */
+.sum-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;transition:all .18s;cursor:pointer;}
+.sum-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.sc-yellow::before{background:#E8A020;}
+.sc-blue::before{background:var(--blue);}
+.sc-green::before{background:var(--green);}
+.sc-red::before{background:var(--red);}
+.sum-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.sum-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);line-height:1;}
+.sum-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.sum-trend{font-size:11px;margin-top:4px;font-weight:500;}
+.trend-up{color:var(--red);}
+.trend-down{color:var(--green);}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 300px;gap:16px;margin-bottom:16px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2);}
+.panel-hdr h2{font-size:14px;font-weight:600;color:var(--text);}
+.panel-hdr-right{display:flex;gap:8px;align-items:center;}
+.panel-link{font-size:12px;color:var(--navy);font-weight:500;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
+
+/* TAGS */
+.tag{display:inline-flex;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-navy{background:rgba(10,22,40,.08);color:var(--navy);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+
+/* BAR CHART MOCK */
+.bar-chart{padding:16px 18px;}
+.bc-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.bc-label{font-size:11.5px;color:var(--muted);width:80px;flex-shrink:0;text-align:right;}
+.bc-bar-bg{flex:1;height:22px;background:var(--bg);border-radius:5px;overflow:hidden;}
+.bc-bar{height:100%;border-radius:5px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:600;color:#fff;transition:width .8s ease;}
+.bc-val{font-size:11.5px;font-weight:600;color:var(--text);width:90px;flex-shrink:0;}
+
+/* READING TABLE */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.util-table{width:100%;border-collapse:collapse;}
+.util-table th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);background:var(--bg);white-space:nowrap;}
+.util-table td{padding:11px 16px;font-size:13px;border-bottom:1px solid var(--border2);vertical-align:middle;}
+.util-table tr:last-child td{border-bottom:none;}
+.util-table tr:hover td{background:rgba(242,240,235,.5);cursor:pointer;}
+
+/* METER CARDS */
+.meter-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;}
+.meter-card{background:var(--bg);border-radius:10px;padding:14px;}
+.mc-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.mc-name{font-size:13px;font-weight:600;color:var(--text);}
+.mc-reading{font-family:'DM Serif Display',serif;font-size:28px;color:var(--navy);margin-bottom:2px;}
+.mc-unit{font-size:11px;color:var(--muted);}
+.mc-bar-bg{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:8px 0;}
+.mc-bar{height:100%;border-radius:3px;}
+.mc-meta{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);}
+
+/* ANOMALY ITEMS */
+.anomaly-item{display:flex;align-items:flex-start;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.anomaly-item:hover{background:var(--bg);}
+.anomaly-item:last-child{border-bottom:none;}
+.an-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.an-body{flex:1;}
+.an-title{font-size:13px;font-weight:500;margin-bottom:2px;}
+.an-sub{font-size:11.5px;color:var(--muted);}
+.an-meta{display:flex;gap:8px;margin-top:5px;}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.filter-select{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-md{max-width:540px;}
+.modal-lg{max-width:700px;}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:600;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:22px;max-height:72vh;overflow-y:auto;}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);margin:-22px -22px 20px;}
+.modal-tab{padding:12px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
+.modal-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.form-field{margin-bottom:15px;}
+.form-field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--navy);background:#fff;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-sec{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border2);}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-secondary{padding:10px 20px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--navy);}
+.info-box{background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.util-toggle{animation:fadeIn .3s ease both;}
+.sum-grid{animation:fadeIn .4s .05s ease both;}
+.two-col{animation:fadeIn .4s .1s ease both;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh Limited</div></div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">DH</div>
+    <div><div class="sb-uname">Delowar Hossain</div><div class="sb-urole">Company Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">Main</span></div>
+    <a class="sb-item" href="admin-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">Dashboard</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">🔔</div><span class="sb-item-text">Priority Inbox</span></a>
+    <div class="sb-section"><span class="sb-section-label">Area 1 — Workplace Services</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🏢</div><span class="sb-item-text">Workplace Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Service Requests</a>
+      <a class="sb-sub-item" href="coming-soon.html">Meeting Room Booking</a>
+      <a class="sb-sub-item" href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Cafeteria and Pantry</a>
+      <a class="sb-sub-item" href="coming-soon.html">Parking Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Courier and Dispatch</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 2 — Real Estate and Assets</span></div>
+    <div class="sb-item sb-area-toggle open" onclick="toggleArea(this)"><div class="sb-item-icon">🏗</div><span class="sb-item-text">Real Estate and Assets</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list open"><div class="sb-sub">
+      <a class="sb-sub-item" href="asset-register.html">Asset Register</a>
+      <a class="sb-sub-item" href="maintenance.html">Maintenance</a>
+      <a class="sb-sub-item" href="lease-management.html">Lease Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Space Management</a>
+      <a class="sb-sub-item active" href="utility-management.html">Utility Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">License Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Asset Transfer</a>
+      <a class="sb-sub-item" href="coming-soon.html">Asset Disposal</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 3 — Security and EHS</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🔒</div><span class="sb-item-text">Security and EHS</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Security Operations</a>
+      <a class="sb-sub-item" href="coming-soon.html">Access Control</a>
+      <a class="sb-sub-item" href="coming-soon.html">Gate Pass Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Incident Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">EHS Compliance</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 4 — Vendor and Finance</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">💼</div><span class="sb-item-text">Vendor and Finance</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="vendor-list.html">Vendor Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Contract Management</a>
+      <a class="sb-sub-item" href="vendor-performance.html">Vendor Performance</a>
+      <a class="sb-sub-item" href="grn-management.html">GRN Management</a>
+      <a class="sb-sub-item" href="billing.html">Billing and Payments</a>
+      <a class="sb-sub-item" href="penalty-management.html">Penalty Management</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 5 — Fleet Management</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🚗</div><span class="sb-item-text">Fleet Management</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Fleet Inventory</a>
+      <a class="sb-sub-item" href="coming-soon.html">Vehicle Requisition</a>
+      <a class="sb-sub-item" href="coming-soon.html">Fuel Tracking</a>
+      <a class="sb-sub-item" href="coming-soon.html">Fleet Maintenance</a>
+      <a class="sb-sub-item" href="coming-soon.html">GPS and Route Tracking</a>
+      <a class="sb-sub-item" href="coming-soon.html">Compliance Tracking</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 6 — Inventory and Supply</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">📦</div><span class="sb-item-text">Inventory and Supply</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Store Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Stock Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Requisition Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Goods Movement</a>
+      <a class="sb-sub-item" href="coming-soon.html">Consumption Tracking</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 7 — Admin Support</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">✈️</div><span class="sb-item-text">Admin Support Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Travel Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Employee Admin Services</a>
+      <a class="sb-sub-item" href="coming-soon.html">Stationery and Supplies</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Platform</span></div>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📊</div><span class="sb-item-text">Reports and Analytics</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📅</div><span class="sb-item-text">Activity Calendar</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📋</div><span class="sb-item-text">Policy and Knowledge Hub</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">👥</div><span class="sb-item-text">User Management</span></a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div>
+    <div class="sb-bottom-item" onclick="alert('Help and support coming soon!')"><span style="font-size:15px;">❓</span><span>Help and Support</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <span style="color:var(--muted)">Area 2</span><span style="color:var(--light)">›</span>
+      <span style="color:var(--muted)">Real Estate and Assets</span><span style="color:var(--light)">›</span>
+      <span>Utility Management</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar"><span style="color:var(--light);font-size:14px;">🔍</span><input type="text" placeholder="Search readings..."></div>
+      <div class="top-btn">🔔</div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;color:var(--text);">
+          <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);">DH</div>
+          <span>Delowar</span><span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>Utility Management</h1>
+        <p>Area 2 · Electricity, water and fuel consumption tracking across all properties · March 2025</p>
+      </div>
+      <div class="page-hdr-right">
+        <button class="btn-act btn-outline" onclick="alert('Exporting utility report...')">⬇ Export Report</button>
+        <button class="btn-act" onclick="openModal('addReadingModal')">+ Add Reading</button>
+      </div>
+    </div>
+
+    <!-- UTILITY TYPE TOGGLE -->
+    <div class="util-toggle">
+      <div class="util-btn active" id="btnElec" onclick="switchUtil('electricity')">
+        <div class="util-icon">⚡</div>
+        <div class="util-info"><div class="util-label">Electricity</div><div class="util-val">42,840 kWh — March</div></div>
+      </div>
+      <div class="util-btn" id="btnWater" onclick="switchUtil('water')">
+        <div class="util-icon">💧</div>
+        <div class="util-info"><div class="util-label">Water</div><div class="util-val">1,240 m³ — March</div></div>
+      </div>
+      <div class="util-btn" id="btnFuel" onclick="switchUtil('fuel')">
+        <div class="util-icon">⛽</div>
+        <div class="util-info"><div class="util-label">Fuel and Gas</div><div class="util-val">3,840 litres — March</div></div>
+      </div>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="sum-grid">
+      <div class="sum-card sc-yellow">
+        <div class="sum-label" id="card1Label">March Consumption</div>
+        <div class="sum-num" id="card1Val">42,840</div>
+        <div class="sum-sub" id="card1Unit">kWh across all properties</div>
+        <div class="sum-trend trend-up" id="card1Trend">↑ +8% vs February</div>
+      </div>
+      <div class="sum-card sc-blue">
+        <div class="sum-label">March Cost</div>
+        <div class="sum-num" id="card2Val" style="font-size:22px;">618,400</div>
+        <div class="sum-sub">BDT total bill</div>
+        <div class="sum-trend trend-up">↑ +6% vs February</div>
+      </div>
+      <div class="sum-card sc-red">
+        <div class="sum-label">Anomalies Detected</div>
+        <div class="sum-num">2</div>
+        <div class="sum-sub">Unusual consumption spikes</div>
+        <div class="sum-trend" style="color:var(--red);">⚠ Needs review</div>
+      </div>
+      <div class="sum-card sc-green">
+        <div class="sum-label">vs Last Year</div>
+        <div class="sum-num" style="font-size:22px;">–11%</div>
+        <div class="sum-sub">Year-on-year reduction</div>
+        <div class="sum-trend trend-down">↓ Efficiency improving</div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="two-col">
+
+      <!-- LEFT -->
+      <div>
+
+        <!-- BAR CHART BY PROPERTY -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2 id="chartTitle">⚡ Electricity by Property — March 2025</h2>
+            <div class="panel-hdr-right">
+              <select class="filter-select" style="padding:6px 10px;font-size:12px;" onchange="alert('Switching period...')">
+                <option>March 2025</option>
+                <option>February 2025</option>
+                <option>January 2025</option>
+                <option>Q1 2025</option>
+              </select>
+            </div>
+          </div>
+          <div class="bar-chart" id="barChart">
+            <div class="bc-row">
+              <span class="bc-label">HQ — Dhaka</span>
+              <div class="bc-bar-bg"><div class="bc-bar" style="width:85%;background:#E8A020;">28,420 kWh</div></div>
+              <span class="bc-val">BDT 410,000</span>
+            </div>
+            <div class="bc-row">
+              <span class="bc-label">Branch 1 — CTG</span>
+              <div class="bc-bar-bg"><div class="bc-bar" style="width:38%;background:#E8A020;">8,940 kWh</div></div>
+              <span class="bc-val">BDT 130,000</span>
+            </div>
+            <div class="bc-row">
+              <span class="bc-label">Branch 2 — SYL</span>
+              <div class="bc-bar-bg"><div class="bc-bar" style="width:28%;background:#E8A020;">4,280 kWh</div></div>
+              <span class="bc-val">BDT 62,000</span>
+            </div>
+            <div class="bc-row">
+              <span class="bc-label">Warehouse — TGI</span>
+              <div class="bc-bar-bg"><div class="bc-bar" style="width:8%;background:#E8A020;">1,200 kWh</div></div>
+              <span class="bc-val">BDT 16,400</span>
+            </div>
+          </div>
+          <div style="padding:10px 18px 14px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;font-size:12px;color:var(--muted);">
+            <span>Total: 42,840 kWh · BDT 618,400</span>
+            <span>Rate: BDT 14.43 / kWh (avg)</span>
+          </div>
+        </div>
+
+        <!-- READINGS TABLE -->
+        <div class="table-wrap">
+          <div style="padding:12px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:14px;font-weight:600;" id="tableTitle">⚡ Meter Readings — March 2025</span>
+            <div style="display:flex;gap:8px;">
+              <select class="filter-select" style="padding:7px 12px;font-size:12px;">
+                <option>All Properties</option>
+                <option>HQ — Dhaka</option>
+                <option>Branch 1 — CTG</option>
+                <option>Branch 2 — SYL</option>
+              </select>
+              <button class="btn-act btn-outline" style="padding:7px 14px;font-size:12px;" onclick="openModal('addReadingModal')">+ Add Reading</button>
+            </div>
+          </div>
+          <table class="util-table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Meter ID</th>
+                <th>Previous Reading</th>
+                <th>Current Reading</th>
+                <th>Consumption</th>
+                <th>Reading Date</th>
+                <th>Cost (BDT)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="openReadingDetail('HQ Main Meter','28420')">
+                <td><div style="font-size:13px;font-weight:500;">HQ Building</div><div style="font-size:11px;color:var(--muted);">Main meter</div></td>
+                <td><span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--navy);">MTR-HQ-01</span></td>
+                <td style="font-size:13px;">218,340 kWh</td>
+                <td style="font-size:13px;font-weight:600;">246,760 kWh</td>
+                <td style="font-weight:700;color:var(--amber);">28,420 kWh</td>
+                <td style="font-size:12px;color:var(--muted);">25 Mar 2025</td>
+                <td style="font-weight:600;">410,000</td>
+                <td><span class="tag tag-amber">High ⚠</span></td>
+              </tr>
+              <tr onclick="openReadingDetail('Branch 1 Meter','8940')">
+                <td><div style="font-size:13px;font-weight:500;">Branch 1 — CTG</div><div style="font-size:11px;color:var(--muted);">Main meter</div></td>
+                <td><span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--navy);">MTR-CT-01</span></td>
+                <td style="font-size:13px;">84,210 kWh</td>
+                <td style="font-size:13px;font-weight:600;">93,150 kWh</td>
+                <td style="font-weight:700;">8,940 kWh</td>
+                <td style="font-size:12px;color:var(--muted);">24 Mar 2025</td>
+                <td style="font-weight:600;">130,000</td>
+                <td><span class="tag tag-green">Normal</span></td>
+              </tr>
+              <tr onclick="openReadingDetail('Branch 2 Meter','4280')">
+                <td><div style="font-size:13px;font-weight:500;">Branch 2 — SYL</div><div style="font-size:11px;color:var(--muted);">Main meter</div></td>
+                <td><span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--navy);">MTR-SY-01</span></td>
+                <td style="font-size:13px;">41,180 kWh</td>
+                <td style="font-size:13px;font-weight:600;">45,460 kWh</td>
+                <td style="font-weight:700;">4,280 kWh</td>
+                <td style="font-size:12px;color:var(--muted);">25 Mar 2025</td>
+                <td style="font-weight:600;">62,000</td>
+                <td><span class="tag tag-green">Normal</span></td>
+              </tr>
+              <tr onclick="openReadingDetail('Warehouse Meter','1200')">
+                <td><div style="font-size:13px;font-weight:500;">Warehouse — TGI</div><div style="font-size:11px;color:var(--muted);">Main meter</div></td>
+                <td><span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--navy);">MTR-TG-01</span></td>
+                <td style="font-size:13px;">12,400 kWh</td>
+                <td style="font-size:13px;font-weight:600;">13,600 kWh</td>
+                <td style="font-weight:700;">1,200 kWh</td>
+                <td style="font-size:12px;color:var(--muted);">25 Mar 2025</td>
+                <td style="font-weight:600;">16,400</td>
+                <td><span class="tag tag-green">Normal</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+
+        <!-- ANOMALY ALERTS -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>⚠ Anomalies Detected</h2>
+            <span class="tag tag-red">2 alerts</span>
+          </div>
+          <div class="anomaly-item" onclick="openModal('anomalyModal')">
+            <div class="an-icon" style="background:var(--red-bg);">🔴</div>
+            <div class="an-body">
+              <div class="an-title" style="color:var(--red);">HQ electricity 31% above baseline</div>
+              <div class="an-sub">28,420 kWh vs avg 21,700 kWh</div>
+              <div class="an-meta"><span class="tag tag-red">High spike</span><span class="tag tag-gray">⚡ Electricity</span></div>
+            </div>
+          </div>
+          <div class="anomaly-item" onclick="openModal('anomalyModal')">
+            <div class="an-icon" style="background:var(--amber-bg);">🟡</div>
+            <div class="an-body">
+              <div class="an-title" style="color:var(--amber);">HQ water 18% above normal</div>
+              <div class="an-sub">Possible pipe leak — Floor 3 area</div>
+              <div class="an-meta"><span class="tag tag-amber">Moderate spike</span><span class="tag tag-gray">💧 Water</span></div>
+            </div>
+          </div>
+          <div style="padding:10px 18px;background:var(--bg);border-top:1px solid var(--border2);">
+            <div style="font-size:12px;color:var(--muted);">Anomalies trigger maintenance job suggestions automatically</div>
+          </div>
+        </div>
+
+        <!-- METER STATUS -->
+        <div class="panel">
+          <div class="panel-hdr"><h2>📟 Live Meter Status</h2></div>
+          <div class="meter-grid">
+            <div class="meter-card">
+              <div class="mc-hdr"><span style="font-size:12px;font-weight:600;color:var(--muted);">HQ — Electricity</span><span class="tag tag-green" style="font-size:10px;">Live</span></div>
+              <div class="mc-reading">246,760</div>
+              <div class="mc-unit">kWh total</div>
+              <div class="mc-bar-bg"><div class="mc-bar" style="width:72%;background:#E8A020;"></div></div>
+              <div class="mc-meta"><span>28,420 this month</span><span style="color:var(--amber);">↑ High</span></div>
+            </div>
+            <div class="meter-card">
+              <div class="mc-hdr"><span style="font-size:12px;font-weight:600;color:var(--muted);">HQ — Water</span><span class="tag tag-amber" style="font-size:10px;">Check</span></div>
+              <div class="mc-reading">8,240</div>
+              <div class="mc-unit">m³ total</div>
+              <div class="mc-bar-bg"><div class="mc-bar" style="width:85%;background:var(--blue);"></div></div>
+              <div class="mc-meta"><span>840 this month</span><span style="color:var(--amber);">↑ +18%</span></div>
+            </div>
+            <div class="meter-card">
+              <div class="mc-hdr"><span style="font-size:12px;font-weight:600;color:var(--muted);">CTG — Electricity</span><span class="tag tag-green" style="font-size:10px;">Normal</span></div>
+              <div class="mc-reading">93,150</div>
+              <div class="mc-unit">kWh total</div>
+              <div class="mc-bar-bg"><div class="mc-bar" style="width:45%;background:var(--green);"></div></div>
+              <div class="mc-meta"><span>8,940 this month</span><span style="color:var(--green);">Normal</span></div>
+            </div>
+            <div class="meter-card">
+              <div class="mc-hdr"><span style="font-size:12px;font-weight:600;color:var(--muted);">Generator — Fuel</span><span class="tag tag-blue" style="font-size:10px;">OK</span></div>
+              <div class="mc-reading">3,840</div>
+              <div class="mc-unit">litres used</div>
+              <div class="mc-bar-bg"><div class="mc-bar" style="width:55%;background:var(--purple);"></div></div>
+              <div class="mc-meta"><span>3,840 this month</span><span style="color:var(--blue);">Normal</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COST TREND -->
+        <div class="panel">
+          <div class="panel-hdr"><h2>📈 Monthly Cost Trend</h2></div>
+          <div style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border2);">
+              <span style="font-size:13px;color:var(--muted);">January 2025</span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:80px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;"><div style="width:70%;height:100%;background:#E8A020;border-radius:3px;"></div></div>
+                <span style="font-size:13px;font-weight:500;">BDT 582,000</span>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border2);">
+              <span style="font-size:13px;color:var(--muted);">February 2025</span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:80px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;"><div style="width:76%;height:100%;background:#E8A020;border-radius:3px;"></div></div>
+                <span style="font-size:13px;font-weight:500;">BDT 583,200</span>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+              <span style="font-size:13px;font-weight:600;">March 2025</span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:80px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;"><div style="width:100%;height:100%;background:var(--red);border-radius:3px;"></div></div>
+                <span style="font-size:13px;font-weight:700;color:var(--red);">BDT 618,400</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ADD READING MODAL -->
+<div class="modal-overlay" id="addReadingModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>📊 Add Utility Reading</h3><button class="modal-close" onclick="closeModal('addReadingModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-field"><label>Utility Type</label>
+          <select><option>Electricity (kWh)</option><option>Water (m³)</option><option>Fuel / Gas (litres)</option></select>
+        </div>
+        <div class="form-field"><label>Property</label>
+          <select><option>HQ Building — Dhaka</option><option>Branch 1 — Chittagong</option><option>Branch 2 — Sylhet</option><option>Warehouse — Tongi</option></select>
+        </div>
+      </div>
+      <div class="form-field"><label>Meter ID</label>
+        <select><option>MTR-HQ-01 — HQ Main</option><option>MTR-HQ-02 — HQ Floor 2</option><option>MTR-CT-01 — Branch 1</option><option>MTR-SY-01 — Branch 2</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Previous Reading</label><input type="number" placeholder="Auto-filled from last entry" readonly style="background:var(--bg);color:var(--muted);" value="218340"></div>
+        <div class="form-field"><label>Current Reading</label><input type="number" placeholder="Enter meter reading now"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Reading Date</label><input type="date"></div>
+        <div class="form-field"><label>Unit Rate (BDT)</label><input type="number" placeholder="e.g. 14.43" value="14.43"></div>
+      </div>
+      <div class="form-field"><label>Meter Photo (optional)</label><input type="file" accept="image/*" style="padding:8px;font-size:12px;"></div>
+      <div class="form-field"><label>Notes</label><textarea placeholder="Any observations e.g. meter replaced, unusual activity..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('addReadingModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveReading()">Save Reading</button>
+    </div>
+  </div>
+</div>
+
+<!-- ANOMALY MODAL -->
+<div class="modal-overlay" id="anomalyModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>⚠ Anomaly Investigation — HQ Electricity</h3><button class="modal-close" onclick="closeModal('anomalyModal')">×</button></div>
+    <div class="modal-body">
+      <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:600;color:var(--red);margin-bottom:8px;">🔴 Consumption 31% above baseline</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div><div style="font-size:11px;color:var(--muted);">March reading</div><div style="font-size:16px;font-weight:700;color:var(--red);">28,420 kWh</div></div>
+          <div><div style="font-size:11px;color:var(--muted);">3-month average</div><div style="font-size:16px;font-weight:700;color:var(--text);">21,700 kWh</div></div>
+          <div><div style="font-size:11px;color:var(--muted);">Excess consumption</div><div style="font-size:16px;font-weight:700;color:var(--red);">6,720 kWh</div></div>
+          <div><div style="font-size:11px;color:var(--muted);">Excess cost</div><div style="font-size:16px;font-weight:700;color:var(--red);">BDT 96,960</div></div>
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Possible causes to investigate:</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--navy);"> HVAC system running continuously — check thermostat settings</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--navy);"> Generator test ran longer than usual</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--navy);"> New equipment installed this month</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--navy);"> Faulty meter reading — verify physically</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--navy);"> Unauthorized usage — investigation needed</label>
+      </div>
+      <div class="form-field"><label>Investigation Notes</label><textarea placeholder="Record findings from investigation..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('anomalyModal')">Close</button>
+      <button class="btn-secondary" onclick="alert('Raising maintenance job for investigation...')">Raise Maintenance Job</button>
+      <button class="btn-primary" onclick="resolveAnomaly()">Mark Investigated</button>
+    </div>
+  </div>
+</div>
+
+<!-- READING DETAIL MODAL -->
+<div class="modal-overlay" id="readingDetailModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3 id="rdTitle">HQ Main Meter — March 2025</h3><button class="modal-close" onclick="closeModal('readingDetailModal')">×</button></div>
+    <div class="modal-body">
+      <div style="background:var(--navy);border-radius:12px;padding:18px;margin-bottom:18px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:4px;">Previous Reading</div><div style="font-size:20px;font-weight:700;color:rgba(255,255,255,.8);">218,340 kWh</div></div>
+          <div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:4px;">Current Reading</div><div style="font-size:20px;font-weight:700;color:#fff;">246,760 kWh</div></div>
+          <div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:4px;">Consumption</div><div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--gold);" id="rdConsumption">28,420 kWh</div></div>
+          <div><div style="font-size:11px;color:rgba(255,255,255,.45);margin-bottom:4px;">Cost</div><div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--gold);">BDT 410,000</div></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Meter ID</div><div style="font-size:13px;font-weight:500;">MTR-HQ-01</div></div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Reading Date</div><div style="font-size:13px;font-weight:500;">25 Mar 2025</div></div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Unit Rate</div><div style="font-size:13px;font-weight:500;">BDT 14.43/kWh</div></div>
+        <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Recorded By</div><div style="font-size:13px;font-weight:500;">Karim Rahman</div></div>
+        <div style="background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:10px 12px;grid-column:span 2;"><div style="font-size:10.5px;color:var(--amber);margin-bottom:3px;">Status</div><div style="font-size:13px;font-weight:600;color:var(--amber);">⚠ 31% above 3-month average — anomaly flagged</div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('readingDetailModal')">Close</button>
+      <button class="btn-primary" onclick="closeModal('readingDetailModal');openModal('anomalyModal')">Investigate Anomaly →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleArea(el){el.classList.toggle('open');const s=el.nextElementSibling;if(s&&s.classList.contains('sb-sub-list'))s.classList.toggle('open');}
+function toggleDD(){document.getElementById('userDD').classList.toggle('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-menu').forEach(m=>m.classList.remove('open'));});
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+function switchTab(btn,id){
+  const mb=btn.closest('.modal-body');
+  mb.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  mb.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+const utilData={
+  electricity:{label:'March Consumption',val:'42,840',unit:'kWh across all properties',trend:'↑ +8% vs February',cost:'618,400',chartTitle:'⚡ Electricity by Property — March 2025',tableTitle:'⚡ Meter Readings — March 2025',bars:[{l:'HQ — Dhaka',w:'85%',v:'28,420 kWh',c:'BDT 410,000'},{l:'Branch 1 — CTG',w:'38%',v:'8,940 kWh',c:'BDT 130,000'},{l:'Branch 2 — SYL',w:'28%',v:'4,280 kWh',c:'BDT 62,000'},{l:'Warehouse — TGI',w:'8%',v:'1,200 kWh',c:'BDT 16,400'}],barColor:'#E8A020'},
+  water:{label:'March Consumption',val:'1,240',unit:'m³ across all properties',trend:'↑ +18% vs February',cost:'186,000',chartTitle:'💧 Water by Property — March 2025',tableTitle:'💧 Water Readings — March 2025',bars:[{l:'HQ — Dhaka',w:'68%',v:'840 m³',c:'BDT 126,000'},{l:'Branch 1 — CTG',w:'28%',v:'248 m³',c:'BDT 37,200'},{l:'Branch 2 — SYL',w:'10%',v:'102 m³',c:'BDT 15,300'},{l:'Warehouse — TGI',w:'4%',v:'50 m³',c:'BDT 7,500'}],barColor:'#1A5FAB'},
+  fuel:{label:'March Consumption',val:'3,840',unit:'litres across all properties',trend:'↓ –4% vs February',cost:'576,000',chartTitle:'⛽ Fuel and Gas — March 2025',tableTitle:'⛽ Fuel Readings — March 2025',bars:[{l:'HQ — Dhaka',w:'70%',v:'2,688 litres',c:'BDT 403,200'},{l:'Branch 1 — CTG',w:'22%',v:'768 litres',c:'BDT 115,200'},{l:'Branch 2 — SYL',w:'8%',v:'384 litres',c:'BDT 57,600'},{l:'Warehouse — TGI',w:'0%',v:'—',c:'—'}],barColor:'#5B45C7'}
+};
+
+function switchUtil(type){
+  ['electricity','water','fuel'].forEach(t=>{
+    const id=t==='electricity'?'btnElec':t==='water'?'btnWater':'btnFuel';
+    document.getElementById(id).classList.toggle('active',t===type);
+  });
+  const d=utilData[type];
+  document.getElementById('card1Label').textContent=d.label;
+  document.getElementById('card1Val').textContent=d.val;
+  document.getElementById('card1Unit').textContent=d.unit;
+  document.getElementById('card1Trend').textContent=d.trend;
+  document.getElementById('card1Trend').className='sum-trend '+(d.trend.includes('↑')?'trend-up':'trend-down');
+  document.getElementById('card2Val').textContent=d.cost;
+  document.getElementById('chartTitle').textContent=d.chartTitle;
+  document.getElementById('tableTitle').textContent=d.tableTitle;
+  const bc=document.getElementById('barChart');
+  bc.innerHTML=d.bars.map(b=>`<div class="bc-row"><span class="bc-label">${b.l}</span><div class="bc-bar-bg"><div class="bc-bar" style="width:${b.w};background:${d.barColor};">${b.v}</div></div><span class="bc-val">${b.c}</span></div>`).join('');
+}
+
+function openReadingDetail(name,consumption){
+  document.getElementById('rdTitle').textContent=name+' — March 2025';
+  document.getElementById('rdConsumption').textContent=consumption+' kWh';
+  openModal('readingDetailModal');
+}
+
+function saveReading(){
+  closeModal('addReadingModal');
+  setTimeout(()=>alert('✅ Reading saved!\n\nConsumption calculated automatically.\nAnomaly check completed.\nMonthly report updated.'),200);
+}
+
+function resolveAnomaly(){
+  closeModal('anomalyModal');
+  setTimeout(()=>alert('✅ Anomaly marked as investigated!\n\nFindings recorded in audit trail.\nFM Manager notified.\nMonthly report updated.'),200);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Asset Disposal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --red:#D94F4F;--red-bg:#FDF0F0;--red-bd:#F5CECE;
+  --amber:#C47B1A;--amber-bg:#FDF5E6;--amber-bd:#F0D9A8;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;--blue-bd:#BDDBF7;
+  --green:#1E8A5A;--green-bg:#EAF7F1;--green-bd:#A8DFC5;
+  --purple:#5B45C7;--purple-bg:#F0EEFF;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(200,169,110,.8);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{width:2px;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+.sb-chevron{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s;flex-shrink:0;}
+.sb-area-toggle.open .sb-chevron{transform:rotate(90deg);}
+.sb-sub-list{overflow:hidden;max-height:0;transition:max-height .3s ease;}
+.sb-sub-list.open{max-height:500px;}
+.sb-sub{padding-left:58px;}
+.sb-sub-item{display:flex;align-items:center;gap:6px;padding:6px 18px 6px 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);transition:color .15s;text-decoration:none;}
+.sb-sub-item:hover{color:rgba(255,255,255,.85);}
+.sb-sub-item.active{color:var(--gold);}
+.sb-sub-item::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;width:220px;}
+.search-bar:focus-within{border-color:var(--navy);background:#fff;}
+.search-bar input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.search-bar input::placeholder{color:var(--light);}
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;}
+.top-btn:hover{border-color:var(--navy);}
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+.content{padding:24px 28px;flex:1;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+.page-hdr-right{display:flex;gap:8px;align-items:center;}
+.btn-act{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-act:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);border-color:var(--navy);}
+/* SUM CARDS */
+.sum-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px;}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;}
+.sum-card:hover{border-color:var(--navy);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.sc-amber::before{background:#E09B1A;}
+.sc-blue::before{background:var(--blue);}
+.sc-green::before{background:var(--green);}
+.sc-navy::before{background:var(--navy);}
+.sc-red::before{background:var(--red);}
+.sum-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.sum-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);line-height:1;}
+.sum-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:8px 14px;flex:1;min-width:200px;}
+.filter-search:focus-within{border-color:var(--navy);}
+.filter-search input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.filter-search input::placeholder{color:var(--light);}
+.filter-select{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;}
+/* TAGS */
+.tag{display:inline-flex;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-navy{background:rgba(10,22,40,.08);color:var(--navy);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+/* TABLE */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.dis-table{width:100%;border-collapse:collapse;}
+.dis-table th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);background:var(--bg);white-space:nowrap;}
+.dis-table td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border2);vertical-align:middle;}
+.dis-table tr:last-child td{border-bottom:none;}
+.dis-table tr:hover td{background:rgba(242,240,235,.5);cursor:pointer;}
+.dis-id{font-size:11.5px;font-weight:700;color:var(--navy);font-family:monospace;}
+/* ACT BUTTONS */
+.act-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+.ab-blue{background:var(--blue-bg);color:var(--blue);}
+.ab-blue:hover{background:var(--blue);color:#fff;}
+.ab-green{background:var(--green-bg);color:var(--green);}
+.ab-green:hover{background:var(--green);color:#fff;}
+.ab-amber{background:var(--amber-bg);color:var(--amber);}
+.ab-amber:hover{background:#E09B1A;color:#fff;}
+.ab-red{background:var(--red-bg);color:var(--red);}
+.ab-red:hover{background:var(--red);color:#fff;}
+.ab-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.ab-gray:hover{border-color:var(--navy);color:var(--navy);}
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-top:1px solid var(--border2);background:var(--bg);}
+.pag-info{font-size:13px;color:var(--muted);}
+.pag-btns{display:flex;gap:4px;}
+.pag-btn{padding:6px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;background:var(--surface);color:var(--text);transition:all .15s;}
+.pag-btn:hover{border-color:var(--navy);}
+.pag-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-md{max-width:560px;}
+.modal-lg{max-width:720px;}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:600;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:22px;max-height:72vh;overflow-y:auto;}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);margin:-22px -22px 20px;}
+.modal-tab{padding:12px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
+.modal-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.form-field{margin-bottom:15px;}
+.form-field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--navy);background:#fff;}
+.form-field textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-sec{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border2);}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-secondary{padding:10px 20px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--navy);}
+.warn-box{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:13px;color:var(--amber);}
+.info-box{background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);}
+/* DISPOSAL DETAIL */
+.disp-hero{background:var(--navy);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+.dh-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.dh-name{font-size:16px;font-weight:600;color:#fff;margin-bottom:3px;}
+.dh-sub{font-size:12px;color:rgba(255,255,255,.5);}
+.dh-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.dh-stat{background:rgba(255,255,255,.07);border-radius:8px;padding:10px 12px;}
+.dh-stat-lbl{font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.dh-stat-val{font-size:14px;font-weight:600;color:#fff;}
+.dh-stat-val.gold{color:var(--gold);}
+.dh-stat-val.red{color:#F09595;}
+/* APPROVAL STEPS */
+.ap-steps{display:flex;gap:0;margin-bottom:20px;}
+.ap-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;}
+.ap-step:not(:last-child)::after{content:'';position:absolute;top:13px;left:calc(50% + 14px);right:calc(-50% + 14px);height:2px;background:var(--border);}
+.ap-step.done:not(:last-child)::after{background:var(--green);}
+.ap-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);z-index:1;}
+.ap-step.done .ap-dot{background:var(--green);border-color:var(--green);color:#fff;}
+.ap-step.current .ap-dot{background:var(--amber);border-color:var(--amber);color:#fff;box-shadow:0 0 0 3px rgba(196,123,26,.2);}
+.ap-label{font-size:10px;color:var(--muted);text-align:center;line-height:1.3;}
+.ap-step.done .ap-label{color:var(--green);}
+.ap-step.current .ap-label{color:var(--amber);font-weight:600;}
+/* TIMELINE */
+.tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border2);}
+.tl-item:last-child{border-bottom:none;}
+.tl-dot{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.tl-body{flex:1;}
+.tl-title{font-size:13px;font-weight:500;margin-bottom:2px;}
+.tl-sub{font-size:11.5px;color:var(--muted);}
+.tl-time{font-size:10.5px;color:var(--light);margin-top:2px;}
+/* VALUE SUMMARY */
+.val-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2);}
+.val-row:last-child{border-bottom:none;padding-top:10px;}
+.val-label{font-size:13px;color:var(--muted);}
+.val-amount{font-size:13px;font-weight:600;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sum-grid{animation:fadeIn .4s .05s ease both;}
+.filter-bar{animation:fadeIn .4s .1s ease both;}
+.table-wrap{animation:fadeIn .4s .15s ease both;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh Limited</div></div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">DH</div>
+    <div><div class="sb-uname">Delowar Hossain</div><div class="sb-urole">Company Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">Main</span></div>
+    <a class="sb-item" href="admin-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">Dashboard</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">🔔</div><span class="sb-item-text">Priority Inbox</span></a>
+    <div class="sb-section"><span class="sb-section-label">Area 1 — Workplace Services</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🏢</div><span class="sb-item-text">Workplace Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Service Requests</a>
+      <a class="sb-sub-item" href="coming-soon.html">Meeting Room Booking</a>
+      <a class="sb-sub-item" href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Cafeteria and Pantry</a>
+      <a class="sb-sub-item" href="coming-soon.html">Parking Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Courier and Dispatch</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 2 — Real Estate and Assets</span></div>
+    <div class="sb-item sb-area-toggle open" onclick="toggleArea(this)"><div class="sb-item-icon">🏗</div><span class="sb-item-text">Real Estate and Assets</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list open"><div class="sb-sub">
+      <a class="sb-sub-item" href="asset-register.html">Asset Register</a>
+      <a class="sb-sub-item" href="maintenance.html">Maintenance</a>
+      <a class="sb-sub-item" href="lease-management.html">Lease Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Space Management</a>
+      <a class="sb-sub-item" href="utility-management.html">Utility Management</a>
+      <a class="sb-sub-item" href="license-management.html">License Management</a>
+      <a class="sb-sub-item" href="asset-transfer.html">Asset Transfer</a>
+      <a class="sb-sub-item active" href="asset-disposal.html">Asset Disposal</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 3 — Security and EHS</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🔒</div><span class="sb-item-text">Security and EHS</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Security Operations</a>
+      <a class="sb-sub-item" href="coming-soon.html">Access Control</a>
+      <a class="sb-sub-item" href="coming-soon.html">Gate Pass Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Incident Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">EHS Compliance</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 4 — Vendor and Finance</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">💼</div><span class="sb-item-text">Vendor and Finance</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="vendor-list.html">Vendor Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Contract Management</a>
+      <a class="sb-sub-item" href="vendor-performance.html">Vendor Performance</a>
+      <a class="sb-sub-item" href="grn-management.html">GRN Management</a>
+      <a class="sb-sub-item" href="billing.html">Billing and Payments</a>
+      <a class="sb-sub-item" href="penalty-management.html">Penalty Management</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 5 — Fleet Management</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🚗</div><span class="sb-item-text">Fleet Management</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Fleet Inventory</a>
+      <a class="sb-sub-item" href="coming-soon.html">Vehicle Requisition</a>
+      <a class="sb-sub-item" href="coming-soon.html">Fuel Tracking</a>
+      <a class="sb-sub-item" href="coming-soon.html">Fleet Maintenance</a>
+      <a class="sb-sub-item" href="coming-soon.html">GPS and Route Tracking</a>
+      <a class="sb-sub-item" href="coming-soon.html">Compliance Tracking</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 6 — Inventory and Supply</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">📦</div><span class="sb-item-text">Inventory and Supply</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Store Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Stock Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Requisition Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Goods Movement</a>
+      <a class="sb-sub-item" href="coming-soon.html">Consumption Tracking</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 7 — Admin Support</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">✈️</div><span class="sb-item-text">Admin Support Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Travel Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Employee Admin Services</a>
+      <a class="sb-sub-item" href="coming-soon.html">Stationery and Supplies</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Platform</span></div>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📊</div><span class="sb-item-text">Reports and Analytics</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📅</div><span class="sb-item-text">Activity Calendar</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📋</div><span class="sb-item-text">Policy and Knowledge Hub</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">👥</div><span class="sb-item-text">User Management</span></a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div>
+    <div class="sb-bottom-item" onclick="alert('Help and support coming soon!')"><span style="font-size:15px;">❓</span><span>Help and Support</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <span style="color:var(--muted)">Area 2</span><span style="color:var(--light)">›</span>
+      <span style="color:var(--muted)">Real Estate and Assets</span><span style="color:var(--light)">›</span>
+      <span>Asset Disposal</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar"><span style="color:var(--light);font-size:14px;">🔍</span><input type="text" placeholder="Search disposals..."></div>
+      <div class="top-btn">🔔</div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;color:var(--text);">
+          <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);">DH</div>
+          <span>Delowar</span><span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>Asset Disposal</h1>
+        <p>Area 2 · Manage write-offs, sales, donations and scrapping of assets · Full audit trail</p>
+      </div>
+      <div class="page-hdr-right">
+        <button class="btn-act btn-outline" onclick="alert('Exporting disposal register...')">⬇ Export</button>
+        <button class="btn-act" onclick="openModal('newDisposalModal')">+ Initiate Disposal</button>
+      </div>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="sum-grid">
+      <div class="sum-card sc-amber">
+        <div class="sum-label">Pending Approval</div>
+        <div class="sum-num">3</div>
+        <div class="sum-sub">Awaiting FM and Admin</div>
+      </div>
+      <div class="sum-card sc-blue">
+        <div class="sum-label">Approved — In Process</div>
+        <div class="sum-num">2</div>
+        <div class="sum-sub">Being disposed</div>
+      </div>
+      <div class="sum-card sc-green">
+        <div class="sum-label">Completed — 2025</div>
+        <div class="sum-num">11</div>
+        <div class="sum-sub">Removed from register</div>
+      </div>
+      <div class="sum-card sc-navy">
+        <div class="sum-label">Recovered Value YTD</div>
+        <div class="sum-num" style="font-size:20px;">184,000</div>
+        <div class="sum-sub">BDT from asset sales</div>
+      </div>
+      <div class="sum-card sc-red">
+        <div class="sum-label">Written Off YTD</div>
+        <div class="sum-num" style="font-size:20px;">320,000</div>
+        <div class="sum-sub">BDT book value lost</div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-search">
+        <span style="color:var(--light);font-size:14px;">🔍</span>
+        <input type="text" placeholder="Search by asset ID, name or disposal reference...">
+      </div>
+      <select class="filter-select">
+        <option>All Status</option>
+        <option>Pending Approval</option>
+        <option>Approved</option>
+        <option>In Process</option>
+        <option>Completed</option>
+        <option>Rejected</option>
+      </select>
+      <select class="filter-select">
+        <option>All Methods</option>
+        <option>Sale</option>
+        <option>Scrap</option>
+        <option>Donation</option>
+        <option>Write-Off</option>
+        <option>Return to Vendor</option>
+      </select>
+      <select class="filter-select">
+        <option>2025</option>
+        <option>2024</option>
+        <option>2023</option>
+      </select>
+    </div>
+
+    <!-- DISPOSAL TABLE -->
+    <div class="table-wrap">
+      <table class="dis-table">
+        <thead>
+          <tr>
+            <th>Disposal ID</th>
+            <th>Asset</th>
+            <th>Disposal Method</th>
+            <th>Original Value</th>
+            <th>Book Value</th>
+            <th>Recovered</th>
+            <th>Initiated By</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th style="width:130px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- PENDING APPROVAL -->
+          <tr onclick="openDisposalDetail('DSP-2025-0018','Conference Table 12 seater')">
+            <td><span class="dis-id">DSP-2025-0018</span></td>
+            <td>
+              <div style="font-size:13px;font-weight:500;">Conference Table — 12 seater</div>
+              <div style="font-size:11px;color:var(--muted);">AST-0112 · Furniture · HQ Floor 4</div>
+            </td>
+            <td><span class="tag tag-red">Scrap</span></td>
+            <td style="font-size:13px;color:var(--muted);">BDT 320,000</td>
+            <td style="font-size:13px;color:var(--red);">BDT 32,000</td>
+            <td style="font-size:13px;color:var(--muted);">BDT 0</td>
+            <td style="font-size:12.5px;">Karim Rahman</td>
+            <td style="font-size:12px;color:var(--muted);">24 Mar 2025</td>
+            <td><span class="tag tag-amber">Pending Approval</span></td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                <button class="act-btn ab-green" onclick="approveDisposal('DSP-2025-0018')">Approve</button>
+                <button class="act-btn ab-blue" onclick="openDisposalDetail('DSP-2025-0018','Conference Table')">View</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr onclick="openDisposalDetail('DSP-2025-0017','Old Desktop PCs x4')">
+            <td><span class="dis-id">DSP-2025-0017</span></td>
+            <td>
+              <div style="font-size:13px;font-weight:500;">Old Desktop PCs × 4</div>
+              <div style="font-size:11px;color:var(--muted);">AST-0044 to 0047 · IT Equipment</div>
+            </td>
+            <td><span class="tag tag-amber">Sale</span></td>
+            <td style="font-size:13px;color:var(--muted);">BDT 240,000</td>
+            <td style="font-size:13px;color:var(--red);">BDT 12,000</td>
+            <td style="font-size:13px;font-weight:600;color:var(--green);">BDT 48,000</td>
+            <td style="font-size:12.5px;">FM Manager</td>
+            <td style="font-size:12px;color:var(--muted);">22 Mar 2025</td>
+            <td><span class="tag tag-amber">Pending Approval</span></td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                <button class="act-btn ab-green" onclick="approveDisposal('DSP-2025-0017')">Approve</button>
+                <button class="act-btn ab-blue" onclick="openDisposalDetail('DSP-2025-0017','Old Desktop PCs')">View</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr onclick="openDisposalDetail('DSP-2025-0016','Broken Photocopier')">
+            <td><span class="dis-id">DSP-2025-0016</span></td>
+            <td>
+              <div style="font-size:13px;font-weight:500;">Broken Photocopier</div>
+              <div style="font-size:11px;color:var(--muted);">AST-0388 · Office Equipment · HQ</div>
+            </td>
+            <td><span class="tag tag-blue">Return to Vendor</span></td>
+            <td style="font-size:13px;color:var(--muted);">BDT 85,000</td>
+            <td style="font-size:13px;color:var(--red);">BDT 8,500</td>
+            <td style="font-size:13px;font-weight:600;color:var(--green);">BDT 22,000</td>
+            <td style="font-size:12.5px;">Tanvir Ahmed</td>
+            <td style="font-size:12px;color:var(--muted);">20 Mar 2025</td>
+            <td><span class="tag tag-amber">Pending Approval</span></td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                <button class="act-btn ab-green" onclick="approveDisposal('DSP-2025-0016')">Approve</button>
+                <button class="act-btn ab-blue" onclick="openDisposalDetail('DSP-2025-0016','Broken Photocopier')">View</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- IN PROCESS -->
+          <tr onclick="openDisposalDetail('DSP-2025-0012','Old Office Chairs x12')">
+            <td><span class="dis-id">DSP-2025-0012</span></td>
+            <td>
+              <div style="font-size:13px;font-weight:500;">Old Office Chairs × 12</div>
+              <div style="font-size:11px;color:var(--muted);">AST-0201 to 0212 · Furniture</div>
+            </td>
+            <td><span class="tag tag-green">Donation</span></td>
+            <td style="font-size:13px;color:var(--muted);">BDT 144,000</td>
+            <td style="font-size:13px;color:var(--muted);">BDT 14,400</td>
+            <td style="font-size:13px;color:var(--muted);">BDT 0</td>
+            <td style="font-size:12.5px;">Karim Rahman</td>
+            <td style="font-size:12px;color:var(--muted);">10 Mar 2025</td>
+            <td><span class="tag tag-blue">In Process</span></td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                <button class="act-btn ab-green" onclick="markDone('DSP-2025-0012')">Mark Done</button>
+                <button class="act-btn ab-blue" onclick="openDisposalDetail('DSP-2025-0012','Office Chairs')">View</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- COMPLETED -->
+          <tr onclick="openDisposalDetail('DSP-2025-0008','HP Printer 2018')" style="opacity:.8;">
+            <td><span class="dis-id">DSP-2025-0008</span></td>
+            <td>
+              <div style="font-size:13px;font-weight:500;">HP LaserJet Printer — 2018</div>
+              <div style="font-size:11px;color:var(--muted);">AST-0088 · IT Equipment</div>
+            </td>
+            <td><span class="tag tag-red">Write-Off</span></td>
+            <td style="font-size:13px;color:var(--muted);">BDT 62,000</td>
+            <td style="font-size:13px;color:var(--muted);">BDT 0</td>
+            <td style="font-size:13px;color:var(--muted);">BDT 0</td>
+            <td style="font-size:12.5px;">FM Manager</td>
+            <td style="font-size:12px;color:var(--green);">5 Feb 2025 ✓</td>
+            <td><span class="tag tag-green">Completed</span></td>
+            <td onclick="event.stopPropagation()">
+              <button class="act-btn ab-gray" onclick="openDisposalDetail('DSP-2025-0008','HP Printer 2018')">View</button>
+            </td>
+          </tr>
+
+          <tr onclick="openDisposalDetail('DSP-2025-0005','Samsung Phones x3')" style="opacity:.8;">
+            <td><span class="dis-id">DSP-2025-0005</span></td>
+            <td>
+              <div style="font-size:13px;font-weight:500;">Samsung Galaxy S20 × 3</div>
+              <div style="font-size:11px;color:var(--muted);">AST-0301 to 0303 · IT Equipment</div>
+            </td>
+            <td><span class="tag tag-amber">Sale</span></td>
+            <td style="font-size:13px;color:var(--muted);">BDT 180,000</td>
+            <td style="font-size:13px;color:var(--muted);">BDT 36,000</td>
+            <td style="font-size:13px;font-weight:600;color:var(--green);">BDT 114,000</td>
+            <td style="font-size:12.5px;">Karim Rahman</td>
+            <td style="font-size:12px;color:var(--green);">20 Jan 2025 ✓</td>
+            <td><span class="tag tag-green">Completed</span></td>
+            <td onclick="event.stopPropagation()">
+              <button class="act-btn ab-gray" onclick="openDisposalDetail('DSP-2025-0005','Samsung Phones')">View</button>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+      <div class="pagination">
+        <div class="pag-info">Showing 6 of 16 disposal records</div>
+        <div class="pag-btns">
+          <button class="pag-btn" disabled>← Prev</button>
+          <button class="pag-btn active">1</button>
+          <button class="pag-btn">2</button>
+          <button class="pag-btn">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- DISPOSAL DETAIL MODAL -->
+<div class="modal-overlay" id="disposalDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr">
+      <h3 id="ddTitle">DSP-2025-0018 — Conference Table</h3>
+      <button class="modal-close" onclick="closeModal('disposalDetailModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="modal-tab active" onclick="switchTab(this,'dd1')">Disposal Details</button>
+        <button class="modal-tab" onclick="switchTab(this,'dd2')">Approval Workflow</button>
+        <button class="modal-tab" onclick="switchTab(this,'dd3')">Audit Trail</button>
+      </div>
+
+      <!-- Tab 1: Details -->
+      <div class="tab-content active" id="dd1">
+        <div class="disp-hero">
+          <div class="dh-top">
+            <div>
+              <div class="dh-name">Conference Table — 12 Seater (AST-0112)</div>
+              <div class="dh-sub">DSP-2025-0018 · Furniture · HQ Floor 4 · Requested by Karim Rahman</div>
+            </div>
+            <span class="tag tag-amber" style="font-size:12px;padding:4px 12px;flex-shrink:0;">Pending Approval</span>
+          </div>
+          <div class="dh-stats">
+            <div class="dh-stat"><div class="dh-stat-lbl">Disposal Method</div><div class="dh-stat-val">Scrap</div></div>
+            <div class="dh-stat"><div class="dh-stat-lbl">Original Value</div><div class="dh-stat-val">BDT 320,000</div></div>
+            <div class="dh-stat"><div class="dh-stat-lbl">Current Book Value</div><div class="dh-stat-val red">BDT 32,000</div></div>
+            <div class="dh-stat"><div class="dh-stat-lbl">Expected Recovery</div><div class="dh-stat-val gold">BDT 0</div></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Asset Age</div><div style="font-size:13px;font-weight:500;">5 years (2020)</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Current Condition</div><div style="font-size:13px;font-weight:500;color:var(--red);">Poor — beyond repair</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Last Maintenance</div><div style="font-size:13px;font-weight:500;">Jan 2024 — failed</div></div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+          <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Justification for Disposal</div>
+          <div style="font-size:13px;line-height:1.7;">The conference table has extensive structural damage — two legs are broken and the surface is severely scratched beyond cosmetic repair. Maintenance team attempted repair in January 2024 but concluded the frame is not salvageable. Replacement has already been ordered. Table must be removed before new one arrives.</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Financial Impact</div>
+          <div class="val-row"><span class="val-label">Original purchase value</span><span class="val-amount">BDT 320,000</span></div>
+          <div class="val-row"><span class="val-label">Accumulated depreciation</span><span class="val-amount" style="color:var(--muted);">– BDT 288,000</span></div>
+          <div class="val-row"><span class="val-label">Current book value</span><span class="val-amount" style="color:var(--red);">BDT 32,000</span></div>
+          <div class="val-row"><span class="val-label">Expected scrap value</span><span class="val-amount" style="color:var(--muted);">BDT 0</span></div>
+          <div class="val-row" style="border-top:2px solid var(--border);">
+            <span class="val-label" style="font-weight:700;font-size:14px;">Loss on disposal</span>
+            <span style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--red);">BDT 32,000</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-primary" style="background:var(--green);" onclick="closeModal('disposalDetailModal');approveDisposal('DSP-2025-0018')">✅ Approve Disposal</button>
+          <button class="btn-secondary" onclick="alert('Disposal rejected. FM Manager notified.')">❌ Reject</button>
+          <button class="btn-secondary" onclick="alert('Referred for second opinion.')">↗ Refer</button>
+        </div>
+      </div>
+
+      <!-- Tab 2: Approval -->
+      <div class="tab-content" id="dd2">
+        <div class="ap-steps" style="margin-bottom:24px;">
+          <div class="ap-step done"><div class="ap-dot">✓</div><div class="ap-label">Request submitted</div></div>
+          <div class="ap-step current"><div class="ap-dot">2</div><div class="ap-label">FM Manager</div></div>
+          <div class="ap-step"><div class="ap-dot">3</div><div class="ap-label">Admin approval</div></div>
+          <div class="ap-step"><div class="ap-dot">4</div><div class="ap-label">Finance sign-off</div></div>
+          <div class="ap-step"><div class="ap-dot">5</div><div class="ap-label">Disposed and closed</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:12px;padding:10px 14px;background:var(--green-bg);border-radius:8px;border:1px solid var(--green-bd);">
+            <span style="font-size:18px;">✅</span>
+            <div><div style="font-size:13px;font-weight:500;color:var(--green);">Disposal request submitted</div><div style="font-size:12px;color:var(--muted);">Karim Rahman · 24 March 2025 · 9:15am · DSP-2025-0018 created</div></div>
+          </div>
+          <div style="display:flex;gap:12px;padding:10px 14px;background:var(--amber-bg);border-radius:8px;border:1px solid var(--amber-bd);">
+            <span style="font-size:18px;">⏳</span>
+            <div><div style="font-size:13px;font-weight:500;color:var(--amber);">Waiting: FM Manager review</div><div style="font-size:12px;color:var(--muted);">Assigned to Karim Rahman · Pending since 24 March</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Audit Trail -->
+      <div class="tab-content" id="dd3">
+        <div class="info-box">ℹ The disposal audit trail is permanent and immutable. Once an asset is disposed, it is archived — never deleted from the system.</div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:var(--blue-bg);">📋</div>
+          <div class="tl-body">
+            <div class="tl-title">Disposal request DSP-2025-0018 created</div>
+            <div class="tl-sub">Asset AST-0112 — Conference Table · Method: Scrap · Book value: BDT 32,000</div>
+            <div class="tl-time">24 March 2025 · 9:15am · Karim Rahman</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:var(--amber-bg);">🔔</div>
+          <div class="tl-body">
+            <div class="tl-title">Notification sent to FM Manager and Admin</div>
+            <div class="tl-sub">Approval request sent via email and in-app · BDT 32,000 write-off flagged to Finance</div>
+            <div class="tl-time">24 March 2025 · 9:15am · System automated</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="alert('Downloading disposal certificate...')">⬇ Download PDF</button>
+      <button class="btn-secondary" onclick="closeModal('disposalDetailModal')">Close</button>
+      <button class="btn-primary" onclick="closeModal('disposalDetailModal');approveDisposal('DSP-2025-0018')">✅ Approve Disposal</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW DISPOSAL MODAL -->
+<div class="modal-overlay" id="newDisposalModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr"><h3>🗑 Initiate Asset Disposal</h3><button class="modal-close" onclick="closeModal('newDisposalModal')">×</button></div>
+    <div class="modal-body">
+      <div class="warn-box">⚠ Asset disposal is permanent. Once approved and completed, the asset is removed from the register and cannot be recovered. Ensure all details are correct before submitting.</div>
+      <div class="form-sec">Asset to Dispose</div>
+      <div class="form-field"><label>Select Asset</label>
+        <select><option>Search or select asset...</option><option>AST-0112 — Conference Table (Poor condition)</option><option>AST-0044 — Desktop PC 2017 (Beyond life)</option><option>AST-0088 — HP Printer 2018 (Not repairable)</option><option>AST-0388 — Photocopier (Broken)</option></select>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+        <div style="font-size:12px;color:var(--muted);">Asset details will appear here — purchase value, book value, age, condition</div>
+      </div>
+      <div class="form-sec">Disposal Details</div>
+      <div class="form-row">
+        <div class="form-field"><label>Disposal Method</label>
+          <select>
+            <option>Scrap — no recovery value</option>
+            <option>Sale — to third party buyer</option>
+            <option>Donation — to charity or institution</option>
+            <option>Write-Off — lost or damaged beyond record</option>
+            <option>Return to Vendor — warranty or exchange</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Proposed Disposal Date</label><input type="date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Expected Recovery Value (BDT)</label><input type="number" placeholder="0 if scrapping"></div>
+        <div class="form-field"><label>Buyer / Recipient Name</label><input type="text" placeholder="If selling or donating"></div>
+      </div>
+      <div class="form-field"><label>Reason for Disposal</label><textarea placeholder="Clearly explain why this asset must be disposed. Include condition, repair history and any quotes obtained..."></textarea></div>
+      <div class="form-field"><label>Supporting Evidence</label><input type="file" accept="image/*,.pdf" style="padding:8px;font-size:12px;"><div style="font-size:11px;color:var(--muted);margin-top:5px;">Upload photos of condition, repair reports, or valuation certificates</div></div>
+      <div class="form-row">
+        <div class="form-field"><label>Replacement Asset Ordered?</label>
+          <select><option>No — not required</option><option>Yes — already ordered</option><option>Yes — to be ordered after disposal</option></select>
+        </div>
+        <div class="form-field"><label>Assigned Approver</label>
+          <select><option>FM Manager — Karim Rahman</option><option>Admin — Delowar Hossain</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('newDisposalModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveDisposal()">Submit for Approval</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleArea(el){el.classList.toggle('open');const s=el.nextElementSibling;if(s&&s.classList.contains('sb-sub-list'))s.classList.toggle('open');}
+function toggleDD(){document.getElementById('userDD').classList.toggle('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-menu').forEach(m=>m.classList.remove('open'));});
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+function switchTab(btn,id){
+  const mb=btn.closest('.modal-body');
+  mb.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  mb.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+function openDisposalDetail(id,name){
+  document.getElementById('ddTitle').textContent=id+' — '+name;
+  openModal('disposalDetailModal');
+}
+function approveDisposal(id){
+  closeModal('disposalDetailModal');
+  setTimeout(()=>alert('✅ Disposal approved!\n\n'+id+'\nSent to next approver.\nFinance notified of write-off.\nAsset marked for disposal.\nGate pass will be auto-generated when asset leaves premises.'),200);
+}
+function markDone(id){
+  if(confirm('Confirm disposal of '+id+' is fully completed?')){
+    alert('✅ Disposal completed!\n\nAsset removed from register.\nWrite-off recorded in Finance.\nGate pass issued.\nDisposal certificate generated.\nAudit trail closed.');
+  }
+}
+function saveDisposal(){
+  closeModal('newDisposalModal');
+  setTimeout(()=>alert('✅ Disposal request submitted!\n\nDSP-2025-NEW created.\nFM Manager and Admin notified.\nFinance team alerted of potential write-off.\nYou will be updated when approved.'),200);
+}
+</script>
+</body>
+</html>

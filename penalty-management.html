@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Penalty Management</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --red:#D94F4F;--red-bg:#FDF0F0;--red-bd:#F5CECE;
+  --amber:#C47B1A;--amber-bg:#FDF5E6;--amber-bd:#F0D9A8;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;--blue-bd:#BDDBF7;
+  --green:#1E8A5A;--green-bg:#EAF7F1;--green-bd:#A8DFC5;
+  --purple:#5B45C7;--purple-bg:#F0EEFF;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(200,169,110,.8);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+.sb-chevron{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s;flex-shrink:0;}
+.sb-area-toggle.open .sb-chevron{transform:rotate(90deg);}
+.sb-sub-list{overflow:hidden;max-height:0;transition:max-height .25s ease;}
+.sb-sub-list.open{max-height:400px;}
+.sb-sub{padding-left:58px;}
+.sb-sub-item{display:flex;align-items:center;gap:6px;padding:6px 18px 6px 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);transition:color .15s;text-decoration:none;}
+.sb-sub-item:hover{color:rgba(255,255,255,.85);}
+.sb-sub-item.active{color:var(--gold);}
+.sb-sub-item::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.breadcrumb span{color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;width:220px;}
+.search-bar:focus-within{border-color:var(--navy);background:#fff;}
+.search-bar input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.search-bar input::placeholder{color:var(--light);}
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;position:relative;}
+.top-btn:hover{border-color:var(--navy);}
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+.content{padding:24px 28px;flex:1;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+.page-hdr-right{display:flex;gap:8px;align-items:center;}
+.btn-act{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-act:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);border-color:var(--navy);}
+
+/* SUM CARDS */
+.sum-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;}
+.sum-card:hover{border-color:var(--navy);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.sc-red::before{background:var(--red);}
+.sc-amber::before{background:#E09B1A;}
+.sc-blue::before{background:var(--blue);}
+.sc-green::before{background:var(--green);}
+.sc-navy::before{background:var(--navy);}
+.sum-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.sum-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);line-height:1;}
+.sum-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px;}
+
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2);}
+.panel-hdr h2{font-size:14px;font-weight:600;color:var(--text);}
+.panel-hdr-right{display:flex;align-items:center;gap:8px;}
+.panel-link{font-size:12px;color:var(--navy);font-weight:500;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
+.panel-link:hover{color:var(--gold);}
+
+/* TAGS */
+.tag{display:inline-flex;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.tag-navy{background:rgba(10,22,40,.08);color:var(--navy);}
+
+/* PENALTY ITEMS */
+.pen-item{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.pen-item:hover{background:var(--bg);}
+.pen-item:last-child{border-bottom:none;}
+.pen-sev{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.pen-body{flex:1;min-width:0;}
+.pen-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;}
+.pen-sub{font-size:11.5px;color:var(--muted);}
+.pen-meta{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;}
+.pen-time{font-size:10.5px;color:var(--light);}
+.pen-right{text-align:right;flex-shrink:0;}
+.pen-amount{font-size:15px;font-weight:700;color:var(--red);}
+.pen-status{font-size:11px;margin-top:3px;}
+.pen-action{flex-shrink:0;}
+.act-btn{font-size:11px;font-weight:600;padding:5px 11px;border-radius:7px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+.ab-blue{background:var(--blue-bg);color:var(--blue);}
+.ab-blue:hover{background:var(--blue);color:#fff;}
+.ab-green{background:var(--green-bg);color:var(--green);}
+.ab-green:hover{background:var(--green);color:#fff;}
+.ab-amber{background:var(--amber-bg);color:var(--amber);}
+.ab-amber:hover{background:#E09B1A;color:#fff;}
+.ab-red{background:var(--red-bg);color:var(--red);}
+.ab-red:hover{background:var(--red);color:#fff;}
+.ab-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.ab-gray:hover{border-color:var(--navy);color:var(--navy);}
+
+/* RULE ITEMS */
+.rule-item{padding:14px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.rule-item:hover{background:var(--bg);}
+.rule-item:last-child{border-bottom:none;}
+.rule-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.rule-name{font-size:13px;font-weight:600;color:var(--text);}
+.rule-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+.rule-rate{font-size:13px;font-weight:700;color:var(--navy);text-align:right;}
+.rule-sub{font-size:11px;color:var(--muted);}
+
+/* DISPUTE ITEMS */
+.dispute-item{display:flex;align-items:flex-start;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.dispute-item:hover{background:var(--bg);}
+.dispute-item:last-child{border-bottom:none;}
+.dis-body{flex:1;}
+.dis-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px;}
+.dis-sub{font-size:11.5px;color:var(--muted);}
+.dis-meta{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;}
+
+/* VENDOR SCORE */
+.vendor-score-item{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border2);}
+.vendor-score-item:last-child{border-bottom:none;}
+.vs-av{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.vs-body{flex:1;}
+.vs-name{font-size:13px;font-weight:500;color:var(--text);}
+.vs-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.vs-right{text-align:right;}
+.vs-pen{font-size:14px;font-weight:700;color:var(--red);}
+.vs-month{font-size:11px;color:var(--muted);margin-top:2px;}
+.bar-wrap{width:80px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;margin:4px 0 0 auto;}
+.bar-fill{height:100%;border-radius:3px;}
+.bar-red{background:var(--red);}
+.bar-amber{background:#E09B1A;}
+.bar-green{background:var(--green);}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:8px 14px;flex:1;}
+.filter-search:focus-within{border-color:var(--navy);}
+.filter-search input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.filter-search input::placeholder{color:var(--light);}
+.filter-select{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-md{max-width:540px;}
+.modal-lg{max-width:680px;}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:600;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:22px;max-height:72vh;overflow-y:auto;}
+.form-field{margin-bottom:15px;}
+.form-field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--navy);background:#fff;}
+.form-field textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-secondary{padding:10px 20px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--navy);}
+
+/* INFO BOXES */
+.warn-box{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:13px;color:var(--amber);}
+.info-box{background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);}
+
+/* PENALTY CALC BOX */
+.calc-box{background:var(--navy);border-radius:12px;padding:18px;margin-bottom:16px;}
+.calc-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08);}
+.calc-row:last-child{border-bottom:none;padding-top:10px;}
+.calc-label{font-size:13px;color:rgba(255,255,255,.6);}
+.calc-val{font-size:13px;font-weight:600;color:#fff;}
+.calc-row.total .calc-label{font-size:14px;font-weight:600;color:rgba(255,255,255,.9);}
+.calc-row.total .calc-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--red);}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sum-grid{animation:fadeIn .4s .05s ease both;}
+.two-col{animation:fadeIn .4s .1s ease both;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh Limited</div></div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">DH</div>
+    <div><div class="sb-uname">Delowar Hossain</div><div class="sb-urole">Company Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">Main</span></div>
+    <a class="sb-item " href="admin-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">Dashboard</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">🔔</div><span class="sb-item-text">Priority Inbox</span></a>
+
+    <div class="sb-section"><span class="sb-section-label">Area 1 — Workplace Services</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🏢</div><span class="sb-item-text">Workplace Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Service Requests</a>
+      <a class="sb-sub-item " href="coming-soon.html">Meeting Room Booking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Cafeteria and Pantry</a>
+      <a class="sb-sub-item " href="coming-soon.html">Parking Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Courier and Dispatch</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 2 — Real Estate and Assets</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🏗</div><span class="sb-item-text">Real Estate and Assets</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="asset-register.html">Asset Register</a>
+      <a class="sb-sub-item " href="maintenance.html">Maintenance</a>
+      <a class="sb-sub-item " href="coming-soon.html">Lease Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Space Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Utility Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">License Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Asset Transfer</a>
+      <a class="sb-sub-item " href="coming-soon.html">Asset Disposal</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 3 — Security and EHS</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🔒</div><span class="sb-item-text">Security and EHS</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Security Operations</a>
+      <a class="sb-sub-item " href="coming-soon.html">Access Control</a>
+      <a class="sb-sub-item " href="coming-soon.html">Gate Pass Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Incident Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">EHS Compliance</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 4 — Vendor and Finance</span></div>
+    <div class="sb-item sb-area-toggle open" onclick="toggleArea(this)"><div class="sb-item-icon">💼</div><span class="sb-item-text">Vendor and Finance</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list open"><div class="sb-sub">
+      <a class="sb-sub-item " href="vendor-list.html">Vendor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Contract Management</a>
+      <a class="sb-sub-item " href="vendor-performance.html">Vendor Performance</a>
+      <a class="sb-sub-item " href="grn-management.html">GRN Management</a>
+      <a class="sb-sub-item " href="billing.html">Billing and Payments</a>
+      <a class="sb-sub-item active" href="penalty-management.html">Penalty Management</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 5 — Fleet Management</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🚗</div><span class="sb-item-text">Fleet Management</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Fleet Inventory</a>
+      <a class="sb-sub-item " href="coming-soon.html">Vehicle Requisition</a>
+      <a class="sb-sub-item " href="coming-soon.html">Fuel Tracking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Fleet Maintenance</a>
+      <a class="sb-sub-item " href="coming-soon.html">GPS and Route Tracking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Compliance Tracking</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 6 — Inventory and Supply</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">📦</div><span class="sb-item-text">Inventory and Supply</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Store Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Stock Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Requisition Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Goods Movement</a>
+      <a class="sb-sub-item " href="coming-soon.html">Consumption Tracking</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 7 — Admin Support</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">✈️</div><span class="sb-item-text">Admin Support Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Travel Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Employee Admin Services</a>
+      <a class="sb-sub-item " href="coming-soon.html">Stationery and Supplies</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Platform</span></div>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📊</div><span class="sb-item-text">Reports and Analytics</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📅</div><span class="sb-item-text">Activity Calendar</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📋</div><span class="sb-item-text">Policy and Knowledge Hub</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">👥</div><span class="sb-item-text">User Management</span></a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div>
+    <div class="sb-bottom-item" onclick="alert('Help and support coming soon!')"><span style="font-size:15px;">❓</span><span>Help and Support</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <span>Area 4</span><span style="color:var(--light)">›</span>
+      <span>Vendor and Finance</span><span style="color:var(--light)">›</span>
+      <span>Penalty Management</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar"><span style="color:var(--light);font-size:14px;">🔍</span><input type="text" placeholder="Search penalties..."></div>
+      <div class="top-btn">🔔</div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;color:var(--text);">
+          <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);">DH</div>
+          <span>Delowar</span><span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>Penalty Management</h1>
+        <p>Area 4 · SLA breach and attendance penalties · All penalties require human approval before deduction</p>
+      </div>
+      <div class="page-hdr-right">
+        <button class="btn-act btn-outline" onclick="alert('Exporting penalty report...')">⬇ Export</button>
+        <button class="btn-act" onclick="openModal('manualPenModal')">+ Add Manual Penalty</button>
+      </div>
+    </div>
+
+    <!-- PLATFORM RULE BANNER -->
+    <div class="warn-box" style="margin-bottom:20px;">
+      <strong>Platform Rule:</strong> No penalty is applied automatically. Every penalty suggestion is reviewed and must be approved by the FM Manager and Admin before deduction from the vendor bill. Vendors can raise disputes on any penalty.
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="sum-grid">
+      <div class="sum-card sc-amber" onclick="filterPen('pending')">
+        <div class="sum-label">Pending Approval</div>
+        <div class="sum-num">5</div>
+        <div class="sum-sub">Awaiting FM review</div>
+      </div>
+      <div class="sum-card sc-red" onclick="filterPen('applied')">
+        <div class="sum-label">Applied — March</div>
+        <div class="sum-num">8</div>
+        <div class="sum-sub">BDT 24,800 deducted</div>
+      </div>
+      <div class="sum-card sc-blue" onclick="filterPen('disputed')">
+        <div class="sum-label">Under Dispute</div>
+        <div class="sum-num">2</div>
+        <div class="sum-sub">Vendor raised objection</div>
+      </div>
+      <div class="sum-card sc-green" onclick="filterPen('waived')">
+        <div class="sum-label">Waived</div>
+        <div class="sum-num">3</div>
+        <div class="sum-sub">Admin decision</div>
+      </div>
+      <div class="sum-card sc-navy">
+        <div class="sum-label">YTD Penalties</div>
+        <div class="sum-num" style="font-size:20px;">68,400</div>
+        <div class="sum-sub">BDT deducted this year</div>
+      </div>
+    </div>
+
+    <!-- TWO COLUMN LAYOUT -->
+    <div class="two-col">
+
+      <!-- PENALTIES LIST -->
+      <div>
+        <!-- FILTER BAR -->
+        <div class="filter-bar">
+          <div class="filter-search">
+            <span style="color:var(--light);font-size:14px;">🔍</span>
+            <input type="text" placeholder="Search by vendor or penalty reference...">
+          </div>
+          <select class="filter-select">
+            <option>All Status</option>
+            <option>Pending Approval</option>
+            <option>Applied</option>
+            <option>Disputed</option>
+            <option>Waived</option>
+          </select>
+          <select class="filter-select">
+            <option>All Vendors</option>
+            <option>ABC Security Ltd</option>
+            <option>Cooling Solutions</option>
+            <option>Dhaka Transport</option>
+          </select>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>⚠ Penalty Register — March 2025</h2>
+            <div class="panel-hdr-right">
+              <span class="tag tag-amber">5 pending</span>
+              <button class="panel-link">View all →</button>
+            </div>
+          </div>
+
+          <!-- PENDING -->
+          <div style="padding:7px 18px;background:var(--amber-bg);border-bottom:1px solid var(--amber-bd);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:11.5px;font-weight:600;color:var(--amber);">⏳ Pending Approval — needs FM Manager decision</span>
+          </div>
+
+          <div class="pen-item" onclick="openPenDetail('PEN-2025-0042','ABC Security Ltd')">
+            <div class="pen-sev" style="background:var(--amber-bg);">👮</div>
+            <div class="pen-body">
+              <div class="pen-title">Guard absence — Shahid Hossain</div>
+              <div class="pen-sub">ABC Security Ltd · HQ Reception · 3 consecutive days absent</div>
+              <div class="pen-meta">
+                <span class="pen-time">21–23 March 2025</span>
+                <span class="tag tag-amber">Attendance</span>
+                <span class="tag tag-gray">PEN-2025-0042</span>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div class="pen-amount">BDT 3,200</div>
+              <div class="pen-status" style="color:var(--amber);">Pending approval</div>
+            </div>
+            <div class="pen-action" style="margin-left:10px;">
+              <button class="act-btn ab-green" onclick="event.stopPropagation();approvePen('PEN-2025-0042',3200)">Approve</button>
+            </div>
+          </div>
+
+          <div class="pen-item" onclick="openPenDetail('PEN-2025-0041','Cooling Solutions Ltd')">
+            <div class="pen-sev" style="background:var(--red-bg);">⏱</div>
+            <div class="pen-body">
+              <div class="pen-title">SLA breach — HVAC repair Floor 3 overdue</div>
+              <div class="pen-sub">Cooling Solutions Ltd · MNT-0142 · 4 hours beyond SLA limit</div>
+              <div class="pen-meta">
+                <span class="pen-time">25 March 2025</span>
+                <span class="tag tag-red">SLA Breach</span>
+                <span class="tag tag-gray">PEN-2025-0041</span>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div class="pen-amount">BDT 5,000</div>
+              <div class="pen-status" style="color:var(--amber);">Pending approval</div>
+            </div>
+            <div class="pen-action" style="margin-left:10px;">
+              <button class="act-btn ab-green" onclick="event.stopPropagation();approvePen('PEN-2025-0041',5000)">Approve</button>
+            </div>
+          </div>
+
+          <div class="pen-item" onclick="openPenDetail('PEN-2025-0040','Dhaka Transport Co')">
+            <div class="pen-sev" style="background:var(--red-bg);">🚗</div>
+            <div class="pen-body">
+              <div class="pen-title">Vehicle not delivered on time — airport trip</div>
+              <div class="pen-sub">Dhaka Transport Co · REQ-VEH-0089 · 45 min late — client inconvenienced</div>
+              <div class="pen-meta">
+                <span class="pen-time">22 March 2025</span>
+                <span class="tag tag-red">SLA Breach</span>
+                <span class="tag tag-gray">PEN-2025-0040</span>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div class="pen-amount">BDT 2,500</div>
+              <div class="pen-status" style="color:var(--amber);">Pending approval</div>
+            </div>
+            <div class="pen-action" style="margin-left:10px;">
+              <button class="act-btn ab-green" onclick="event.stopPropagation();approvePen('PEN-2025-0040',2500)">Approve</button>
+            </div>
+          </div>
+
+          <!-- APPLIED -->
+          <div style="padding:7px 18px;background:var(--red-bg);border-bottom:1px solid var(--red-bd);border-top:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:11.5px;font-weight:600;color:var(--red);">✓ Applied — deducted from bill</span>
+          </div>
+
+          <div class="pen-item" onclick="openPenDetail('PEN-2025-0038','ABC Security Ltd')" style="opacity:.8;">
+            <div class="pen-sev" style="background:var(--red-bg);">👮</div>
+            <div class="pen-body">
+              <div class="pen-title">Guard absence — Masud Ali late arrival</div>
+              <div class="pen-sub">ABC Security Ltd · Main Gate · 5 late arrivals in March</div>
+              <div class="pen-meta">
+                <span class="pen-time">Various — March 2025</span>
+                <span class="tag tag-amber">Attendance</span>
+                <span class="tag tag-green">Applied to BILL-0094</span>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div class="pen-amount">BDT 1,600</div>
+              <div class="pen-status" style="color:var(--green);">Deducted ✓</div>
+            </div>
+            <div class="pen-action" style="margin-left:10px;">
+              <button class="act-btn ab-blue" onclick="event.stopPropagation();openPenDetail('PEN-2025-0038','ABC Security Ltd')">View</button>
+            </div>
+          </div>
+
+          <div class="pen-item" onclick="openPenDetail('PEN-2025-0035','Cooling Solutions Ltd')" style="opacity:.8;">
+            <div class="pen-sev" style="background:var(--red-bg);">⏱</div>
+            <div class="pen-body">
+              <div class="pen-title">SLA breach — AC repair delay Floor 2</div>
+              <div class="pen-sub">Cooling Solutions Ltd · MNT-0138 · 6 hours beyond SLA</div>
+              <div class="pen-meta">
+                <span class="pen-time">18 March 2025</span>
+                <span class="tag tag-red">SLA Breach</span>
+                <span class="tag tag-green">Applied to bill</span>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div class="pen-amount">BDT 7,500</div>
+              <div class="pen-status" style="color:var(--green);">Deducted ✓</div>
+            </div>
+            <div class="pen-action" style="margin-left:10px;">
+              <button class="act-btn ab-blue" onclick="event.stopPropagation();openPenDetail('PEN-2025-0035','Cooling Solutions Ltd')">View</button>
+            </div>
+          </div>
+
+          <!-- DISPUTED -->
+          <div style="padding:7px 18px;background:var(--blue-bg);border-bottom:1px solid var(--blue-bd);border-top:1px solid var(--border2);">
+            <span style="font-size:11.5px;font-weight:600;color:var(--blue);">🔵 Under Dispute — vendor raised objection</span>
+          </div>
+
+          <div class="pen-item" onclick="openDisputeModal('PEN-2025-0039')">
+            <div class="pen-sev" style="background:var(--blue-bg);">⚖️</div>
+            <div class="pen-body">
+              <div class="pen-title">KM discrepancy — March fleet billing</div>
+              <div class="pen-sub">Dhaka Transport Co · VTS shows 38KM vs requisition 45KM</div>
+              <div class="pen-meta">
+                <span class="pen-time">Dispute raised 24 March</span>
+                <span class="tag tag-blue">Disputed</span>
+                <span class="tag tag-gray">PEN-2025-0039</span>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div class="pen-amount">BDT 4,480</div>
+              <div class="pen-status" style="color:var(--blue);">Dispute open</div>
+            </div>
+            <div class="pen-action" style="margin-left:10px;">
+              <button class="act-btn ab-blue" onclick="event.stopPropagation();openDisputeModal('PEN-2025-0039')">Resolve</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- PENALTY RULES -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>📋 Penalty Rules</h2>
+            <button class="panel-link" onclick="openModal('editRulesModal')">Edit rules →</button>
+          </div>
+          <div class="rule-item" onclick="openModal('editRulesModal')">
+            <div class="rule-hdr">
+              <span class="rule-name">Guard absent — per day</span>
+              <div style="text-align:right;"><div class="rule-rate">BDT 640</div><div class="rule-sub">Per absent guard per day</div></div>
+            </div>
+            <div class="rule-desc">Applied when vendor marks a guard absent and no replacement is provided within 2 hours of shift start.</div>
+          </div>
+          <div class="rule-item" onclick="openModal('editRulesModal')">
+            <div class="rule-hdr">
+              <span class="rule-name">SLA breach — per hour</span>
+              <div style="text-align:right;"><div class="rule-rate">BDT 1,250</div><div class="rule-sub">Per hour beyond SLA</div></div>
+            </div>
+            <div class="rule-desc">Applied when a service ticket exceeds its SLA deadline. Calculated from SLA breach time to resolution time.</div>
+          </div>
+          <div class="rule-item" onclick="openModal('editRulesModal')">
+            <div class="rule-hdr">
+              <span class="rule-name">Late arrival — guard</span>
+              <div style="text-align:right;"><div class="rule-rate">BDT 320</div><div class="rule-sub">Per occurrence</div></div>
+            </div>
+            <div class="rule-desc">Applied when a guard arrives more than 15 minutes late to their shift without prior notification.</div>
+          </div>
+          <div class="rule-item" onclick="openModal('editRulesModal')">
+            <div class="rule-hdr">
+              <span class="rule-name">Vehicle not on time</span>
+              <div style="text-align:right;"><div class="rule-rate">BDT 2,500</div><div class="rule-sub">Per occurrence</div></div>
+            </div>
+            <div class="rule-desc">Applied when fleet vendor fails to deliver vehicle within 30 minutes of requested time causing operational impact.</div>
+          </div>
+          <div style="padding:10px 18px;background:var(--bg);border-top:1px solid var(--border2);">
+            <div style="font-size:12px;color:var(--muted);">All rules are defined in vendor contracts · Changes require FM Manager approval</div>
+          </div>
+        </div>
+
+        <!-- VENDOR PENALTY SUMMARY -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>🏭 Penalties by Vendor — March</h2>
+          </div>
+          <div class="vendor-score-item">
+            <div class="vs-av" style="background:#1A5FAB;">AS</div>
+            <div class="vs-body">
+              <div class="vs-name">ABC Security Ltd</div>
+              <div class="vs-sub">4 penalties · Attendance issues</div>
+            </div>
+            <div class="vs-right">
+              <div class="vs-pen">BDT 6,400</div>
+              <div class="vs-month">March 2025</div>
+              <div class="bar-wrap"><div class="bar-fill bar-amber" style="width:58%;"></div></div>
+            </div>
+          </div>
+          <div class="vendor-score-item">
+            <div class="vs-av" style="background:#C47B1A;">CS</div>
+            <div class="vs-body">
+              <div class="vs-name">Cooling Solutions Ltd</div>
+              <div class="vs-sub">3 penalties · SLA breaches</div>
+            </div>
+            <div class="vs-right">
+              <div class="vs-pen">BDT 13,750</div>
+              <div class="vs-month">March 2025</div>
+              <div class="bar-wrap"><div class="bar-fill bar-red" style="width:85%;"></div></div>
+            </div>
+          </div>
+          <div class="vendor-score-item">
+            <div class="vs-av" style="background:#D94F4F;">DT</div>
+            <div class="vs-body">
+              <div class="vs-name">Dhaka Transport Co</div>
+              <div class="vs-sub">2 penalties · Late delivery</div>
+            </div>
+            <div class="vs-right">
+              <div class="vs-pen">BDT 6,980</div>
+              <div class="vs-month">March 2025</div>
+              <div class="bar-wrap"><div class="bar-fill bar-red" style="width:62%;"></div></div>
+            </div>
+          </div>
+          <div class="vendor-score-item">
+            <div class="vs-av" style="background:#1E8A5A;">GC</div>
+            <div class="vs-body">
+              <div class="vs-name">Green Clean Co</div>
+              <div class="vs-sub">0 penalties this month</div>
+            </div>
+            <div class="vs-right">
+              <div class="vs-pen" style="color:var(--green);">BDT 0</div>
+              <div class="vs-month">March 2025</div>
+              <div class="bar-wrap"><div class="bar-fill bar-green" style="width:5%;"></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- PENALTY DETAIL MODAL -->
+<div class="modal-overlay" id="penDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr">
+      <div>
+        <h3 id="penDetailTitle">PEN-2025-0042 — ABC Security Ltd</h3>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;">Guard absence penalty · Attendance breach · March 2025</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('penDetailModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="calc-box">
+        <div class="calc-row"><span class="calc-label">Penalty type</span><span class="calc-val">Guard absent — per day</span></div>
+        <div class="calc-row"><span class="calc-label">Guard name</span><span class="calc-val">Shahid Hossain</span></div>
+        <div class="calc-row"><span class="calc-label">Absent days</span><span class="calc-val">3 days (21, 22, 23 March)</span></div>
+        <div class="calc-row"><span class="calc-label">Rate per day</span><span class="calc-val">BDT 640</span></div>
+        <div class="calc-row"><span class="calc-label">No replacement provided</span><span class="calc-val">Confirmed by Security Manager</span></div>
+        <div class="calc-row total"><span class="calc-label">Penalty amount</span><span class="calc-val">BDT 3,200</span></div>
+      </div>
+      <div class="warn-box">⚠ This penalty has not yet been approved. Once approved it will be deducted from the next bill for ABC Security Ltd. The vendor will be notified.</div>
+      <div class="form-field">
+        <label>FM Manager Decision</label>
+        <select id="penDecision">
+          <option value="approve">Approve — deduct from next bill</option>
+          <option value="waive">Waive — accept vendor explanation</option>
+          <option value="reduce">Reduce — partial penalty</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Notes</label>
+        <textarea placeholder="Reason for your decision..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('penDetailModal')">Cancel</button>
+      <button class="btn-primary" style="background:var(--green);" onclick="confirmPenDecision()">Confirm Decision</button>
+    </div>
+  </div>
+</div>
+
+<!-- DISPUTE MODAL -->
+<div class="modal-overlay" id="disputeModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>⚖️ Resolve Dispute — PEN-2025-0039</h3><button class="modal-close" onclick="closeModal('disputeModal')">×</button></div>
+    <div class="modal-body">
+      <div class="info-box">Dhaka Transport Co has disputed this penalty. Review both sides and make a decision.</div>
+      <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;padding:12px 14px;margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:6px;">Our Position — Penalty Applied</div>
+        <div style="font-size:13px;color:var(--text);">VTS shows 38 KM for the March fleet. Requisition form shows 45 KM. Difference of 7 KM × BDT 64 = BDT 448 × 10 trips = BDT 4,480 penalty.</div>
+      </div>
+      <div style="background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:6px;">Vendor Response — Disputed</div>
+        <div style="font-size:13px;color:var(--text);">VTS device was malfunctioning on 3 trips. Actual KM driven matches requisition. Requesting waiver for those 3 trips. Evidence: attached GPS screenshots.</div>
+      </div>
+      <div class="form-field">
+        <label>Your Decision</label>
+        <select>
+          <option>Uphold penalty — VTS data is final</option>
+          <option>Waive penalty — accept vendor explanation</option>
+          <option>Partial waiver — reduce penalty amount</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Notes</label><textarea placeholder="Record your decision reasoning..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('disputeModal')">Cancel</button>
+      <button class="btn-primary" onclick="resolveDispute()">Record Decision</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANUAL PENALTY MODAL -->
+<div class="modal-overlay" id="manualPenModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>⚠ Add Manual Penalty</h3><button class="modal-close" onclick="closeModal('manualPenModal')">×</button></div>
+    <div class="modal-body">
+      <div class="warn-box">⚠ Manual penalties are for exceptional cases not covered by automatic rules. They require FM Manager and Admin approval.</div>
+      <div class="form-field"><label>Vendor</label>
+        <select><option>Select vendor...</option><option>ABC Security Ltd</option><option>Green Clean Co</option><option>Cooling Solutions Ltd</option><option>Dhaka Transport Co</option></select>
+      </div>
+      <div class="form-field"><label>Penalty Type</label>
+        <select><option>Contract breach</option><option>Quality failure</option><option>Safety violation</option><option>Data breach</option><option>Other</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Penalty Amount (BDT)</label><input type="number" placeholder="0"></div>
+        <div class="form-field"><label>Incident Date</label><input type="date"></div>
+      </div>
+      <div class="form-field"><label>Description</label><textarea placeholder="Describe the incident and basis for penalty..."></textarea></div>
+      <div class="form-field"><label>Supporting Evidence</label><input type="file" style="padding:8px;font-size:12px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('manualPenModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveManualPen()">Submit for Approval</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT RULES MODAL -->
+<div class="modal-overlay" id="editRulesModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>📋 Edit Penalty Rules</h3><button class="modal-close" onclick="closeModal('editRulesModal')">×</button></div>
+    <div class="modal-body">
+      <div class="info-box">Changes to penalty rules apply to future GRNs only. Existing pending penalties use the rules at time of occurrence.</div>
+      <div class="form-section" style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border2);">Guard and Security</div>
+      <div class="form-row">
+        <div class="form-field"><label>Guard absent per day (BDT)</label><input type="number" value="640"></div>
+        <div class="form-field"><label>Late arrival per occurrence (BDT)</label><input type="number" value="320"></div>
+      </div>
+      <div class="form-section" style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border2);">SLA Breaches</div>
+      <div class="form-row">
+        <div class="form-field"><label>SLA breach per hour (BDT)</label><input type="number" value="1250"></div>
+        <div class="form-field"><label>Max SLA penalty per incident (BDT)</label><input type="number" value="15000"></div>
+      </div>
+      <div class="form-section" style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border2);">Fleet</div>
+      <div class="form-row">
+        <div class="form-field"><label>Vehicle late delivery (BDT)</label><input type="number" value="2500"></div>
+        <div class="form-field"><label>No-show penalty (BDT)</label><input type="number" value="5000"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('editRulesModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveRules()">Save Rules</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleArea(el){el.classList.toggle('open');const s=el.nextElementSibling;if(s&&s.classList.contains('sb-sub-list'))s.classList.toggle('open');}
+function toggleDD(){document.getElementById('userDD').classList.toggle('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-menu').forEach(m=>m.classList.remove('open'));});
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+
+function openPenDetail(ref,vendor){
+  document.getElementById('penDetailTitle').textContent=ref+' — '+vendor;
+  openModal('penDetailModal');
+}
+function openDisputeModal(ref){openModal('disputeModal');}
+function filterPen(status){alert('Filtering penalties by: '+status);}
+
+function approvePen(ref,amount){
+  if(confirm('Approve penalty '+ref+' for BDT '+amount.toLocaleString()+'?\n\nThis will be deducted from the vendor\'s next bill.')){
+    alert('✅ Penalty approved!\n\nPEN: '+ref+'\nAmount: BDT '+amount.toLocaleString()+'\nVendor notified.\nWill be deducted from next bill.');
+  }
+}
+
+function confirmPenDecision(){
+  const dec=document.getElementById('penDecision').value;
+  closeModal('penDetailModal');
+  const msgs={
+    approve:'✅ Penalty approved!\nWill be deducted from next vendor bill.\nVendor notified.',
+    waive:'✓ Penalty waived.\nVendor notified. Reason recorded in audit trail.',
+    reduce:'📝 Partial penalty recorded.\nReduced amount will be applied.\nVendor notified.'
+  };
+  setTimeout(()=>alert(msgs[dec]),200);
+}
+
+function resolveDispute(){
+  closeModal('disputeModal');
+  setTimeout(()=>alert('✅ Dispute resolved!\n\nDecision recorded.\nBoth parties notified.\nBill updated accordingly.'),200);
+}
+
+function saveManualPen(){
+  closeModal('manualPenModal');
+  setTimeout(()=>alert('✅ Manual penalty submitted!\n\nPEN-2025-NEW created.\nSent for FM Manager approval.\nVendor will be notified when approved.'),200);
+}
+
+function saveRules(){
+  closeModal('editRulesModal');
+  setTimeout(()=>alert('✅ Penalty rules updated!\n\nNew rules apply to all future GRNs.\nChanges saved to audit trail.'),200);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — GRN Management</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --red:#D94F4F;--red-bg:#FDF0F0;--red-bd:#F5CECE;
+  --amber:#C47B1A;--amber-bg:#FDF5E6;--amber-bd:#F0D9A8;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;--blue-bd:#BDDBF7;
+  --green:#1E8A5A;--green-bg:#EAF7F1;--green-bd:#A8DFC5;
+  --purple:#5B45C7;--purple-bg:#F0EEFF;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(200,169,110,.8);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+.sb-chevron{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s;flex-shrink:0;}
+.sb-area-toggle.open .sb-chevron{transform:rotate(90deg);}
+.sb-sub-list{overflow:hidden;max-height:0;transition:max-height .25s ease;}
+.sb-sub-list.open{max-height:400px;}
+.sb-sub{padding-left:58px;}
+.sb-sub-item{display:flex;align-items:center;gap:6px;padding:6px 18px 6px 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);transition:color .15s;text-decoration:none;}
+.sb-sub-item:hover{color:rgba(255,255,255,.85);}
+.sb-sub-item.active{color:var(--gold);}
+.sb-sub-item::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.breadcrumb span{color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;width:220px;}
+.search-bar:focus-within{border-color:var(--navy);background:#fff;}
+.search-bar input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.search-bar input::placeholder{color:var(--light);}
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;position:relative;}
+.top-btn:hover{border-color:var(--navy);}
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100%+6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+.content{padding:24px 28px;flex:1;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+.page-hdr-right{display:flex;gap:8px;align-items:center;}
+.btn-act{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-act:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);border-color:var(--navy);}
+
+/* SUMMARY CARDS */
+.sum-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px;}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;}
+.sum-card:hover{border-color:var(--navy);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.sc-amber::before{background:#E09B1A;}
+.sc-blue::before{background:var(--blue);}
+.sc-green::before{background:var(--green);}
+.sc-red::before{background:var(--red);}
+.sc-navy::before{background:var(--navy);}
+.sum-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.sum-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);line-height:1;}
+.sum-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:8px 14px;flex:1;min-width:200px;}
+.filter-search:focus-within{border-color:var(--navy);}
+.filter-search input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.filter-search input::placeholder{color:var(--light);}
+.filter-select{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;}
+.filter-select:focus{border-color:var(--navy);}
+
+/* TABLE */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.grn-table{width:100%;border-collapse:collapse;}
+.grn-table th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);background:var(--bg);white-space:nowrap;}
+.grn-table td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border2);vertical-align:middle;}
+.grn-table tr:last-child td{border-bottom:none;}
+.grn-table tr:hover td{background:rgba(242,240,235,.5);cursor:pointer;}
+.grn-ref{font-size:11.5px;font-weight:700;color:var(--navy);font-family:monospace;}
+
+/* TAGS */
+.tag{display:inline-flex;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.tag-navy{background:rgba(10,22,40,.08);color:var(--navy);}
+
+/* ACTION BUTTONS */
+.act-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+.ab-blue{background:var(--blue-bg);color:var(--blue);}
+.ab-blue:hover{background:var(--blue);color:#fff;}
+.ab-green{background:var(--green-bg);color:var(--green);}
+.ab-green:hover{background:var(--green);color:#fff;}
+.ab-red{background:var(--red-bg);color:var(--red);}
+.ab-red:hover{background:var(--red);color:#fff;}
+.ab-amber{background:var(--amber-bg);color:var(--amber);}
+.ab-amber:hover{background:#E09B1A;color:#fff;}
+.ab-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.ab-gray:hover{border-color:var(--navy);color:var(--navy);}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-top:1px solid var(--border2);background:var(--bg);}
+.pag-info{font-size:13px;color:var(--muted);}
+.pag-btns{display:flex;gap:4px;}
+.pag-btn{padding:6px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;background:var(--surface);color:var(--text);transition:all .15s;}
+.pag-btn:hover{border-color:var(--navy);}
+.pag-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-md{max-width:560px;}
+.modal-lg{max-width:720px;}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:600;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:22px;max-height:72vh;overflow-y:auto;}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);margin:-22px -22px 20px;}
+.modal-tab{padding:12px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
+.modal-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.form-field{margin-bottom:15px;}
+.form-field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--navy);background:#fff;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-section{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border2);}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-secondary{padding:10px 20px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--navy);}
+
+/* GRN DETAIL VIEW */
+.grn-detail-hdr{background:var(--bg);border-radius:10px;padding:16px 18px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
+.grn-detail-title{font-size:16px;font-weight:600;color:var(--text);}
+.grn-detail-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.grn-items-table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+.grn-items-table th{padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);background:var(--bg);}
+.grn-items-table td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border2);}
+.grn-items-table tr:last-child td{border-bottom:none;}
+.grn-total-row{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--navy);border-radius:8px;color:#fff;}
+.grn-total-label{font-size:14px;font-weight:600;}
+.grn-total-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold);}
+
+/* INFO BOX */
+.info-box{background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);}
+.warn-box{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:13px;color:var(--amber);}
+
+/* APPROVAL STEPS */
+.approval-steps{display:flex;gap:0;margin-bottom:20px;}
+.ap-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;}
+.ap-step:not(:last-child)::after{content:'';position:absolute;top:13px;left:calc(50% + 14px);right:calc(-50% + 14px);height:2px;background:var(--border);}
+.ap-step.done:not(:last-child)::after{background:var(--green);}
+.ap-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);z-index:1;}
+.ap-step.done .ap-dot{background:var(--green);border-color:var(--green);color:#fff;}
+.ap-step.current .ap-dot{background:var(--amber);border-color:var(--amber);color:#fff;box-shadow:0 0 0 3px rgba(196,123,26,.2);}
+.ap-step.current:not(:last-child)::after{background:var(--border);}
+.ap-label{font-size:10px;color:var(--muted);text-align:center;line-height:1.3;}
+.ap-step.done .ap-label{color:var(--green);}
+.ap-step.current .ap-label{color:var(--amber);font-weight:600;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sum-grid{animation:fadeIn .4s .05s ease both;}
+.filter-bar{animation:fadeIn .4s .1s ease both;}
+.table-wrap{animation:fadeIn .4s .15s ease both;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh Limited</div></div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">DH</div>
+    <div><div class="sb-uname">Delowar Hossain</div><div class="sb-urole">Company Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">Main</span></div>
+    <a class="sb-item " href="admin-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">Dashboard</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">🔔</div><span class="sb-item-text">Priority Inbox</span></a>
+
+    <div class="sb-section"><span class="sb-section-label">Area 1 — Workplace Services</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🏢</div><span class="sb-item-text">Workplace Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Service Requests</a>
+      <a class="sb-sub-item " href="coming-soon.html">Meeting Room Booking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Cafeteria and Pantry</a>
+      <a class="sb-sub-item " href="coming-soon.html">Parking Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Courier and Dispatch</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 2 — Real Estate and Assets</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🏗</div><span class="sb-item-text">Real Estate and Assets</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="asset-register.html">Asset Register</a>
+      <a class="sb-sub-item " href="maintenance.html">Maintenance</a>
+      <a class="sb-sub-item " href="coming-soon.html">Lease Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Space Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Utility Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">License Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Asset Transfer</a>
+      <a class="sb-sub-item " href="coming-soon.html">Asset Disposal</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 3 — Security and EHS</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🔒</div><span class="sb-item-text">Security and EHS</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Security Operations</a>
+      <a class="sb-sub-item " href="coming-soon.html">Access Control</a>
+      <a class="sb-sub-item " href="coming-soon.html">Gate Pass Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Incident Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">EHS Compliance</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 4 — Vendor and Finance</span></div>
+    <div class="sb-item sb-area-toggle open" onclick="toggleArea(this)"><div class="sb-item-icon">💼</div><span class="sb-item-text">Vendor and Finance</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list open"><div class="sb-sub">
+      <a class="sb-sub-item " href="vendor-list.html">Vendor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Contract Management</a>
+      <a class="sb-sub-item " href="vendor-performance.html">Vendor Performance</a>
+      <a class="sb-sub-item active" href="grn-management.html">GRN Management</a>
+      <a class="sb-sub-item " href="billing.html">Billing and Payments</a>
+      <a class="sb-sub-item " href="penalty-management.html">Penalty Management</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 5 — Fleet Management</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🚗</div><span class="sb-item-text">Fleet Management</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Fleet Inventory</a>
+      <a class="sb-sub-item " href="coming-soon.html">Vehicle Requisition</a>
+      <a class="sb-sub-item " href="coming-soon.html">Fuel Tracking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Fleet Maintenance</a>
+      <a class="sb-sub-item " href="coming-soon.html">GPS and Route Tracking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Compliance Tracking</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 6 — Inventory and Supply</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">📦</div><span class="sb-item-text">Inventory and Supply</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Store Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Stock Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Requisition Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Goods Movement</a>
+      <a class="sb-sub-item " href="coming-soon.html">Consumption Tracking</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 7 — Admin Support</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">✈️</div><span class="sb-item-text">Admin Support Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Travel Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Employee Admin Services</a>
+      <a class="sb-sub-item " href="coming-soon.html">Stationery and Supplies</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Platform</span></div>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📊</div><span class="sb-item-text">Reports and Analytics</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📅</div><span class="sb-item-text">Activity Calendar</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📋</div><span class="sb-item-text">Policy and Knowledge Hub</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">👥</div><span class="sb-item-text">User Management</span></a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div>
+    <div class="sb-bottom-item" onclick="alert('Help and support coming soon!')"><span style="font-size:15px;">❓</span><span>Help and Support</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <span>Area 4</span><span style="color:var(--light)">›</span>
+      <span>Vendor and Finance</span><span style="color:var(--light)">›</span>
+      <span>GRN Management</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar"><span style="color:var(--light);font-size:14px;">🔍</span><input type="text" placeholder="Search GRN reference..."></div>
+      <div class="top-btn">🔔</div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;color:var(--text);">
+          <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);">DH</div>
+          <span>Delowar</span><span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>GRN Management</h1>
+        <p>Goods Received Notes · All vendor deliveries must be accepted before billing is generated</p>
+      </div>
+      <div class="page-hdr-right">
+        <button class="btn-act btn-outline" onclick="alert('Exporting GRN list...')">⬇ Export</button>
+        <button class="btn-act" onclick="openModal('newGrnModal')">+ Create GRN</button>
+      </div>
+    </div>
+
+    <!-- PLATFORM RULE BANNER -->
+    <div class="info-box" style="margin-bottom:20px;">
+      <strong>Platform Rule:</strong> All vendor bills are auto-generated ONLY from approved GRN records. No manual bill submission is allowed. GRN must be verified and accepted before any payment can be processed.
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="sum-grid">
+      <div class="sum-card sc-amber" onclick="filterGRN('pending')">
+        <div class="sum-label">Pending Acceptance</div>
+        <div class="sum-num">6</div>
+        <div class="sum-sub">Delivery received, not accepted</div>
+      </div>
+      <div class="sum-card sc-blue" onclick="filterGRN('review')">
+        <div class="sum-label">Under Review</div>
+        <div class="sum-num">3</div>
+        <div class="sum-sub">Items being verified</div>
+      </div>
+      <div class="sum-card sc-green" onclick="filterGRN('accepted')">
+        <div class="sum-label">Accepted — March</div>
+        <div class="sum-num">24</div>
+        <div class="sum-sub">Bills auto-generated</div>
+      </div>
+      <div class="sum-card sc-red" onclick="filterGRN('rejected')">
+        <div class="sum-label">Rejected</div>
+        <div class="sum-num">2</div>
+        <div class="sum-sub">Vendor notified</div>
+      </div>
+      <div class="sum-card sc-navy" onclick="filterGRN('all')">
+        <div class="sum-label">Total Value — March</div>
+        <div class="sum-num" style="font-size:20px;">1.24M</div>
+        <div class="sum-sub">BDT accepted this month</div>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-search">
+        <span style="color:var(--light);font-size:14px;">🔍</span>
+        <input type="text" placeholder="Search by GRN reference, vendor or service..." oninput="filterTable(this.value)">
+      </div>
+      <select class="filter-select" onchange="filterByStatus(this.value)">
+        <option value="">All Status</option>
+        <option>Pending Acceptance</option>
+        <option>Under Review</option>
+        <option>Accepted</option>
+        <option>Rejected</option>
+      </select>
+      <select class="filter-select">
+        <option value="">All Vendors</option>
+        <option>ABC Security Ltd</option>
+        <option>Green Clean Co</option>
+        <option>Cooling Solutions</option>
+        <option>Fresh Foods Ltd</option>
+        <option>Dhaka Transport</option>
+      </select>
+      <select class="filter-select">
+        <option>March 2025</option>
+        <option>February 2025</option>
+        <option>January 2025</option>
+      </select>
+    </div>
+
+    <!-- GRN TABLE -->
+    <div class="table-wrap">
+      <table class="grn-table" id="grnTable">
+        <thead>
+          <tr>
+            <th style="width:32px;"><input type="checkbox" onclick="toggleAll(this)" style="accent-color:var(--navy);width:14px;height:14px;cursor:pointer;"></th>
+            <th>GRN Reference</th>
+            <th>Vendor</th>
+            <th>Service Type</th>
+            <th>Period</th>
+            <th>Delivery Date</th>
+            <th>Amount (BDT)</th>
+            <th>Status</th>
+            <th>Approval</th>
+            <th style="width:160px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="grnTbody">
+
+          <!-- PENDING rows -->
+          <tr onclick="openGrnDetail('GRN-2025-0341','ABC Security Ltd','pending')">
+            <td onclick="event.stopPropagation()"><input type="checkbox" style="accent-color:var(--navy);width:14px;height:14px;cursor:pointer;"></td>
+            <td><span class="grn-ref">GRN-2025-0341</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;background:#1A5FAB;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">AS</div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;">ABC Security Ltd</div>
+                  <div style="font-size:11px;color:var(--muted);">VND-001</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="tag tag-navy">Security</span></td>
+            <td style="font-size:12px;">1–25 Mar 2025</td>
+            <td style="font-size:12px;color:var(--muted);">25 Mar 2025</td>
+            <td style="font-weight:600;">184,320</td>
+            <td><span class="tag tag-amber">Pending</span></td>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <div style="font-size:11px;color:var(--muted);">FM Manager</div>
+                <div style="font-size:10px;color:var(--amber);">Waiting</div>
+              </div>
+            </td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                <button class="act-btn ab-green" onclick="openAcceptModal('GRN-2025-0341')">Accept</button>
+                <button class="act-btn ab-blue" onclick="openGrnDetail('GRN-2025-0341','ABC Security Ltd','pending')">Review</button>
+                <button class="act-btn ab-red" onclick="openRejectModal('GRN-2025-0341')">Reject</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr onclick="openGrnDetail('GRN-2025-0340','Green Clean Co','pending')">
+            <td onclick="event.stopPropagation()"><input type="checkbox" style="accent-color:var(--navy);width:14px;height:14px;cursor:pointer;"></td>
+            <td><span class="grn-ref">GRN-2025-0340</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;background:#1E8A5A;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">GC</div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;">Green Clean Co</div>
+                  <div style="font-size:11px;color:var(--muted);">VND-002</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="tag tag-green">Cleaning</span></td>
+            <td style="font-size:12px;">1–25 Mar 2025</td>
+            <td style="font-size:12px;color:var(--muted);">25 Mar 2025</td>
+            <td style="font-weight:600;">142,000</td>
+            <td><span class="tag tag-amber">Pending</span></td>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <div style="font-size:11px;color:var(--muted);">FM Manager</div>
+                <div style="font-size:10px;color:var(--amber);">Waiting</div>
+              </div>
+            </td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                <button class="act-btn ab-green" onclick="openAcceptModal('GRN-2025-0340')">Accept</button>
+                <button class="act-btn ab-blue" onclick="openGrnDetail('GRN-2025-0340','Green Clean Co','pending')">Review</button>
+                <button class="act-btn ab-red" onclick="openRejectModal('GRN-2025-0340')">Reject</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr onclick="openGrnDetail('GRN-2025-0338','Cooling Solutions','review')">
+            <td onclick="event.stopPropagation()"><input type="checkbox" style="accent-color:var(--navy);width:14px;height:14px;cursor:pointer;"></td>
+            <td><span class="grn-ref">GRN-2025-0338</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;background:#C47B1A;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">CS</div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;">Cooling Solutions</div>
+                  <div style="font-size:11px;color:var(--muted);">VND-003</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="tag tag-amber">Maintenance</span></td>
+            <td style="font-size:12px;">1–24 Mar 2025</td>
+            <td style="font-size:12px;color:var(--muted);">24 Mar 2025</td>
+            <td style="font-weight:600;">58,500</td>
+            <td><span class="tag tag-blue">Under Review</span></td>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <div style="font-size:11px;color:var(--muted);">FM Manager</div>
+                <div style="font-size:10px;color:var(--blue);">Reviewing items</div>
+              </div>
+            </td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                <button class="act-btn ab-green" onclick="openAcceptModal('GRN-2025-0338')">Accept</button>
+                <button class="act-btn ab-blue" onclick="openGrnDetail('GRN-2025-0338','Cooling Solutions','review')">Review</button>
+                <button class="act-btn ab-red" onclick="openRejectModal('GRN-2025-0338')">Reject</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ACCEPTED rows -->
+          <tr onclick="openGrnDetail('GRN-2025-0335','Fresh Foods Ltd','accepted')" style="opacity:.8;">
+            <td onclick="event.stopPropagation()"><input type="checkbox" style="accent-color:var(--navy);width:14px;height:14px;cursor:pointer;"></td>
+            <td><span class="grn-ref">GRN-2025-0335</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;background:#5B45C7;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">FF</div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;">Fresh Foods Ltd</div>
+                  <div style="font-size:11px;color:var(--muted);">VND-004</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="tag tag-blue">Catering</span></td>
+            <td style="font-size:12px;">1–22 Mar 2025</td>
+            <td style="font-size:12px;color:var(--muted);">22 Mar 2025</td>
+            <td style="font-weight:600;">96,800</td>
+            <td><span class="tag tag-green">Accepted</span></td>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <div style="font-size:11px;color:var(--muted);">FM Manager</div>
+                <div style="font-size:10px;color:var(--green);">Accepted 23 Mar</div>
+              </div>
+            </td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex;gap:5px;">
+                <button class="act-btn ab-blue" onclick="openGrnDetail('GRN-2025-0335','Fresh Foods Ltd','accepted')">View</button>
+                <button class="act-btn ab-gray" onclick="alert('Bill BILL-2025-0089 has been auto-generated from this GRN.')">View Bill</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr onclick="openGrnDetail('GRN-2025-0330','ABC Security Ltd','accepted')" style="opacity:.8;">
+            <td onclick="event.stopPropagation()"><input type="checkbox" style="accent-color:var(--navy);width:14px;height:14px;cursor:pointer;"></td>
+            <td><span class="grn-ref">GRN-2025-0330</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;background:#1A5FAB;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">AS</div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;">ABC Security Ltd</div>
+                  <div style="font-size:11px;color:var(--muted);">VND-001</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="tag tag-navy">Security</span></td>
+            <td style="font-size:12px;">February 2025</td>
+            <td style="font-size:12px;color:var(--muted);">1 Mar 2025</td>
+            <td style="font-weight:600;">179,200</td>
+            <td><span class="tag tag-green">Accepted</span></td>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <div style="font-size:11px;color:var(--muted);">FM Manager</div>
+                <div style="font-size:10px;color:var(--green);">Accepted 2 Mar</div>
+              </div>
+            </td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex;gap:5px;">
+                <button class="act-btn ab-blue" onclick="openGrnDetail('GRN-2025-0330','ABC Security Ltd','accepted')">View</button>
+                <button class="act-btn ab-gray" onclick="alert('Bill BILL-2025-0081 has been paid. BDT 179,200.')">View Bill</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- REJECTED row -->
+          <tr onclick="openGrnDetail('GRN-2025-0325','Dhaka Transport','rejected')" style="opacity:.6;">
+            <td onclick="event.stopPropagation()"><input type="checkbox" style="accent-color:var(--navy);width:14px;height:14px;cursor:pointer;"></td>
+            <td><span class="grn-ref">GRN-2025-0325</span></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;background:#D94F4F;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">DT</div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;">Dhaka Transport</div>
+                  <div style="font-size:11px;color:var(--muted);">VND-005</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="tag tag-red">Transport</span></td>
+            <td style="font-size:12px;">1–20 Mar 2025</td>
+            <td style="font-size:12px;color:var(--muted);">21 Mar 2025</td>
+            <td style="font-weight:600;color:var(--muted);">48,200</td>
+            <td><span class="tag tag-red">Rejected</span></td>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <div style="font-size:11px;color:var(--muted);">FM Manager</div>
+                <div style="font-size:10px;color:var(--red);">KM mismatch</div>
+              </div>
+            </td>
+            <td onclick="event.stopPropagation()">
+              <div style="display:flex;gap:5px;">
+                <button class="act-btn ab-blue" onclick="openGrnDetail('GRN-2025-0325','Dhaka Transport','rejected')">View</button>
+                <button class="act-btn ab-amber" onclick="alert('Sending resubmission request to Dhaka Transport...')">Resubmit</button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+      <div class="pagination">
+        <div class="pag-info">Showing 6 of 35 GRN records</div>
+        <div class="pag-btns">
+          <button class="pag-btn" disabled>← Prev</button>
+          <button class="pag-btn active">1</button>
+          <button class="pag-btn">2</button>
+          <button class="pag-btn">3</button>
+          <button class="pag-btn">Next →</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- GRN DETAIL MODAL -->
+<div class="modal-overlay" id="grnDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr">
+      <div>
+        <h3 id="grnDetailTitle">GRN-2025-0341 — ABC Security Ltd</h3>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;">Security Services · March 2025 · Submitted by vendor on 25 March</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('grnDetailModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="modal-tab active" onclick="switchTab(this,'gd1')">GRN Details</button>
+        <button class="modal-tab" onclick="switchTab(this,'gd2')">Items and Verification</button>
+        <button class="modal-tab" onclick="switchTab(this,'gd3')">Approval Trail</button>
+      </div>
+
+      <!-- Tab 1: Details -->
+      <div class="tab-content active" id="gd1">
+        <div class="grn-detail-hdr">
+          <div>
+            <div class="grn-detail-title">ABC Security Ltd — Security Services</div>
+            <div class="grn-detail-sub">GRN-2025-0341 · Period: 1–25 March 2025 · 12 guards deployed</div>
+          </div>
+          <span class="tag tag-amber" style="font-size:12px;padding:4px 12px;">Pending Acceptance</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;">
+          <div style="background:var(--bg);border-radius:8px;padding:12px;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Vendor</div>
+            <div style="font-size:13px;font-weight:600;">ABC Security Ltd</div>
+            <div style="font-size:12px;color:var(--muted);">VND-001 · Security</div>
+          </div>
+          <div style="background:var(--bg);border-radius:8px;padding:12px;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Service Period</div>
+            <div style="font-size:13px;font-weight:600;">1–25 March 2025</div>
+            <div style="font-size:12px;color:var(--muted);">25 working days</div>
+          </div>
+          <div style="background:var(--bg);border-radius:8px;padding:12px;">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Contract Rate</div>
+            <div style="font-size:13px;font-weight:600;">BDT 640 / guard / day</div>
+            <div style="font-size:12px;color:var(--muted);">As per contract CLT-001</div>
+          </div>
+        </div>
+        <div class="info-box">
+          ℹ Once you accept this GRN, a bill will be auto-generated for BDT 184,320 (minus any applicable penalties). The vendor will be notified and the bill will enter the approval workflow.
+        </div>
+      </div>
+
+      <!-- Tab 2: Items -->
+      <div class="tab-content" id="gd2">
+        <div class="warn-box">⚠ Verify all items below against your records before accepting. Once accepted, this GRN cannot be modified.</div>
+        <table class="grn-items-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Location</th>
+              <th>Deployed</th>
+              <th>Days</th>
+              <th>Rate (BDT)</th>
+              <th>Amount (BDT)</th>
+              <th>Verify</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:500;">Main Gate Guards</td>
+              <td style="font-size:12px;color:var(--muted);">HQ Building</td>
+              <td>2 guards</td>
+              <td>25</td>
+              <td>640</td>
+              <td style="font-weight:600;">32,000</td>
+              <td><input type="checkbox" checked style="accent-color:var(--green);width:14px;height:14px;"> <span style="font-size:11px;color:var(--green);">Verified</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:500;">Reception Guards</td>
+              <td style="font-size:12px;color:var(--muted);">HQ Building</td>
+              <td>1 guard</td>
+              <td>22</td>
+              <td>640</td>
+              <td style="font-weight:600;">14,080</td>
+              <td><input type="checkbox" style="accent-color:var(--amber);width:14px;height:14px;"> <span style="font-size:11px;color:var(--amber);">Check — 3 days absent</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:500;">Car Park Guards</td>
+              <td style="font-size:12px;color:var(--muted);">HQ Building</td>
+              <td>2 guards</td>
+              <td>25</td>
+              <td>640</td>
+              <td style="font-weight:600;">32,000</td>
+              <td><input type="checkbox" checked style="accent-color:var(--green);width:14px;height:14px;"> <span style="font-size:11px;color:var(--green);">Verified</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:500;">Branch 1 Guards</td>
+              <td style="font-size:12px;color:var(--muted);">Chittagong</td>
+              <td>3 guards</td>
+              <td>25</td>
+              <td>640</td>
+              <td style="font-weight:600;">48,000</td>
+              <td><input type="checkbox" checked style="accent-color:var(--green);width:14px;height:14px;"> <span style="font-size:11px;color:var(--green);">Verified</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:500;">Branch 2 Guards</td>
+              <td style="font-size:12px;color:var(--muted);">Sylhet</td>
+              <td>2 guards</td>
+              <td>25</td>
+              <td>640</td>
+              <td style="font-weight:600;">32,000</td>
+              <td><input type="checkbox" checked style="accent-color:var(--green);width:14px;height:14px;"> <span style="font-size:11px;color:var(--green);">Verified</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="grn-total-row">
+          <span class="grn-total-label">Vendor Claimed Total</span>
+          <span class="grn-total-val">BDT 184,320</span>
+        </div>
+        <div style="margin-top:10px;padding:10px 14px;background:var(--amber-bg);border-radius:8px;font-size:13px;color:var(--amber);">
+          ⚠ Reception guard had 3 absent days. Penalty of BDT 3,200 will be applied on bill generation. Net payable: <strong>BDT 181,120</strong>
+        </div>
+      </div>
+
+      <!-- Tab 3: Approval Trail -->
+      <div class="tab-content" id="gd3">
+        <div class="approval-steps" style="margin-bottom:24px;">
+          <div class="ap-step done"><div class="ap-dot">✓</div><div class="ap-label">Vendor submitted</div></div>
+          <div class="ap-step done"><div class="ap-dot">✓</div><div class="ap-label">System validated</div></div>
+          <div class="ap-step current"><div class="ap-dot">3</div><div class="ap-label">FM Manager review</div></div>
+          <div class="ap-step"><div class="ap-dot">4</div><div class="ap-label">Admin approval</div></div>
+          <div class="ap-step"><div class="ap-dot">5</div><div class="ap-label">Bill generated</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:12px;padding:10px 14px;background:var(--green-bg);border-radius:8px;border:1px solid var(--green-bd);">
+            <div style="font-size:18px;">✅</div>
+            <div><div style="font-size:13px;font-weight:500;color:var(--green);">Vendor submitted GRN</div><div style="font-size:12px;color:var(--muted);">ABC Security Ltd · 25 March 2025 · 11:30am</div></div>
+          </div>
+          <div style="display:flex;gap:12px;padding:10px 14px;background:var(--green-bg);border-radius:8px;border:1px solid var(--green-bd);">
+            <div style="font-size:18px;">✅</div>
+            <div><div style="font-size:13px;font-weight:500;color:var(--green);">System validation passed</div><div style="font-size:12px;color:var(--muted);">Contract rates verified · Attendance cross-checked · 25 March 2025 · 11:31am</div></div>
+          </div>
+          <div style="display:flex;gap:12px;padding:10px 14px;background:var(--amber-bg);border-radius:8px;border:1px solid var(--amber-bd);">
+            <div style="font-size:18px;">⏳</div>
+            <div><div style="font-size:13px;font-weight:500;color:var(--amber);">Waiting: FM Manager review</div><div style="font-size:12px;color:var(--muted);">Assigned to Karim Rahman · Pending since 25 March 2025</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('grnDetailModal')">Close</button>
+      <button class="btn-secondary" style="color:var(--red);border-color:var(--red-bd);" onclick="closeModal('grnDetailModal');openRejectModal('GRN-2025-0341')">Reject GRN</button>
+      <button class="btn-primary" onclick="closeModal('grnDetailModal');openAcceptModal('GRN-2025-0341')">Accept GRN →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACCEPT GRN MODAL -->
+<div class="modal-overlay" id="acceptModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>✅ Accept GRN</h3><button class="modal-close" onclick="closeModal('acceptModal')">×</button></div>
+    <div class="modal-body">
+      <div class="info-box">Once accepted, a bill will be auto-generated from this GRN. This action cannot be undone.</div>
+      <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:10px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:8px;">✓ GRN Summary</div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--green-bd);"><span style="font-size:13px;color:var(--muted);">GRN Reference</span><span style="font-size:13px;font-weight:500;" id="acceptRef">GRN-2025-0341</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--green-bd);"><span style="font-size:13px;color:var(--muted);">Vendor</span><span style="font-size:13px;font-weight:500;">ABC Security Ltd</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--green-bd);"><span style="font-size:13px;color:var(--muted);">Gross Amount</span><span style="font-size:13px;font-weight:500;">BDT 184,320</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--green-bd);"><span style="font-size:13px;color:var(--red);">Penalty Deduction</span><span style="font-size:13px;font-weight:500;color:var(--red);">– BDT 3,200</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0 2px;"><span style="font-size:14px;font-weight:700;">Net Bill Amount</span><span style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--navy);">BDT 181,120</span></div>
+      </div>
+      <div class="form-field">
+        <label>Acceptance Notes (optional)</label>
+        <textarea placeholder="Any notes for the vendor or for internal records..." style="min-height:70px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('acceptModal')">Cancel</button>
+      <button class="btn-primary" onclick="confirmAccept()" style="background:var(--green);">✅ Confirm Acceptance</button>
+    </div>
+  </div>
+</div>
+
+<!-- REJECT GRN MODAL -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>❌ Reject GRN</h3><button class="modal-close" onclick="closeModal('rejectModal')">×</button></div>
+    <div class="modal-body">
+      <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:13px;color:var(--red);">⚠ Rejecting this GRN will notify the vendor. They will need to resubmit with corrections.</div>
+      <div class="form-field">
+        <label>Rejection Reason (required)</label>
+        <select id="rejectReason">
+          <option value="">Select reason...</option>
+          <option>KM mismatch — VTS records differ</option>
+          <option>Guard count mismatch</option>
+          <option>Incorrect service period</option>
+          <option>Items not delivered as per contract</option>
+          <option>Missing documentation</option>
+          <option>Duplicate submission</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Detailed Explanation</label>
+        <textarea id="rejectNotes" placeholder="Explain exactly what needs to be corrected before resubmission..." style="min-height:90px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('rejectModal')">Cancel</button>
+      <button class="btn-primary" onclick="confirmReject()" style="background:var(--red);">Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE GRN MODAL -->
+<div class="modal-overlay" id="newGrnModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>📦 Create New GRN</h3><button class="modal-close" onclick="closeModal('newGrnModal')">×</button></div>
+    <div class="modal-body">
+      <div class="info-box">GRN is typically submitted by the vendor through their portal. Use this form to create a GRN manually on behalf of a vendor if needed.</div>
+      <div class="form-field"><label>Vendor</label>
+        <select><option>Select vendor...</option><option>ABC Security Ltd</option><option>Green Clean Co</option><option>Cooling Solutions</option><option>Fresh Foods Ltd</option><option>Dhaka Transport Co</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Service Period From</label><input type="date"></div>
+        <div class="form-field"><label>Service Period To</label><input type="date"></div>
+      </div>
+      <div class="form-field"><label>Service Type</label>
+        <select><option>Security — Guard deployment</option><option>Cleaning services</option><option>Maintenance</option><option>Catering</option><option>Transport and fleet</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Units Delivered</label><input type="number" placeholder="e.g. 12 guards"></div>
+        <div class="form-field"><label>Days of Service</label><input type="number" placeholder="e.g. 25 days"></div>
+      </div>
+      <div class="form-field"><label>Supporting Document</label><input type="file" style="padding:8px;font-size:12px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('newGrnModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveNewGRN()">Create GRN</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleArea(el){el.classList.toggle('open');const s=el.nextElementSibling;if(s&&s.classList.contains('sb-sub-list'))s.classList.toggle('open');}
+function toggleDD(){document.getElementById('userDD').classList.toggle('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-menu').forEach(m=>m.classList.remove('open'));});
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+
+function switchTab(btn,tabId){
+  const modal=btn.closest('.modal-body');
+  modal.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  modal.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+function openGrnDetail(ref,vendor,status){
+  document.getElementById('grnDetailTitle').textContent=ref+' — '+vendor;
+  openModal('grnDetailModal');
+}
+
+function openAcceptModal(ref){
+  document.getElementById('acceptRef').textContent=ref;
+  openModal('acceptModal');
+}
+
+function openRejectModal(ref){openModal('rejectModal');}
+
+function confirmAccept(){
+  closeModal('acceptModal');
+  setTimeout(()=>alert('✅ GRN accepted successfully!\n\nBill auto-generated: BILL-2025-NEW\nAmount: BDT 181,120\nPenalty applied: BDT 3,200\n\nBill is now in the approval workflow.\nFM Manager and Admin have been notified.'),200);
+}
+
+function confirmReject(){
+  const reason=document.getElementById('rejectReason').value;
+  if(!reason){alert('Please select a rejection reason.');return;}
+  closeModal('rejectModal');
+  setTimeout(()=>alert('❌ GRN rejected.\n\nReason: '+reason+'\nVendor has been notified to correct and resubmit.\nRejection recorded in audit trail.'),200);
+}
+
+function saveNewGRN(){
+  closeModal('newGrnModal');
+  setTimeout(()=>alert('✅ GRN created manually!\n\nGRN-2025-NEW created.\nSent for FM Manager review.\nVendor has been notified.'),200);
+}
+
+function filterGRN(status){alert('Filtering by: '+status);}
+function filterTable(val){
+  document.querySelectorAll('#grnTbody tr').forEach(r=>{
+    r.style.display=r.textContent.toLowerCase().includes(val.toLowerCase())?'':'none';
+  });
+}
+function filterByStatus(val){if(val)alert('Filtering by: '+val);}
+function toggleAll(cb){document.querySelectorAll('#grnTbody input[type="checkbox"]').forEach(c=>c.checked=cb.checked);}
+</script>
+</body>
+</html>

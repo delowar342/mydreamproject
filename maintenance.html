@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Maintenance</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --red:#D94F4F;--red-bg:#FDF0F0;--red-bd:#F5CECE;
+  --amber:#C47B1A;--amber-bg:#FDF5E6;--amber-bd:#F0D9A8;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;--blue-bd:#BDDBF7;
+  --green:#1E8A5A;--green-bg:#EAF7F1;--green-bd:#A8DFC5;
+  --purple:#5B45C7;--purple-bg:#F0EEFF;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(200,169,110,.8);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+.sb-chevron{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s;flex-shrink:0;}
+.sb-area-toggle.open .sb-chevron{transform:rotate(90deg);}
+.sb-sub-list{overflow:hidden;max-height:0;transition:max-height .25s ease;}
+.sb-sub-list.open{max-height:400px;}
+.sb-sub{padding-left:58px;}
+.sb-sub-item{display:flex;align-items:center;gap:6px;padding:6px 18px 6px 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);transition:color .15s;text-decoration:none;}
+.sb-sub-item:hover{color:rgba(255,255,255,.85);}
+.sb-sub-item.active{color:var(--gold);}
+.sb-sub-item::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;width:220px;}
+.search-bar:focus-within{border-color:var(--navy);background:#fff;}
+.search-bar input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.search-bar input::placeholder{color:var(--light);}
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;}
+.top-btn:hover{border-color:var(--navy);}
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+.content{padding:24px 28px;flex:1;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+.page-hdr-right{display:flex;gap:8px;align-items:center;}
+.btn-act{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-act:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);border-color:var(--navy);}
+
+/* TABS */
+.page-tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;}
+.page-tab{padding:10px 22px;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
+.page-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.page-tab:hover{color:var(--text);}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+
+/* SUM CARDS */
+.sum-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px;}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;}
+.sum-card:hover{border-color:var(--navy);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.sc-red::before{background:var(--red);}
+.sc-amber::before{background:#E09B1A;}
+.sc-blue::before{background:var(--blue);}
+.sc-green::before{background:var(--green);}
+.sc-navy::before{background:var(--navy);}
+.sum-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.sum-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);line-height:1;}
+.sum-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:8px 14px;flex:1;min-width:200px;}
+.filter-search:focus-within{border-color:var(--navy);}
+.filter-search input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.filter-search input::placeholder{color:var(--light);}
+.filter-select{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;}
+
+/* TAGS */
+.tag{display:inline-flex;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-navy{background:rgba(10,22,40,.08);color:var(--navy);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+
+/* TABLE */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.mnt-table{width:100%;border-collapse:collapse;}
+.mnt-table th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);background:var(--bg);white-space:nowrap;}
+.mnt-table td{padding:11px 16px;font-size:13px;border-bottom:1px solid var(--border2);vertical-align:middle;}
+.mnt-table tr:last-child td{border-bottom:none;}
+.mnt-table tr:hover td{background:rgba(242,240,235,.5);cursor:pointer;}
+.mnt-id{font-size:11.5px;font-weight:700;color:var(--navy);font-family:monospace;}
+
+/* PRIORITY DOT */
+.pri-dot{display:inline-flex;align-items:center;gap:5px;font-size:12px;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-red{background:var(--red);}
+.dot-amber{background:#E09B1A;}
+.dot-blue{background:var(--blue);}
+.dot-green{background:var(--green);}
+
+/* SLA BAR */
+.sla-wrap{display:flex;align-items:center;gap:6px;}
+.sla-bar-bg{width:60px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;}
+.sla-bar{height:100%;border-radius:3px;}
+
+/* ACT BUTTONS */
+.act-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+.ab-blue{background:var(--blue-bg);color:var(--blue);}
+.ab-blue:hover{background:var(--blue);color:#fff;}
+.ab-green{background:var(--green-bg);color:var(--green);}
+.ab-green:hover{background:var(--green);color:#fff;}
+.ab-amber{background:var(--amber-bg);color:var(--amber);}
+.ab-amber:hover{background:#E09B1A;color:#fff;}
+.ab-red{background:var(--red-bg);color:var(--red);}
+.ab-red:hover{background:var(--red);color:#fff;}
+.ab-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.ab-gray:hover{border-color:var(--navy);color:var(--navy);}
+
+/* PM CALENDAR */
+.pm-calendar{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.pm-cal-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2);}
+.pm-cal-hdr h2{font-size:14px;font-weight:600;}
+.cal-nav{display:flex;align-items:center;gap:8px;}
+.cal-nav button{width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.cal-nav button:hover{border-color:var(--navy);}
+.cal-month{font-size:13px;font-weight:500;min-width:100px;text-align:center;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0;}
+.cal-day-hdr{padding:8px 0;text-align:center;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);}
+.cal-day{padding:8px 6px;min-height:64px;border-right:1px solid var(--border2);border-bottom:1px solid var(--border2);font-size:12px;cursor:pointer;transition:background .15s;vertical-align:top;}
+.cal-day:hover{background:var(--bg);}
+.cal-day:nth-child(7n){border-right:none;}
+.cal-day.today{background:rgba(200,169,110,.06);}
+.cal-day.empty{background:var(--bg);cursor:default;}
+.cal-day-num{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:4px;}
+.cal-day.today .cal-day-num{color:var(--navy);font-weight:700;}
+.cal-event{font-size:10px;font-weight:500;padding:2px 5px;border-radius:4px;margin-bottom:2px;line-height:1.3;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.ce-pm{background:var(--blue-bg);color:var(--blue);}
+.ce-rm{background:var(--red-bg);color:var(--red);}
+.ce-done{background:var(--green-bg);color:var(--green);}
+
+/* PM SCHEDULE TABLE */
+.pm-table{width:100%;border-collapse:collapse;}
+.pm-table th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);background:var(--bg);}
+.pm-table td{padding:11px 16px;font-size:13px;border-bottom:1px solid var(--border2);vertical-align:middle;}
+.pm-table tr:last-child td{border-bottom:none;}
+.pm-table tr:hover td{background:rgba(242,240,235,.5);cursor:pointer;}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-top:1px solid var(--border2);background:var(--bg);}
+.pag-info{font-size:13px;color:var(--muted);}
+.pag-btns{display:flex;gap:4px;}
+.pag-btn{padding:6px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;background:var(--surface);color:var(--text);transition:all .15s;}
+.pag-btn:hover{border-color:var(--navy);}
+.pag-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-md{max-width:560px;}
+.modal-lg{max-width:720px;}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:600;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:22px;max-height:72vh;overflow-y:auto;}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);margin:-22px -22px 20px;}
+.modal-tab{padding:12px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
+.modal-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.mtab-content{display:none;}
+.mtab-content.active{display:block;}
+.form-field{margin-bottom:15px;}
+.form-field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--navy);background:#fff;}
+.form-field textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-sec{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border2);}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-secondary{padding:10px 20px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--navy);}
+
+/* JOB DETAIL */
+.job-hero{background:var(--navy);border-radius:12px;padding:18px 20px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
+.jh-left h3{font-size:16px;font-weight:600;color:#fff;margin-bottom:4px;}
+.jh-left p{font-size:12px;color:rgba(255,255,255,.55);}
+.jh-stats{display:flex;gap:16px;}
+.jh-stat{text-align:right;}
+.jh-stat-label{font-size:10px;color:rgba(255,255,255,.45);margin-bottom:3px;}
+.jh-stat-val{font-size:14px;font-weight:600;color:var(--gold);}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+.dg-item{background:var(--bg);border-radius:8px;padding:10px 12px;}
+.dg-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+.dg-val{font-size:13px;font-weight:500;}
+.timeline-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border2);}
+.timeline-item:last-child{border-bottom:none;}
+.tl-dot{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.tl-body{flex:1;}
+.tl-title{font-size:13px;font-weight:500;margin-bottom:2px;}
+.tl-sub{font-size:11.5px;color:var(--muted);}
+.tl-time{font-size:10.5px;color:var(--light);margin-top:3px;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sum-grid{animation:fadeIn .4s .05s ease both;}
+.page-tabs{animation:fadeIn .4s .08s ease both;}
+.table-wrap,.pm-calendar{animation:fadeIn .4s .12s ease both;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh Limited</div></div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">DH</div>
+    <div><div class="sb-uname">Delowar Hossain</div><div class="sb-urole">Company Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">Main</span></div>
+    <a class="sb-item " href="admin-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">Dashboard</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">🔔</div><span class="sb-item-text">Priority Inbox</span></a>
+
+    <div class="sb-section"><span class="sb-section-label">Area 1 — Workplace Services</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🏢</div><span class="sb-item-text">Workplace Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Service Requests</a>
+      <a class="sb-sub-item " href="coming-soon.html">Meeting Room Booking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Cafeteria and Pantry</a>
+      <a class="sb-sub-item " href="coming-soon.html">Parking Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Courier and Dispatch</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 2 — Real Estate and Assets</span></div>
+    <div class="sb-item sb-area-toggle open" onclick="toggleArea(this)"><div class="sb-item-icon">🏗</div><span class="sb-item-text">Real Estate and Assets</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list open"><div class="sb-sub">
+      <a class="sb-sub-item " href="asset-register.html">Asset Register</a>
+      <a class="sb-sub-item active" href="maintenance.html">Maintenance</a>
+      <a class="sb-sub-item " href="coming-soon.html">Lease Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Space Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Utility Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">License Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Asset Transfer</a>
+      <a class="sb-sub-item " href="coming-soon.html">Asset Disposal</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 3 — Security and EHS</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🔒</div><span class="sb-item-text">Security and EHS</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Security Operations</a>
+      <a class="sb-sub-item " href="coming-soon.html">Access Control</a>
+      <a class="sb-sub-item " href="coming-soon.html">Gate Pass Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Incident Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">EHS Compliance</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 4 — Vendor and Finance</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">💼</div><span class="sb-item-text">Vendor and Finance</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="vendor-list.html">Vendor Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Contract Management</a>
+      <a class="sb-sub-item " href="vendor-performance.html">Vendor Performance</a>
+      <a class="sb-sub-item " href="grn-management.html">GRN Management</a>
+      <a class="sb-sub-item " href="billing.html">Billing and Payments</a>
+      <a class="sb-sub-item " href="penalty-management.html">Penalty Management</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 5 — Fleet Management</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">🚗</div><span class="sb-item-text">Fleet Management</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Fleet Inventory</a>
+      <a class="sb-sub-item " href="coming-soon.html">Vehicle Requisition</a>
+      <a class="sb-sub-item " href="coming-soon.html">Fuel Tracking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Fleet Maintenance</a>
+      <a class="sb-sub-item " href="coming-soon.html">GPS and Route Tracking</a>
+      <a class="sb-sub-item " href="coming-soon.html">Compliance Tracking</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 6 — Inventory and Supply</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">📦</div><span class="sb-item-text">Inventory and Supply</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Store Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Stock Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Requisition Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Goods Movement</a>
+      <a class="sb-sub-item " href="coming-soon.html">Consumption Tracking</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Area 7 — Admin Support</span></div>
+    <div class="sb-item sb-area-toggle " onclick="toggleArea(this)"><div class="sb-item-icon">✈️</div><span class="sb-item-text">Admin Support Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list "><div class="sb-sub">
+      <a class="sb-sub-item " href="coming-soon.html">Travel Management</a>
+      <a class="sb-sub-item " href="coming-soon.html">Employee Admin Services</a>
+      <a class="sb-sub-item " href="coming-soon.html">Stationery and Supplies</a>
+    </div></div>
+
+    <div class="sb-section"><span class="sb-section-label">Platform</span></div>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📊</div><span class="sb-item-text">Reports and Analytics</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📅</div><span class="sb-item-text">Activity Calendar</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">📋</div><span class="sb-item-text">Policy and Knowledge Hub</span></a>
+    <a class="sb-item " href="coming-soon.html"><div class="sb-item-icon">👥</div><span class="sb-item-text">User Management</span></a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div>
+    <div class="sb-bottom-item" onclick="alert('Help and support coming soon!')"><span style="font-size:15px;">❓</span><span>Help and Support</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <span style="color:var(--muted);">Area 2</span><span style="color:var(--light)">›</span>
+      <span style="color:var(--muted);">Real Estate and Assets</span><span style="color:var(--light)">›</span>
+      <span>Maintenance</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar"><span style="color:var(--light);font-size:14px;">🔍</span><input type="text" placeholder="Search jobs..."></div>
+      <div class="top-btn">🔔</div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;color:var(--text);">
+          <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);">DH</div>
+          <span>Delowar</span><span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>Maintenance</h1>
+        <p>Area 2 · Reactive breakdown jobs and preventive maintenance schedule · March 2025</p>
+      </div>
+      <div class="page-hdr-right">
+        <button class="btn-act btn-outline" onclick="alert('Opening PM schedule planner...')">📅 Plan PM Schedule</button>
+        <button class="btn-act" onclick="openModal('newJobModal')">+ Raise Job</button>
+      </div>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="sum-grid">
+      <div class="sum-card sc-red" onclick="switchPageTab('reactive',0)">
+        <div class="sum-label">Open Reactive Jobs</div>
+        <div class="sum-num">7</div>
+        <div class="sum-sub">2 critical · 5 normal</div>
+      </div>
+      <div class="sum-card sc-amber" onclick="switchPageTab('reactive',0)">
+        <div class="sum-label">SLA Breached</div>
+        <div class="sum-num">2</div>
+        <div class="sum-sub">Overdue this month</div>
+      </div>
+      <div class="sum-card sc-blue" onclick="switchPageTab('pm',1)">
+        <div class="sum-label">PM Due This Month</div>
+        <div class="sum-num">14</div>
+        <div class="sum-sub">6 completed · 8 pending</div>
+      </div>
+      <div class="sum-card sc-green" onclick="switchPageTab('reactive',0)">
+        <div class="sum-label">Completed — March</div>
+        <div class="sum-num">23</div>
+        <div class="sum-sub">Avg resolution: 4.2 hrs</div>
+      </div>
+      <div class="sum-card sc-navy">
+        <div class="sum-label">SLA Compliance</div>
+        <div class="sum-num">87%</div>
+        <div class="sum-sub">Target: 95%</div>
+      </div>
+    </div>
+
+    <!-- PAGE TABS -->
+    <div class="page-tabs">
+      <button class="page-tab active" id="tab0" onclick="switchPageTab('reactive',0)">⚡ Reactive Maintenance <span style="background:var(--red-bg);color:var(--red);font-size:10px;padding:1px 6px;border-radius:8px;margin-left:4px;">7 open</span></button>
+      <button class="page-tab" id="tab1" onclick="switchPageTab('pm',1)">📅 Preventive Maintenance <span style="background:var(--blue-bg);color:var(--blue);font-size:10px;padding:1px 6px;border-radius:8px;margin-left:4px;">8 due</span></button>
+    </div>
+
+    <!-- REACTIVE PANE -->
+    <div class="tab-pane active" id="pane-reactive">
+      <div class="filter-bar">
+        <div class="filter-search">
+          <span style="color:var(--light);font-size:14px;">🔍</span>
+          <input type="text" placeholder="Search by job ID, asset, location or vendor...">
+        </div>
+        <select class="filter-select">
+          <option>All Priority</option>
+          <option>Critical</option>
+          <option>High</option>
+          <option>Normal</option>
+          <option>Low</option>
+        </select>
+        <select class="filter-select">
+          <option>All Status</option>
+          <option>Open</option>
+          <option>Assigned</option>
+          <option>In Progress</option>
+          <option>Completed</option>
+          <option>SLA Breached</option>
+        </select>
+        <select class="filter-select">
+          <option>All Vendors</option>
+          <option>Cooling Solutions Ltd</option>
+          <option>Bright Electrical</option>
+          <option>TechFix BD</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table class="mnt-table">
+          <thead>
+            <tr>
+              <th>Job ID</th>
+              <th>Description</th>
+              <th>Asset</th>
+              <th>Location</th>
+              <th>Priority</th>
+              <th>Assigned To</th>
+              <th>Raised</th>
+              <th>SLA Deadline</th>
+              <th>Status</th>
+              <th style="width:140px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- CRITICAL / SLA BREACHED -->
+            <tr onclick="openJobDetail('MNT-0158','AC not working — Board Room')" style="background:rgba(253,240,240,.3);">
+              <td><span class="mnt-id">MNT-0158</span></td>
+              <td>
+                <div style="font-size:13px;font-weight:500;">AC not working — Board Room</div>
+                <div style="font-size:11px;color:var(--muted);">No cooling since yesterday afternoon</div>
+              </td>
+              <td style="font-size:12px;">AST-0445<br><span style="color:var(--muted);">Daikin HVAC Unit</span></td>
+              <td style="font-size:12px;color:var(--muted);">HQ · Floor 4<br>Board Room</td>
+              <td><div class="pri-dot"><div class="dot dot-red"></div><span style="color:var(--red);font-weight:600;">Critical</span></div></td>
+              <td>
+                <div style="font-size:12.5px;font-weight:500;">Cooling Solutions</div>
+                <div style="font-size:11px;color:var(--muted);">Technician: Rafiq</div>
+              </td>
+              <td style="font-size:12px;color:var(--muted);">25 Mar · 2pm</td>
+              <td>
+                <div style="font-size:12px;color:var(--red);font-weight:600;">25 Mar · 6pm ⚠</div>
+                <div style="font-size:10.5px;color:var(--red);">SLA breached 4 hrs</div>
+              </td>
+              <td><span class="tag tag-red">SLA Breached</span></td>
+              <td onclick="event.stopPropagation()">
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  <button class="act-btn ab-red" onclick="openJobDetail('MNT-0158','AC not working')">Escalate</button>
+                  <button class="act-btn ab-blue" onclick="openJobDetail('MNT-0158','AC not working')">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- CRITICAL IN PROGRESS -->
+            <tr onclick="openJobDetail('MNT-0160','Generator fuel leak')">
+              <td><span class="mnt-id">MNT-0160</span></td>
+              <td>
+                <div style="font-size:13px;font-weight:500;">Generator fuel leak detected</div>
+                <div style="font-size:11px;color:var(--muted);">Minor fuel leak on connection joint</div>
+              </td>
+              <td style="font-size:12px;">AST-0789<br><span style="color:var(--muted);">Generator 50 KVA</span></td>
+              <td style="font-size:12px;color:var(--muted);">HQ · Rooftop</td>
+              <td><div class="pri-dot"><div class="dot dot-red"></div><span style="color:var(--red);font-weight:600;">Critical</span></div></td>
+              <td>
+                <div style="font-size:12.5px;font-weight:500;">Bright Electrical</div>
+                <div style="font-size:11px;color:var(--muted);">Technician: Alam</div>
+              </td>
+              <td style="font-size:12px;color:var(--muted);">26 Mar · 9am</td>
+              <td>
+                <div style="font-size:12px;color:var(--amber);font-weight:500;">26 Mar · 1pm</div>
+                <div class="sla-wrap" style="margin-top:4px;"><div class="sla-bar-bg"><div class="sla-bar" style="width:65%;background:var(--amber);"></div></div><span style="font-size:10px;color:var(--amber);">65%</span></div>
+              </td>
+              <td><span class="tag tag-blue">In Progress</span></td>
+              <td onclick="event.stopPropagation()">
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  <button class="act-btn ab-green" onclick="alert('Marking MNT-0160 as resolved...')">Resolve</button>
+                  <button class="act-btn ab-blue" onclick="openJobDetail('MNT-0160','Generator fuel leak')">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- HIGH OPEN -->
+            <tr onclick="openJobDetail('MNT-0155','Lift malfunction — Floor 2')">
+              <td><span class="mnt-id">MNT-0155</span></td>
+              <td>
+                <div style="font-size:13px;font-weight:500;">Lift malfunction — Floor 2 button</div>
+                <div style="font-size:11px;color:var(--muted);">Button not responding intermittently</div>
+              </td>
+              <td style="font-size:12px;">AST-0211<br><span style="color:var(--muted);">Otis Elevator Unit</span></td>
+              <td style="font-size:12px;color:var(--muted);">HQ · Lobby</td>
+              <td><div class="pri-dot"><div class="dot dot-amber"></div><span style="color:var(--amber);font-weight:600;">High</span></div></td>
+              <td>
+                <div style="font-size:12.5px;color:var(--muted);">Unassigned</div>
+                <div style="font-size:11px;color:var(--red);">Needs vendor</div>
+              </td>
+              <td style="font-size:12px;color:var(--muted);">24 Mar · 11am</td>
+              <td>
+                <div style="font-size:12px;color:var(--text);">27 Mar · 11am</div>
+                <div class="sla-wrap" style="margin-top:4px;"><div class="sla-bar-bg"><div class="sla-bar" style="width:80%;background:#E09B1A;"></div></div><span style="font-size:10px;color:var(--amber);">80%</span></div>
+              </td>
+              <td><span class="tag tag-amber">Open — Unassigned</span></td>
+              <td onclick="event.stopPropagation()">
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  <button class="act-btn ab-amber" onclick="openAssignModal('MNT-0155')">Assign</button>
+                  <button class="act-btn ab-blue" onclick="openJobDetail('MNT-0155','Lift malfunction')">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- NORMAL ASSIGNED -->
+            <tr onclick="openJobDetail('MNT-0152','Office washroom tap leaking')">
+              <td><span class="mnt-id">MNT-0152</span></td>
+              <td>
+                <div style="font-size:13px;font-weight:500;">Office washroom tap leaking</div>
+                <div style="font-size:11px;color:var(--muted);">3rd floor gents — dripping continuously</div>
+              </td>
+              <td style="font-size:12px;color:var(--muted);">No asset linked<br>Plumbing</td>
+              <td style="font-size:12px;color:var(--muted);">HQ · Floor 3</td>
+              <td><div class="pri-dot"><div class="dot dot-blue"></div><span style="color:var(--blue);">Normal</span></div></td>
+              <td>
+                <div style="font-size:12.5px;font-weight:500;">TechFix BD</div>
+                <div style="font-size:11px;color:var(--muted);">Technician: Sumon</div>
+              </td>
+              <td style="font-size:12px;color:var(--muted);">23 Mar · 10am</td>
+              <td>
+                <div style="font-size:12px;color:var(--green);">28 Mar · 10am</div>
+                <div class="sla-wrap" style="margin-top:4px;"><div class="sla-bar-bg"><div class="sla-bar" style="width:40%;background:var(--green);"></div></div><span style="font-size:10px;color:var(--green);">40%</span></div>
+              </td>
+              <td><span class="tag tag-blue">Assigned</span></td>
+              <td onclick="event.stopPropagation()">
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  <button class="act-btn ab-green" onclick="alert('Marking MNT-0152 as resolved...')">Resolve</button>
+                  <button class="act-btn ab-blue" onclick="openJobDetail('MNT-0152','Tap leaking')">View</button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- COMPLETED -->
+            <tr onclick="openJobDetail('MNT-0148','CCTV camera offline Floor 2')" style="opacity:.75;">
+              <td><span class="mnt-id">MNT-0148</span></td>
+              <td>
+                <div style="font-size:13px;font-weight:500;">CCTV camera offline — Floor 2</div>
+                <div style="font-size:11px;color:var(--muted);">Camera Unit 4 showing offline</div>
+              </td>
+              <td style="font-size:12px;">AST-0388<br><span style="color:var(--muted);">Hikvision CCTV Unit</span></td>
+              <td style="font-size:12px;color:var(--muted);">HQ · Floor 2</td>
+              <td><div class="pri-dot"><div class="dot dot-blue"></div><span style="color:var(--blue);">Normal</span></div></td>
+              <td>
+                <div style="font-size:12.5px;font-weight:500;">TechFix BD</div>
+                <div style="font-size:11px;color:var(--muted);">Technician: Kamal</div>
+              </td>
+              <td style="font-size:12px;color:var(--muted);">20 Mar · 9am</td>
+              <td style="font-size:12px;color:var(--green);">Resolved within SLA<br>Completed 20 Mar · 2pm</td>
+              <td><span class="tag tag-green">Completed</span></td>
+              <td onclick="event.stopPropagation()">
+                <button class="act-btn ab-blue" onclick="openJobDetail('MNT-0148','CCTV offline')">View</button>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+        <div class="pagination">
+          <div class="pag-info">Showing 5 of 30 jobs</div>
+          <div class="pag-btns">
+            <button class="pag-btn" disabled>← Prev</button>
+            <button class="pag-btn active">1</button>
+            <button class="pag-btn">2</button>
+            <button class="pag-btn">3</button>
+            <button class="pag-btn">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PM PANE -->
+    <div class="tab-pane" id="pane-pm">
+
+      <!-- CALENDAR -->
+      <div class="pm-calendar">
+        <div class="pm-cal-hdr">
+          <h2>📅 PM Schedule — March 2025</h2>
+          <div class="cal-nav">
+            <button onclick="alert('Previous month')">←</button>
+            <span class="cal-month">March 2025</span>
+            <button onclick="alert('Next month')">→</button>
+          </div>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-day-hdr">Sun</div><div class="cal-day-hdr">Mon</div><div class="cal-day-hdr">Tue</div><div class="cal-day-hdr">Wed</div><div class="cal-day-hdr">Thu</div><div class="cal-day-hdr">Fri</div><div class="cal-day-hdr">Sat</div>
+          <div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day"><div class="cal-day-num">1</div></div>
+          <div class="cal-day"><div class="cal-day-num">2</div></div>
+          <div class="cal-day"><div class="cal-day-num">3</div><div class="cal-event ce-done">✓ Generator check</div></div>
+          <div class="cal-day"><div class="cal-day-num">4</div></div>
+          <div class="cal-day"><div class="cal-day-num">5</div></div>
+          <div class="cal-day"><div class="cal-day-num">6</div></div>
+          <div class="cal-day"><div class="cal-day-num">7</div></div>
+          <div class="cal-day"><div class="cal-day-num">8</div></div>
+          <div class="cal-day"><div class="cal-day-num">9</div></div>
+          <div class="cal-day"><div class="cal-day-num">10</div><div class="cal-event ce-done">✓ AC filters — HQ</div></div>
+          <div class="cal-day"><div class="cal-day-num">11</div></div>
+          <div class="cal-day"><div class="cal-day-num">12</div></div>
+          <div class="cal-day"><div class="cal-day-num">13</div></div>
+          <div class="cal-day"><div class="cal-day-num">14</div></div>
+          <div class="cal-day"><div class="cal-day-num">15</div><div class="cal-event ce-done">✓ Fire alarm test</div></div>
+          <div class="cal-day"><div class="cal-day-num">16</div></div>
+          <div class="cal-day"><div class="cal-day-num">17</div><div class="cal-event ce-done">✓ Lift maintenance</div></div>
+          <div class="cal-day"><div class="cal-day-num">18</div></div>
+          <div class="cal-day"><div class="cal-day-num">19</div></div>
+          <div class="cal-day"><div class="cal-day-num">20</div></div>
+          <div class="cal-day"><div class="cal-day-num">21</div></div>
+          <div class="cal-day"><div class="cal-day-num">22</div><div class="cal-event ce-done">✓ Water pump check</div></div>
+          <div class="cal-day"><div class="cal-day-num">23</div></div>
+          <div class="cal-day"><div class="cal-day-num">24</div></div>
+          <div class="cal-day today"><div class="cal-day-num">25</div><div class="cal-event ce-pm">HVAC full service</div></div>
+          <div class="cal-day"><div class="cal-day-num">26</div><div class="cal-event ce-pm">Electrical panel</div></div>
+          <div class="cal-day"><div class="cal-day-num">27</div><div class="cal-event ce-pm">AC Branch 1</div></div>
+          <div class="cal-day"><div class="cal-day-num">28</div></div>
+          <div class="cal-day"><div class="cal-day-num">29</div><div class="cal-event ce-pm">Plumbing check</div></div>
+          <div class="cal-day"><div class="cal-day-num">30</div></div>
+          <div class="cal-day"><div class="cal-day-num">31</div><div class="cal-event ce-pm">Monthly generator test</div></div>
+        </div>
+      </div>
+
+      <!-- PM SCHEDULE TABLE -->
+      <div class="table-wrap">
+        <div style="padding:12px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:14px;font-weight:600;">📋 PM Schedule — March 2025</span>
+          <button class="btn-act btn-outline" style="padding:7px 14px;font-size:12px;" onclick="openModal('addPMModal')">+ Add PM Task</button>
+        </div>
+        <table class="pm-table">
+          <thead>
+            <tr>
+              <th>PM Reference</th>
+              <th>Description</th>
+              <th>Asset</th>
+              <th>Frequency</th>
+              <th>Assigned Vendor</th>
+              <th>Scheduled Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr onclick="openPMDetail('PM-2025-031','HVAC Full Service')">
+              <td><span class="mnt-id">PM-2025-031</span></td>
+              <td><div style="font-weight:500;">HVAC full service — HQ</div><div style="font-size:11px;color:var(--muted);">Clean filters, check refrigerant, test all units</div></td>
+              <td style="font-size:12px;">All HVAC units<br><span style="color:var(--muted);">14 units · HQ</span></td>
+              <td><span class="tag tag-blue">Quarterly</span></td>
+              <td style="font-size:12.5px;">Cooling Solutions Ltd</td>
+              <td style="font-size:12px;color:var(--amber);font-weight:500;">25 March 2025 · Today</td>
+              <td><span class="tag tag-amber">Due Today</span></td>
+              <td onclick="event.stopPropagation()">
+                <div style="display:flex;gap:4px;">
+                  <button class="act-btn ab-green" onclick="alert('Marking PM-2025-031 as completed...')">Mark Done</button>
+                  <button class="act-btn ab-blue" onclick="openPMDetail('PM-2025-031','HVAC Full Service')">View</button>
+                </div>
+              </td>
+            </tr>
+            <tr onclick="openPMDetail('PM-2025-032','Electrical panel check')">
+              <td><span class="mnt-id">PM-2025-032</span></td>
+              <td><div style="font-weight:500;">Electrical panel inspection</div><div style="font-size:11px;color:var(--muted);">Check MCBs, earthing, wiring condition</div></td>
+              <td style="font-size:12px;">Electrical panels<br><span style="color:var(--muted);">HQ all floors</span></td>
+              <td><span class="tag tag-blue">Monthly</span></td>
+              <td style="font-size:12.5px;">Bright Electrical</td>
+              <td style="font-size:12px;color:var(--amber);font-weight:500;">26 March 2025</td>
+              <td><span class="tag tag-amber">Due Tomorrow</span></td>
+              <td onclick="event.stopPropagation()">
+                <div style="display:flex;gap:4px;">
+                  <button class="act-btn ab-blue" onclick="openPMDetail('PM-2025-032','Electrical panel')">View</button>
+                </div>
+              </td>
+            </tr>
+            <tr onclick="openPMDetail('PM-2025-033','AC service Branch 1')">
+              <td><span class="mnt-id">PM-2025-033</span></td>
+              <td><div style="font-weight:500;">AC service — Chittagong Branch</div><div style="font-size:11px;color:var(--muted);">Full service all AC units at Branch 1</div></td>
+              <td style="font-size:12px;">AC units Branch 1<br><span style="color:var(--muted);">6 units</span></td>
+              <td><span class="tag tag-blue">Quarterly</span></td>
+              <td style="font-size:12.5px;">Cooling Solutions Ltd</td>
+              <td style="font-size:12px;">27 March 2025</td>
+              <td><span class="tag tag-navy">Upcoming</span></td>
+              <td onclick="event.stopPropagation()">
+                <button class="act-btn ab-blue" onclick="openPMDetail('PM-2025-033','AC Branch 1')">View</button>
+              </td>
+            </tr>
+            <tr onclick="openPMDetail('PM-2025-022','Generator check')" style="opacity:.8;">
+              <td><span class="mnt-id">PM-2025-022</span></td>
+              <td><div style="font-weight:500;">Monthly generator test run</div><div style="font-size:11px;color:var(--muted);">Test under load, check oil levels, battery</div></td>
+              <td style="font-size:12px;">AST-0789<br><span style="color:var(--muted);">Generator 50 KVA</span></td>
+              <td><span class="tag tag-green">Monthly</span></td>
+              <td style="font-size:12.5px;">Bright Electrical</td>
+              <td style="font-size:12px;color:var(--green);">3 March 2025</td>
+              <td><span class="tag tag-green">Completed ✓</span></td>
+              <td onclick="event.stopPropagation()">
+                <button class="act-btn ab-gray" onclick="openPMDetail('PM-2025-022','Generator check')">View</button>
+              </td>
+            </tr>
+            <tr onclick="openPMDetail('PM-2025-023','AC filters HQ')" style="opacity:.8;">
+              <td><span class="mnt-id">PM-2025-023</span></td>
+              <td><div style="font-weight:500;">AC filter cleaning — HQ all floors</div><div style="font-size:11px;color:var(--muted);">Clean and replace filters where needed</div></td>
+              <td style="font-size:12px;">HVAC filters<br><span style="color:var(--muted);">All floors HQ</span></td>
+              <td><span class="tag tag-green">Monthly</span></td>
+              <td style="font-size:12.5px;">Cooling Solutions Ltd</td>
+              <td style="font-size:12px;color:var(--green);">10 March 2025</td>
+              <td><span class="tag tag-green">Completed ✓</span></td>
+              <td onclick="event.stopPropagation()">
+                <button class="act-btn ab-gray" onclick="openPMDetail('PM-2025-023','AC filters')">View</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <div class="pag-info">Showing 5 of 14 PM tasks</div>
+          <div class="pag-btns">
+            <button class="pag-btn" disabled>← Prev</button>
+            <button class="pag-btn active">1</button>
+            <button class="pag-btn">2</button>
+            <button class="pag-btn">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- JOB DETAIL MODAL -->
+<div class="modal-overlay" id="jobDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr">
+      <h3 id="jdTitle">MNT-0158 — AC not working Board Room</h3>
+      <button class="modal-close" onclick="closeModal('jobDetailModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="modal-tab active" onclick="switchMTab(this,'jd1')">Job Details</button>
+        <button class="modal-tab" onclick="switchMTab(this,'jd2')">Activity Log</button>
+        <button class="modal-tab" onclick="switchMTab(this,'jd3')">Technician Notes</button>
+      </div>
+      <div class="mtab-content active" id="jd1">
+        <div class="job-hero">
+          <div class="jh-left">
+            <h3>AC not working — Board Room</h3>
+            <p>MNT-0158 · Raised 25 Mar 2025 · 2:00pm · by Karim Rahman</p>
+          </div>
+          <div class="jh-stats">
+            <div class="jh-stat"><div class="jh-stat-label">Priority</div><div class="jh-stat-val" style="color:var(--red);">Critical</div></div>
+            <div class="jh-stat"><div class="jh-stat-label">SLA Status</div><div class="jh-stat-val" style="color:var(--red);">Breached +4hr</div></div>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <div class="dg-item"><div class="dg-label">Asset</div><div class="dg-val">Daikin HVAC Unit · AST-0445</div></div>
+          <div class="dg-item"><div class="dg-label">Location</div><div class="dg-val">HQ Floor 4 · Board Room</div></div>
+          <div class="dg-item"><div class="dg-label">Category</div><div class="dg-val">HVAC / Air Conditioning</div></div>
+          <div class="dg-item"><div class="dg-label">Assigned Vendor</div><div class="dg-val">Cooling Solutions Ltd</div></div>
+          <div class="dg-item"><div class="dg-label">Technician</div><div class="dg-val">Rafiq Uddin</div></div>
+          <div class="dg-item"><div class="dg-label">SLA Deadline</div><div class="dg-val" style="color:var(--red);">25 Mar 6:00pm ⚠</div></div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+          <div style="font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Problem Description</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.7;">The Board Room AC unit completely stopped working during the afternoon. No cooling at all. Board meeting scheduled tomorrow morning with senior management. This is urgent — please escalate immediately.</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-primary" style="background:var(--red);" onclick="closeModal('jobDetailModal');alert('Escalation sent to FM Manager and Vendor GM.\nAutomatic SLA penalty calculated.\nVendor notified of escalation.')">🚨 Escalate</button>
+          <button class="btn-secondary" onclick="openAssignModal('MNT-0158')">👤 Reassign</button>
+          <button class="btn-secondary" onclick="alert('Marking job as resolved...')">✅ Mark Resolved</button>
+        </div>
+      </div>
+      <div class="mtab-content" id="jd2">
+        <div class="timeline-item">
+          <div class="tl-dot" style="background:var(--red-bg);">🚨</div>
+          <div class="tl-body"><div class="tl-title" style="color:var(--red);">SLA breached — 4 hours overdue</div><div class="tl-sub">Automatic escalation triggered · Vendor GM notified</div><div class="tl-time">25 March 2025 · 10:00pm</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot" style="background:var(--blue-bg);">👤</div>
+          <div class="tl-body"><div class="tl-title">Assigned to Cooling Solutions Ltd — Rafiq Uddin</div><div class="tl-sub">Assigned by Karim Rahman · Vendor notified via SMS and email</div><div class="tl-time">25 March 2025 · 2:30pm</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot" style="background:var(--amber-bg);">📋</div>
+          <div class="tl-body"><div class="tl-title">Job raised — MNT-0158 created</div><div class="tl-sub">Raised by Karim Rahman · Priority set to Critical · SLA 4 hours</div><div class="tl-time">25 March 2025 · 2:00pm</div></div>
+        </div>
+      </div>
+      <div class="mtab-content" id="jd3">
+        <div style="background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--amber);">⚠ No technician notes submitted yet. Technician must submit notes before job can be closed.</div>
+        <div class="form-field"><label>Add Note</label><textarea placeholder="Enter technician findings or status update..."></textarea></div>
+        <button class="btn-primary" onclick="alert('Note saved and visible to FM Manager.')">Save Note</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('jobDetailModal')">Close</button>
+      <button class="btn-primary" onclick="alert('Marking job as resolved and closing...')">✅ Resolve and Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ASSIGN VENDOR MODAL -->
+<div class="modal-overlay" id="assignModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3 id="assignTitle">Assign Vendor — MNT-0155</h3><button class="modal-close" onclick="closeModal('assignModal')">×</button></div>
+    <div class="modal-body">
+      <div style="background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);">ℹ Vendor will be notified by SMS and email immediately on assignment.</div>
+      <div class="form-field"><label>Assign to Vendor</label>
+        <select><option>Cooling Solutions Ltd</option><option>Bright Electrical</option><option>TechFix BD</option><option>General Maintenance Co</option></select>
+      </div>
+      <div class="form-field"><label>Technician</label>
+        <select><option>Auto-assign best available</option><option>Rafiq Uddin</option><option>Alam Hossain</option><option>Sumon Mia</option></select>
+      </div>
+      <div class="form-field"><label>Expected Start Time</label><input type="datetime-local"></div>
+      <div class="form-field"><label>Instructions for Technician</label><textarea placeholder="Any specific instructions or access requirements..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('assignModal')">Cancel</button>
+      <button class="btn-primary" onclick="confirmAssign()">Assign and Notify Vendor</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW JOB MODAL -->
+<div class="modal-overlay" id="newJobModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr"><h3>🔧 Raise Maintenance Job</h3><button class="modal-close" onclick="closeModal('newJobModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-field"><label>Job Title</label><input type="text" placeholder="Describe the problem briefly e.g. AC not working — Board Room"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Category</label>
+          <select><option>HVAC / Air Conditioning</option><option>Electrical</option><option>Plumbing</option><option>Civil Works</option><option>IT Infrastructure</option><option>Security Systems</option><option>Lift and Escalator</option><option>Generator</option><option>Other</option></select>
+        </div>
+        <div class="form-field"><label>Priority</label>
+          <select><option>Critical — 4 hour SLA</option><option>High — 8 hour SLA</option><option>Normal — 24 hour SLA</option><option>Low — 72 hour SLA</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Property</label>
+          <select><option>HQ Building — Dhaka</option><option>Branch 1 — Chittagong</option><option>Branch 2 — Sylhet</option></select>
+        </div>
+        <div class="form-field"><label>Exact Location</label><input type="text" placeholder="e.g. Floor 3 · Meeting Room B"></div>
+      </div>
+      <div class="form-field"><label>Linked Asset (optional)</label>
+        <select><option value="">No asset linked</option><option>AST-0445 — Daikin HVAC Unit</option><option>AST-0789 — Generator 50KVA</option><option>AST-0211 — Otis Elevator</option><option>AST-0234 — Dell Laptop</option></select>
+      </div>
+      <div class="form-field"><label>Detailed Description</label><textarea placeholder="Describe the problem in detail. Include when it started, symptoms, and any relevant context..."></textarea></div>
+      <div class="form-field"><label>Photo Evidence (optional)</label><input type="file" accept="image/*" style="padding:8px;font-size:12px;"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Assign Vendor Now</label>
+          <select><option value="">Auto-assign based on category</option><option>Cooling Solutions Ltd</option><option>Bright Electrical</option><option>TechFix BD</option></select>
+        </div>
+        <div class="form-field"><label>Requested Completion</label><input type="datetime-local"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('newJobModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveNewJob()">Raise Job and Notify Vendor</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PM TASK MODAL -->
+<div class="modal-overlay" id="addPMModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>📅 Add PM Task</h3><button class="modal-close" onclick="closeModal('addPMModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-field"><label>PM Task Name</label><input type="text" placeholder="e.g. Monthly generator test run"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Category</label>
+          <select><option>HVAC</option><option>Electrical</option><option>Plumbing</option><option>Civil</option><option>Generator</option><option>Lift</option><option>Fire Systems</option></select>
+        </div>
+        <div class="form-field"><label>Frequency</label>
+          <select><option>Weekly</option><option>Monthly</option><option>Quarterly</option><option>Semi-annual</option><option>Annual</option></select>
+        </div>
+      </div>
+      <div class="form-field"><label>Linked Asset</label>
+        <select><option>AST-0789 — Generator 50KVA</option><option>AST-0445 — Daikin HVAC</option><option>AST-0211 — Otis Elevator</option><option>All HVAC Units</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Assigned Vendor</label>
+          <select><option>Cooling Solutions Ltd</option><option>Bright Electrical</option><option>TechFix BD</option></select>
+        </div>
+        <div class="form-field"><label>Next Due Date</label><input type="date"></div>
+      </div>
+      <div class="form-field"><label>Checklist Items</label><textarea placeholder="List items the technician must complete e.g.&#10;1. Check oil levels&#10;2. Test under load for 30 minutes&#10;3. Check battery terminals"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('addPMModal')">Cancel</button>
+      <button class="btn-primary" onclick="savePMTask()">Save PM Task</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleArea(el){el.classList.toggle('open');const s=el.nextElementSibling;if(s&&s.classList.contains('sb-sub-list'))s.classList.toggle('open');}
+function toggleDD(){document.getElementById('userDD').classList.toggle('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-menu').forEach(m=>m.classList.remove('open'));});
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+
+function switchMTab(btn,id){
+  const mb=btn.closest('.modal-body');
+  mb.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  mb.querySelectorAll('.mtab-content').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+function switchPageTab(name,idx){
+  document.querySelectorAll('.page-tab').forEach((t,i)=>{t.classList.toggle('active',i===idx);});
+  document.getElementById('pane-reactive').classList.toggle('active',name==='reactive');
+  document.getElementById('pane-pm').classList.toggle('active',name==='pm');
+}
+
+function openJobDetail(id,title){
+  document.getElementById('jdTitle').textContent=id+' — '+title;
+  openModal('jobDetailModal');
+}
+
+function openPMDetail(id,title){
+  alert('Opening PM detail for '+id+' — '+title+'\n\nChecklist, completion records and next schedule shown here.');
+}
+
+function openAssignModal(id){
+  document.getElementById('assignTitle').textContent='Assign Vendor — '+id;
+  closeModal('jobDetailModal');
+  openModal('assignModal');
+}
+
+function confirmAssign(){
+  closeModal('assignModal');
+  setTimeout(()=>alert('✅ Vendor assigned!\n\nVendor notified via SMS and email.\nTechnician dispatched.\nSLA clock running.\nJob status updated to Assigned.'),200);
+}
+
+function saveNewJob(){
+  closeModal('newJobModal');
+  setTimeout(()=>alert('✅ Maintenance job raised!\n\nMNT-0161 created.\nVendor notified immediately.\nSLA clock started.\nYou will be updated when technician arrives.'),200);
+}
+
+function savePMTask(){
+  closeModal('addPMModal');
+  setTimeout(()=>alert('✅ PM task added to schedule!\n\nTask will recur as set.\nVendor will be notified 48 hours before each due date.\nTask visible in PM calendar.'),200);
+}
+</script>
+</body>
+</html>

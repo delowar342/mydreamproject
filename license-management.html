@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — License Management</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --red:#D94F4F;--red-bg:#FDF0F0;--red-bd:#F5CECE;
+  --amber:#C47B1A;--amber-bg:#FDF5E6;--amber-bd:#F0D9A8;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;--blue-bd:#BDDBF7;
+  --green:#1E8A5A;--green-bg:#EAF7F1;--green-bd:#A8DFC5;
+  --purple:#5B45C7;--purple-bg:#F0EEFF;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(200,169,110,.8);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{width:2px;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+.sb-chevron{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s;flex-shrink:0;}
+.sb-area-toggle.open .sb-chevron{transform:rotate(90deg);}
+.sb-sub-list{overflow:hidden;max-height:0;transition:max-height .3s ease;}
+.sb-sub-list.open{max-height:500px;}
+.sb-sub{padding-left:58px;}
+.sb-sub-item{display:flex;align-items:center;gap:6px;padding:6px 18px 6px 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);transition:color .15s;text-decoration:none;}
+.sb-sub-item:hover{color:rgba(255,255,255,.85);}
+.sb-sub-item.active{color:var(--gold);}
+.sb-sub-item::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;width:220px;}
+.search-bar:focus-within{border-color:var(--navy);background:#fff;}
+.search-bar input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.search-bar input::placeholder{color:var(--light);}
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;}
+.top-btn:hover{border-color:var(--navy);}
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+.content{padding:24px 28px;flex:1;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+.page-hdr-right{display:flex;gap:8px;align-items:center;}
+.btn-act{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-act:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);border-color:var(--navy);}
+/* SUM CARDS */
+.sum-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px;}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;}
+.sum-card:hover{border-color:var(--navy);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.sc-navy::before{background:var(--navy);}
+.sc-red::before{background:var(--red);}
+.sc-amber::before{background:#E09B1A;}
+.sc-blue::before{background:var(--blue);}
+.sc-green::before{background:var(--green);}
+.sum-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.sum-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);line-height:1;}
+.sum-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 300px;gap:16px;}
+/* FILTER BAR */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.filter-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:8px 14px;flex:1;min-width:180px;}
+.filter-search:focus-within{border-color:var(--navy);}
+.filter-search input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.filter-search input::placeholder{color:var(--light);}
+.filter-select{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;}
+/* TAGS */
+.tag{display:inline-flex;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-navy{background:rgba(10,22,40,.08);color:var(--navy);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.tag-purple{background:var(--purple-bg);color:var(--purple);}
+/* TABLE */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.lic-table{width:100%;border-collapse:collapse;}
+.lic-table th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);background:var(--bg);white-space:nowrap;}
+.lic-table td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border2);vertical-align:middle;}
+.lic-table tr:last-child td{border-bottom:none;}
+.lic-table tr:hover td{background:rgba(242,240,235,.5);cursor:pointer;}
+.lic-id{font-size:11.5px;font-weight:700;color:var(--navy);font-family:monospace;}
+/* EXPIRY INDICATOR */
+.expiry-ind{display:flex;flex-direction:column;gap:3px;}
+.exp-bar-bg{height:5px;background:var(--bg);border-radius:3px;overflow:hidden;width:90px;}
+.exp-bar{height:100%;border-radius:3px;}
+/* ACT BUTTONS */
+.act-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+.ab-blue{background:var(--blue-bg);color:var(--blue);}
+.ab-blue:hover{background:var(--blue);color:#fff;}
+.ab-green{background:var(--green-bg);color:var(--green);}
+.ab-green:hover{background:var(--green);color:#fff;}
+.ab-amber{background:var(--amber-bg);color:var(--amber);}
+.ab-amber:hover{background:#E09B1A;color:#fff;}
+.ab-red{background:var(--red-bg);color:var(--red);}
+.ab-red:hover{background:var(--red);color:#fff;}
+.ab-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.ab-gray:hover{border-color:var(--navy);color:var(--navy);}
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2);}
+.panel-hdr h2{font-size:14px;font-weight:600;color:var(--text);}
+.panel-link{font-size:12px;color:var(--navy);font-weight:500;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;}
+.panel-link:hover{color:var(--gold);}
+/* ALERT ITEMS */
+.alert-item{display:flex;align-items:flex-start;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.alert-item:hover{background:var(--bg);}
+.alert-item:last-child{border-bottom:none;}
+.al-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.al-body{flex:1;}
+.al-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;}
+.al-sub{font-size:11.5px;color:var(--muted);}
+.al-meta{display:flex;gap:7px;margin-top:5px;flex-wrap:wrap;}
+/* CATEGORY ITEMS */
+.cat-item{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.cat-item:hover{background:var(--bg);}
+.cat-item:last-child{border-bottom:none;}
+.cat-left{display:flex;align-items:center;gap:10px;}
+.cat-icon{font-size:18px;}
+.cat-name{font-size:13px;font-weight:500;color:var(--text);}
+.cat-count{font-size:11.5px;color:var(--muted);margin-top:1px;}
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-top:1px solid var(--border2);background:var(--bg);}
+.pag-info{font-size:13px;color:var(--muted);}
+.pag-btns{display:flex;gap:4px;}
+.pag-btn{padding:6px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;background:var(--surface);color:var(--text);transition:all .15s;}
+.pag-btn:hover{border-color:var(--navy);}
+.pag-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-md{max-width:560px;}
+.modal-lg{max-width:720px;}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:600;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:22px;max-height:72vh;overflow-y:auto;}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);margin:-22px -22px 20px;}
+.modal-tab{padding:12px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
+.modal-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.form-field{margin-bottom:15px;}
+.form-field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--navy);background:#fff;}
+.form-field textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-sec{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border2);}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-secondary{padding:10px 20px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--navy);}
+/* INFO BOXES */
+.warn-box{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:13px;color:var(--amber);}
+.info-box{background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:8px;padding:11px 14px;margin-bottom:16px;font-size:13px;color:var(--blue);}
+/* LICENSE DETAIL */
+.lic-hero{background:var(--navy);border-radius:12px;padding:20px;margin-bottom:18px;}
+.lh-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;}
+.lh-name{font-size:17px;font-weight:600;color:#fff;margin-bottom:3px;}
+.lh-sub{font-size:12px;color:rgba(255,255,255,.5);}
+.lh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.lh-stat{background:rgba(255,255,255,.07);border-radius:8px;padding:10px 12px;}
+.lh-stat-lbl{font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.lh-stat-val{font-size:14px;font-weight:600;color:#fff;}
+.lh-stat-val.gold{color:var(--gold);}
+/* DOC ITEMS */
+.doc-item{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--bg);border-radius:8px;margin-bottom:8px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sum-grid{animation:fadeIn .4s .05s ease both;}
+.two-col{animation:fadeIn .4s .1s ease both;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh Limited</div></div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">DH</div>
+    <div><div class="sb-uname">Delowar Hossain</div><div class="sb-urole">Company Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">Main</span></div>
+    <a class="sb-item" href="admin-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">Dashboard</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">🔔</div><span class="sb-item-text">Priority Inbox</span></a>
+    <div class="sb-section"><span class="sb-section-label">Area 1 — Workplace Services</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🏢</div><span class="sb-item-text">Workplace Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Service Requests</a>
+      <a class="sb-sub-item" href="coming-soon.html">Meeting Room Booking</a>
+      <a class="sb-sub-item" href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Cafeteria and Pantry</a>
+      <a class="sb-sub-item" href="coming-soon.html">Parking Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Courier and Dispatch</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 2 — Real Estate and Assets</span></div>
+    <div class="sb-item sb-area-toggle open" onclick="toggleArea(this)"><div class="sb-item-icon">🏗</div><span class="sb-item-text">Real Estate and Assets</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list open"><div class="sb-sub">
+      <a class="sb-sub-item" href="asset-register.html">Asset Register</a>
+      <a class="sb-sub-item" href="maintenance.html">Maintenance</a>
+      <a class="sb-sub-item" href="lease-management.html">Lease Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Space Management</a>
+      <a class="sb-sub-item" href="utility-management.html">Utility Management</a>
+      <a class="sb-sub-item active" href="license-management.html">License Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Asset Transfer</a>
+      <a class="sb-sub-item" href="coming-soon.html">Asset Disposal</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 3 — Security and EHS</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🔒</div><span class="sb-item-text">Security and EHS</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Security Operations</a>
+      <a class="sb-sub-item" href="coming-soon.html">Access Control</a>
+      <a class="sb-sub-item" href="coming-soon.html">Gate Pass Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Visitor Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Incident Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">EHS Compliance</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 4 — Vendor and Finance</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">💼</div><span class="sb-item-text">Vendor and Finance</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="vendor-list.html">Vendor Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Contract Management</a>
+      <a class="sb-sub-item" href="vendor-performance.html">Vendor Performance</a>
+      <a class="sb-sub-item" href="grn-management.html">GRN Management</a>
+      <a class="sb-sub-item" href="billing.html">Billing and Payments</a>
+      <a class="sb-sub-item" href="penalty-management.html">Penalty Management</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 5 — Fleet Management</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🚗</div><span class="sb-item-text">Fleet Management</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Fleet Inventory</a>
+      <a class="sb-sub-item" href="coming-soon.html">Vehicle Requisition</a>
+      <a class="sb-sub-item" href="coming-soon.html">Fuel Tracking</a>
+      <a class="sb-sub-item" href="coming-soon.html">Fleet Maintenance</a>
+      <a class="sb-sub-item" href="coming-soon.html">GPS and Route Tracking</a>
+      <a class="sb-sub-item" href="coming-soon.html">Compliance Tracking</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 6 — Inventory and Supply</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">📦</div><span class="sb-item-text">Inventory and Supply</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Store Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Stock Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Requisition Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Goods Movement</a>
+      <a class="sb-sub-item" href="coming-soon.html">Consumption Tracking</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 7 — Admin Support</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">✈️</div><span class="sb-item-text">Admin Support Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Travel Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Employee Admin Services</a>
+      <a class="sb-sub-item" href="coming-soon.html">Stationery and Supplies</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Platform</span></div>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📊</div><span class="sb-item-text">Reports and Analytics</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📅</div><span class="sb-item-text">Activity Calendar</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📋</div><span class="sb-item-text">Policy and Knowledge Hub</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">👥</div><span class="sb-item-text">User Management</span></a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div>
+    <div class="sb-bottom-item" onclick="alert('Help and support coming soon!')"><span style="font-size:15px;">❓</span><span>Help and Support</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <span style="color:var(--muted)">Area 2</span><span style="color:var(--light)">›</span>
+      <span style="color:var(--muted)">Real Estate and Assets</span><span style="color:var(--light)">›</span>
+      <span>License Management</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar"><span style="color:var(--light);font-size:14px;">🔍</span><input type="text" placeholder="Search licenses..."></div>
+      <div class="top-btn">🔔</div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;color:var(--text);">
+          <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);">DH</div>
+          <span>Delowar</span><span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>License Management</h1>
+        <p>Area 2 · All regulatory licenses, permits and compliance certificates · 2025</p>
+      </div>
+      <div class="page-hdr-right">
+        <button class="btn-act btn-outline" onclick="alert('Exporting license register...')">⬇ Export</button>
+        <button class="btn-act" onclick="openModal('addLicModal')">+ Add License</button>
+      </div>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="sum-grid">
+      <div class="sum-card sc-navy">
+        <div class="sum-label">Total Licenses</div>
+        <div class="sum-num">24</div>
+        <div class="sum-sub">Across all categories</div>
+      </div>
+      <div class="sum-card sc-red">
+        <div class="sum-label">Expired</div>
+        <div class="sum-num">1</div>
+        <div class="sum-sub">Immediate action required</div>
+      </div>
+      <div class="sum-card sc-amber">
+        <div class="sum-label">Expiring in 60 Days</div>
+        <div class="sum-num">3</div>
+        <div class="sum-sub">Renewal in progress</div>
+      </div>
+      <div class="sum-card sc-blue">
+        <div class="sum-label">Expiring in 90 Days</div>
+        <div class="sum-num">5</div>
+        <div class="sum-sub">Start renewal soon</div>
+      </div>
+      <div class="sum-card sc-green">
+        <div class="sum-label">Valid and Current</div>
+        <div class="sum-num">15</div>
+        <div class="sum-sub">No action needed</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- LEFT: LICENSE TABLE -->
+      <div>
+        <!-- CRITICAL ALERT -->
+        <div style="background:var(--red-bg);border:1.5px solid var(--red-bd);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:20px;">🚨</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;color:var(--red);">CRITICAL — Fire Safety Certificate EXPIRED</div>
+            <div style="font-size:12px;color:var(--red);margin-top:2px;">LIC-014 · HQ Building · Expired 20 March 2025 · Regulatory risk — renew immediately</div>
+          </div>
+          <button class="act-btn ab-red" onclick="openModal('renewLicModal')">Renew Now</button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-search">
+            <span style="color:var(--light);font-size:14px;">🔍</span>
+            <input type="text" placeholder="Search by license name, authority...">
+          </div>
+          <select class="filter-select">
+            <option>All Categories</option>
+            <option>Fire Safety</option>
+            <option>Environmental</option>
+            <option>Building</option>
+            <option>Trade License</option>
+            <option>Electrical</option>
+          </select>
+          <select class="filter-select">
+            <option>All Status</option>
+            <option>Valid</option>
+            <option>Expiring Soon</option>
+            <option>Expired</option>
+            <option>Renewal in Progress</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table class="lic-table">
+            <thead>
+              <tr>
+                <th>License ID</th>
+                <th>License Name</th>
+                <th>Category</th>
+                <th>Issuing Authority</th>
+                <th>Property</th>
+                <th>Issue Date</th>
+                <th>Expiry</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- EXPIRED -->
+              <tr onclick="openLicDetail('LIC-014','Fire Safety Certificate')" style="background:rgba(253,240,240,.4);">
+                <td><span class="lic-id">LIC-014</span></td>
+                <td>
+                  <div style="font-size:13px;font-weight:600;color:var(--red);">Fire Safety Certificate</div>
+                  <div style="font-size:11px;color:var(--red);">⚠ EXPIRED</div>
+                </td>
+                <td><span class="tag tag-red">Fire Safety</span></td>
+                <td style="font-size:12px;">FSCD Bangladesh<br><span style="color:var(--muted);">Fire Service Dept</span></td>
+                <td style="font-size:12px;color:var(--muted);">HQ Building</td>
+                <td style="font-size:12px;color:var(--muted);">20 Mar 2024</td>
+                <td>
+                  <div class="expiry-ind">
+                    <div class="exp-bar-bg"><div class="exp-bar" style="width:100%;background:var(--red);"></div></div>
+                    <span style="font-size:10.5px;color:var(--red);font-weight:700;">Expired 20 Mar 2025</span>
+                  </div>
+                </td>
+                <td><span class="tag tag-red">Expired</span></td>
+                <td onclick="event.stopPropagation()">
+                  <div style="display:flex;gap:4px;">
+                    <button class="act-btn ab-red" onclick="openModal('renewLicModal')">Renew Now</button>
+                    <button class="act-btn ab-blue" onclick="openLicDetail('LIC-014','Fire Safety Certificate')">View</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- EXPIRING SOON -->
+              <tr onclick="openLicDetail('LIC-008','Lift Operation Permit')" style="background:rgba(253,245,230,.3);">
+                <td><span class="lic-id">LIC-008</span></td>
+                <td>
+                  <div style="font-size:13px;font-weight:500;">Lift Operation Permit</div>
+                  <div style="font-size:11px;color:var(--amber);">Expiring in 28 days</div>
+                </td>
+                <td><span class="tag tag-amber">Electrical</span></td>
+                <td style="font-size:12px;">DESCO<br><span style="color:var(--muted);">Electrical Authority</span></td>
+                <td style="font-size:12px;color:var(--muted);">HQ Building</td>
+                <td style="font-size:12px;color:var(--muted);">22 Apr 2024</td>
+                <td>
+                  <div class="expiry-ind">
+                    <div class="exp-bar-bg"><div class="exp-bar" style="width:93%;background:var(--amber);"></div></div>
+                    <span style="font-size:10.5px;color:var(--amber);font-weight:600;">22 Apr 2025 · 28 days</span>
+                  </div>
+                </td>
+                <td><span class="tag tag-amber">Expiring Soon</span></td>
+                <td onclick="event.stopPropagation()">
+                  <div style="display:flex;gap:4px;">
+                    <button class="act-btn ab-amber" onclick="openModal('renewLicModal')">Renew</button>
+                    <button class="act-btn ab-blue" onclick="openLicDetail('LIC-008','Lift Operation Permit')">View</button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr onclick="openLicDetail('LIC-011','Generator Operating License')" style="background:rgba(253,245,230,.2);">
+                <td><span class="lic-id">LIC-011</span></td>
+                <td>
+                  <div style="font-size:13px;font-weight:500;">Generator Operating License</div>
+                  <div style="font-size:11px;color:var(--amber);">Expiring in 45 days</div>
+                </td>
+                <td><span class="tag tag-amber">Electrical</span></td>
+                <td style="font-size:12px;">BERC<br><span style="color:var(--muted);">Energy Regulator</span></td>
+                <td style="font-size:12px;color:var(--muted);">HQ Building</td>
+                <td style="font-size:12px;color:var(--muted);">9 May 2024</td>
+                <td>
+                  <div class="expiry-ind">
+                    <div class="exp-bar-bg"><div class="exp-bar" style="width:88%;background:var(--amber);"></div></div>
+                    <span style="font-size:10.5px;color:var(--amber);font-weight:600;">9 May 2025 · 45 days</span>
+                  </div>
+                </td>
+                <td><span class="tag tag-amber">Expiring Soon</span></td>
+                <td onclick="event.stopPropagation()">
+                  <div style="display:flex;gap:4px;">
+                    <button class="act-btn ab-amber" onclick="openModal('renewLicModal')">Renew</button>
+                    <button class="act-btn ab-blue" onclick="openLicDetail('LIC-011','Generator Operating License')">View</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- RENEWAL IN PROGRESS -->
+              <tr onclick="openLicDetail('LIC-003','Trade License — HQ')">
+                <td><span class="lic-id">LIC-003</span></td>
+                <td>
+                  <div style="font-size:13px;font-weight:500;">Trade License — HQ</div>
+                  <div style="font-size:11px;color:var(--blue);">Renewal submitted</div>
+                </td>
+                <td><span class="tag tag-navy">Trade License</span></td>
+                <td style="font-size:12px;">DSCC<br><span style="color:var(--muted);">City Corporation</span></td>
+                <td style="font-size:12px;color:var(--muted);">HQ Building</td>
+                <td style="font-size:12px;color:var(--muted);">1 Jan 2025</td>
+                <td>
+                  <div class="expiry-ind">
+                    <div class="exp-bar-bg"><div class="exp-bar" style="width:75%;background:var(--blue);"></div></div>
+                    <span style="font-size:10.5px;color:var(--blue);">31 Dec 2025 · 9 months</span>
+                  </div>
+                </td>
+                <td><span class="tag tag-blue">Renewal in Progress</span></td>
+                <td onclick="event.stopPropagation()">
+                  <div style="display:flex;gap:4px;">
+                    <button class="act-btn ab-blue" onclick="openLicDetail('LIC-003','Trade License')">Track</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- VALID -->
+              <tr onclick="openLicDetail('LIC-001','Building Occupancy Certificate')" style="opacity:.8;">
+                <td><span class="lic-id">LIC-001</span></td>
+                <td>
+                  <div style="font-size:13px;font-weight:500;">Building Occupancy Certificate</div>
+                  <div style="font-size:11px;color:var(--muted);">Permanent — no expiry</div>
+                </td>
+                <td><span class="tag tag-blue">Building</span></td>
+                <td style="font-size:12px;">RAJUK<br><span style="color:var(--muted);">Urban Authority</span></td>
+                <td style="font-size:12px;color:var(--muted);">HQ Building</td>
+                <td style="font-size:12px;color:var(--muted);">15 Jun 2018</td>
+                <td>
+                  <div class="expiry-ind">
+                    <span style="font-size:10.5px;color:var(--green);">Permanent — No expiry</span>
+                  </div>
+                </td>
+                <td><span class="tag tag-green">Valid</span></td>
+                <td onclick="event.stopPropagation()">
+                  <button class="act-btn ab-blue" onclick="openLicDetail('LIC-001','Building Occupancy Certificate')">View</button>
+                </td>
+              </tr>
+
+              <tr onclick="openLicDetail('LIC-006','Environmental Clearance')" style="opacity:.8;">
+                <td><span class="lic-id">LIC-006</span></td>
+                <td>
+                  <div style="font-size:13px;font-weight:500;">Environmental Clearance Certificate</div>
+                  <div style="font-size:11px;color:var(--muted);">Valid for 3 years</div>
+                </td>
+                <td><span class="tag tag-green">Environmental</span></td>
+                <td style="font-size:12px;">DoE Bangladesh<br><span style="color:var(--muted);">Environment Dept</span></td>
+                <td style="font-size:12px;color:var(--muted);">All Properties</td>
+                <td style="font-size:12px;color:var(--muted);">10 Feb 2024</td>
+                <td>
+                  <div class="expiry-ind">
+                    <div class="exp-bar-bg"><div class="exp-bar" style="width:28%;background:var(--green);"></div></div>
+                    <span style="font-size:10.5px;color:var(--green);">9 Feb 2027 · 23 months</span>
+                  </div>
+                </td>
+                <td><span class="tag tag-green">Valid</span></td>
+                <td onclick="event.stopPropagation()">
+                  <button class="act-btn ab-blue" onclick="openLicDetail('LIC-006','Environmental Clearance')">View</button>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+          <div class="pagination">
+            <div class="pag-info">Showing 6 of 24 licenses</div>
+            <div class="pag-btns">
+              <button class="pag-btn" disabled>← Prev</button>
+              <button class="pag-btn active">1</button>
+              <button class="pag-btn">2</button>
+              <button class="pag-btn">3</button>
+              <button class="pag-btn">Next →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div>
+        <!-- EXPIRY ALERTS -->
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2>🔔 Upcoming Renewals</h2>
+            <span class="tag tag-red">4 urgent</span>
+          </div>
+          <div class="alert-item" onclick="openModal('renewLicModal')">
+            <div class="al-icon" style="background:var(--red-bg);">🚨</div>
+            <div class="al-body">
+              <div class="al-title" style="color:var(--red);">Fire Safety Certificate — EXPIRED</div>
+              <div class="al-sub">LIC-014 · HQ Building</div>
+              <div class="al-meta"><span class="tag tag-red">Expired</span></div>
+            </div>
+          </div>
+          <div class="alert-item" onclick="openModal('renewLicModal')">
+            <div class="al-icon" style="background:var(--amber-bg);">⚠️</div>
+            <div class="al-body">
+              <div class="al-title">Lift Operation Permit</div>
+              <div class="al-sub">LIC-008 · HQ Building · 28 days</div>
+              <div class="al-meta"><span class="tag tag-amber">28 days</span></div>
+            </div>
+          </div>
+          <div class="alert-item" onclick="openModal('renewLicModal')">
+            <div class="al-icon" style="background:var(--amber-bg);">⚠️</div>
+            <div class="al-body">
+              <div class="al-title">Generator Operating License</div>
+              <div class="al-sub">LIC-011 · HQ Building · 45 days</div>
+              <div class="al-meta"><span class="tag tag-amber">45 days</span></div>
+            </div>
+          </div>
+          <div class="alert-item" onclick="openModal('renewLicModal')">
+            <div class="al-icon" style="background:var(--blue-bg);">🔵</div>
+            <div class="al-body">
+              <div class="al-title">Boiler Safety Certificate</div>
+              <div class="al-sub">LIC-019 · Branch 1 · 78 days</div>
+              <div class="al-meta"><span class="tag tag-blue">78 days</span></div>
+            </div>
+          </div>
+          <div style="padding:10px 18px;background:var(--bg);border-top:1px solid var(--border2);">
+            <div style="font-size:12px;color:var(--muted);">Alerts sent 90, 60, 30 and 7 days before expiry</div>
+          </div>
+        </div>
+
+        <!-- BY CATEGORY -->
+        <div class="panel">
+          <div class="panel-hdr"><h2>📂 By Category</h2></div>
+          <div class="cat-item">
+            <div class="cat-left">
+              <span class="cat-icon">🔥</span>
+              <div><div class="cat-name">Fire Safety</div><div class="cat-count">3 licenses · 1 expired</div></div>
+            </div>
+            <span class="tag tag-red">1 expired</span>
+          </div>
+          <div class="cat-item">
+            <div class="cat-left">
+              <span class="cat-icon">⚡</span>
+              <div><div class="cat-name">Electrical</div><div class="cat-count">4 licenses · 2 expiring</div></div>
+            </div>
+            <span class="tag tag-amber">2 expiring</span>
+          </div>
+          <div class="cat-item">
+            <div class="cat-left">
+              <span class="cat-icon">🏢</span>
+              <div><div class="cat-name">Building Permits</div><div class="cat-count">5 licenses · All valid</div></div>
+            </div>
+            <span class="tag tag-green">All valid</span>
+          </div>
+          <div class="cat-item">
+            <div class="cat-left">
+              <span class="cat-icon">🌿</span>
+              <div><div class="cat-name">Environmental</div><div class="cat-count">3 licenses · All valid</div></div>
+            </div>
+            <span class="tag tag-green">All valid</span>
+          </div>
+          <div class="cat-item">
+            <div class="cat-left">
+              <span class="cat-icon">🏪</span>
+              <div><div class="cat-name">Trade Licenses</div><div class="cat-count">4 licenses · 1 in progress</div></div>
+            </div>
+            <span class="tag tag-blue">1 in progress</span>
+          </div>
+          <div class="cat-item">
+            <div class="cat-left">
+              <span class="cat-icon">📋</span>
+              <div><div class="cat-name">Other Compliance</div><div class="cat-count">5 licenses · All valid</div></div>
+            </div>
+            <span class="tag tag-green">All valid</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- LICENSE DETAIL MODAL -->
+<div class="modal-overlay" id="licDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr">
+      <h3 id="ldTitle">LIC-014 — Fire Safety Certificate</h3>
+      <button class="modal-close" onclick="closeModal('licDetailModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="modal-tab active" onclick="switchTab(this,'lt1')">License Details</button>
+        <button class="modal-tab" onclick="switchTab(this,'lt2')">Renewal History</button>
+        <button class="modal-tab" onclick="switchTab(this,'lt3')">Documents</button>
+      </div>
+
+      <div class="tab-content active" id="lt1">
+        <div class="lic-hero">
+          <div class="lh-top">
+            <div>
+              <div class="lh-name">Fire Safety Certificate</div>
+              <div class="lh-sub">LIC-014 · FSCD Bangladesh · HQ Building</div>
+            </div>
+            <span class="tag tag-red" style="font-size:12px;padding:4px 12px;flex-shrink:0;">Expired</span>
+          </div>
+          <div class="lh-stats">
+            <div class="lh-stat"><div class="lh-stat-lbl">Issue Date</div><div class="lh-stat-val">20 March 2024</div></div>
+            <div class="lh-stat"><div class="lh-stat-lbl">Expiry Date</div><div class="lh-stat-val" style="color:var(--red);">20 March 2025</div></div>
+            <div class="lh-stat"><div class="lh-stat-lbl">Status</div><div class="lh-stat-val" style="color:var(--red);">EXPIRED ⚠</div></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">License Number</div><div style="font-size:13px;font-weight:500;">FSCD-HQ-2024-0182</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Issuing Authority</div><div style="font-size:13px;font-weight:500;">FSCD Bangladesh</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Validity Period</div><div style="font-size:13px;font-weight:500;">1 year</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Property</div><div style="font-size:13px;font-weight:500;">HQ Building — Dhaka</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Category</div><div style="font-size:13px;font-weight:500;">Fire Safety</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Assigned To</div><div style="font-size:13px;font-weight:500;">Karim Rahman</div></div>
+        </div>
+        <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;padding:12px 14px;">
+          <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:4px;">⚠ This license has expired</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.6;">Operating without a valid Fire Safety Certificate is a regulatory violation. Renew immediately by contacting FSCD Bangladesh and scheduling an inspection. Annual fee: BDT 45,000.</div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="lt2">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;padding:12px 14px;">
+            <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:4px;">2025 Renewal — EXPIRED</div>
+            <div style="font-size:12.5px;color:var(--text);">Expired 20 March 2025 · No renewal submitted · Action required immediately</div>
+          </div>
+          <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:8px;padding:12px 14px;opacity:.8;">
+            <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px;">2024 Renewal — Completed ✓</div>
+            <div style="font-size:12.5px;color:var(--text);">Issued 20 March 2024 · BDT 45,000 paid · FSCD inspection passed · Certificate No: FSCD-HQ-2024-0182</div>
+          </div>
+          <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:8px;padding:12px 14px;opacity:.6;">
+            <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px;">2023 Renewal — Completed ✓</div>
+            <div style="font-size:12.5px;color:var(--text);">Issued 18 March 2023 · BDT 42,000 paid · Certificate No: FSCD-HQ-2023-0156</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="lt3">
+        <div class="doc-item"><span style="font-size:20px;">📄</span><div style="flex:1;"><div style="font-size:13px;font-weight:500;">Fire Safety Certificate 2024</div><div style="font-size:11px;color:var(--muted);">FSCD-HQ-2024-0182 · Issued 20 March 2024 · EXPIRED</div></div><button class="act-btn ab-blue" onclick="alert('Downloading certificate...')">Download</button></div>
+        <div class="doc-item"><span style="font-size:20px;">📋</span><div style="flex:1;"><div style="font-size:13px;font-weight:500;">Inspection Report 2024</div><div style="font-size:11px;color:var(--muted);">FSCD Inspection passed · 15 March 2024</div></div><button class="act-btn ab-blue" onclick="alert('Downloading report...')">Download</button></div>
+        <div class="doc-item"><span style="font-size:20px;">💳</span><div style="flex:1;"><div style="font-size:13px;font-weight:500;">Payment Receipt 2024</div><div style="font-size:11px;color:var(--muted);">BDT 45,000 · 18 March 2024</div></div><button class="act-btn ab-blue" onclick="alert('Downloading receipt...')">Download</button></div>
+        <div style="margin-top:14px;">
+          <button class="btn-secondary" style="font-size:13px;" onclick="alert('Uploading new document...')">+ Upload New Document</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="alert('Downloading license summary...')">⬇ Download PDF</button>
+      <button class="btn-secondary" onclick="closeModal('licDetailModal')">Close</button>
+      <button class="btn-primary" style="background:var(--red);" onclick="closeModal('licDetailModal');openModal('renewLicModal')">🚨 Renew Now →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENEW LICENSE MODAL -->
+<div class="modal-overlay" id="renewLicModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>🔄 Start License Renewal</h3><button class="modal-close" onclick="closeModal('renewLicModal')">×</button></div>
+    <div class="modal-body">
+      <div class="warn-box">⚠ Start the renewal process as early as possible. Some regulatory licenses take 4–8 weeks to be issued after application.</div>
+      <div class="form-field"><label>License to Renew</label>
+        <select><option>LIC-014 — Fire Safety Certificate (EXPIRED)</option><option>LIC-008 — Lift Operation Permit</option><option>LIC-011 — Generator Operating License</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Application Submitted Date</label><input type="date"></div>
+        <div class="form-field"><label>Expected Issue Date</label><input type="date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Renewal Fee (BDT)</label><input type="number" placeholder="45000"></div>
+        <div class="form-field"><label>Assigned To</label>
+          <select><option>Karim Rahman — FM Manager</option><option>Delowar Hossain — Admin</option><option>Compliance Officer</option></select>
+        </div>
+      </div>
+      <div class="form-field"><label>Application Reference Number</label><input type="text" placeholder="Reference number from authority"></div>
+      <div class="form-field"><label>Notes</label><textarea placeholder="Any special conditions, contacts or requirements..."></textarea></div>
+      <div class="form-field"><label>Upload Application Copy</label><input type="file" style="padding:8px;font-size:12px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('renewLicModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveRenewal()">Start Renewal Process</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD LICENSE MODAL -->
+<div class="modal-overlay" id="addLicModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr"><h3>📋 Add New License</h3><button class="modal-close" onclick="closeModal('addLicModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-sec">License Information</div>
+      <div class="form-row">
+        <div class="form-field"><label>License Name</label><input type="text" placeholder="e.g. Fire Safety Certificate"></div>
+        <div class="form-field"><label>Category</label>
+          <select><option>Fire Safety</option><option>Electrical</option><option>Building Permit</option><option>Environmental</option><option>Trade License</option><option>Health and Safety</option><option>Food Safety</option><option>Other</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>License Number</label><input type="text" placeholder="Official license number"></div>
+        <div class="form-field"><label>Issuing Authority</label><input type="text" placeholder="e.g. FSCD Bangladesh"></div>
+      </div>
+      <div class="form-field"><label>Property / Scope</label>
+        <select><option>HQ Building — Dhaka</option><option>Branch 1 — Chittagong</option><option>Branch 2 — Sylhet</option><option>Warehouse — Tongi</option><option>All Properties</option></select>
+      </div>
+      <div class="form-sec">Validity Details</div>
+      <div class="form-row">
+        <div class="form-field"><label>Issue Date</label><input type="date"></div>
+        <div class="form-field"><label>Expiry Date</label><input type="date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Validity Period</label>
+          <select><option>1 year</option><option>2 years</option><option>3 years</option><option>5 years</option><option>Permanent</option></select>
+        </div>
+        <div class="form-field"><label>Renewal Alert (days before)</label>
+          <select><option>90 days</option><option>60 days</option><option>30 days</option><option>Custom</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>License Fee (BDT)</label><input type="number" placeholder="0"></div>
+        <div class="form-field"><label>Assigned To</label>
+          <select><option>Karim Rahman — FM Manager</option><option>Delowar Hossain — Admin</option></select>
+        </div>
+      </div>
+      <div class="form-field"><label>Upload License Certificate</label><input type="file" style="padding:8px;font-size:12px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('addLicModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveLicense()">Save License</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleArea(el){el.classList.toggle('open');const s=el.nextElementSibling;if(s&&s.classList.contains('sb-sub-list'))s.classList.toggle('open');}
+function toggleDD(){document.getElementById('userDD').classList.toggle('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-menu').forEach(m=>m.classList.remove('open'));});
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+function switchTab(btn,id){
+  const mb=btn.closest('.modal-body');
+  mb.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  mb.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+function openLicDetail(id,name){
+  document.getElementById('ldTitle').textContent=id+' — '+name;
+  openModal('licDetailModal');
+}
+function saveRenewal(){
+  closeModal('renewLicModal');
+  setTimeout(()=>alert('✅ Renewal process started!\n\nAssigned to FM Manager.\nReminders set.\nTrack progress in License Detail.'),200);
+}
+function saveLicense(){
+  closeModal('addLicModal');
+  setTimeout(()=>alert('✅ License added!\n\nLIC-025 created.\nExpiry alert set.\nTeam notified.'),200);
+}
+</script>
+</body>
+</html>

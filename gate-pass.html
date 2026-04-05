@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Gate Pass Management</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;--bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;--text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;--red:#D94F4F;--red-bg:#FDF0F0;--red-bd:#F5CECE;--amber:#C47B1A;--amber-bg:#FDF5E6;--amber-bd:#F0D9A8;--blue:#1A5FAB;--blue-bg:#EBF3FD;--blue-bd:#BDDBF7;--green:#1E8A5A;--green-bg:#EAF7F1;--green-bd:#A8DFC5;--purple:#5B45C7;--purple-bg:#F0EEFF;--sidebar-w:248px;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;}
+.sb-urole{font-size:10.5px;color:rgba(200,169,110,.8);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;overflow-y:auto;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-chevron{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s;}
+.sb-area-toggle.open .sb-chevron{transform:rotate(90deg);}
+.sb-sub-list{overflow:hidden;max-height:0;transition:max-height .3s ease;}
+.sb-sub-list.open{max-height:500px;}
+.sb-sub{padding-left:58px;}
+.sb-sub-item{display:flex;align-items:center;gap:6px;padding:6px 18px 6px 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);transition:color .15s;text-decoration:none;}
+.sb-sub-item:hover{color:rgba(255,255,255,.85);}
+.sb-sub-item.active{color:var(--gold);}
+.sb-sub-item::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;width:220px;}
+.search-bar input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.search-bar input::placeholder{color:var(--light);}
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;}
+.top-btn:hover{border-color:var(--navy);}
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100%+6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+.content{padding:24px 28px;flex:1;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+.page-hdr-right{display:flex;gap:8px;}
+.btn-act{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-act:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);border-color:var(--navy);}
+.sum-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px;}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;position:relative;overflow:hidden;transition:all .18s;cursor:pointer;}
+.sum-card:hover{border-color:var(--navy);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.sc-navy::before{background:var(--navy);}
+.sc-green::before{background:var(--green);}
+.sc-amber::before{background:#E09B1A;}
+.sc-red::before{background:var(--red);}
+.sc-blue::before{background:var(--blue);}
+.sum-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.sum-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);line-height:1;}
+.sum-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.two-col{display:grid;grid-template-columns:1fr 300px;gap:16px;}
+.tag{display:inline-flex;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-navy{background:rgba(10,22,40,.08);color:var(--navy);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.gp-table{width:100%;border-collapse:collapse;}
+.gp-table th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);background:var(--bg);}
+.gp-table td{padding:11px 16px;font-size:13px;border-bottom:1px solid var(--border2);vertical-align:middle;}
+.gp-table tr:last-child td{border-bottom:none;}
+.gp-table tr:hover td{background:rgba(242,240,235,.5);cursor:pointer;}
+.gp-id{font-size:11.5px;font-weight:700;color:var(--navy);font-family:monospace;}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2);}
+.panel-hdr h2{font-size:14px;font-weight:600;}
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:8px 14px;flex:1;}
+.filter-search input{border:none;background:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;flex:1;}
+.filter-search input::placeholder{color:var(--light);}
+.filter-select{padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;}
+.act-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+.ab-blue{background:var(--blue-bg);color:var(--blue);}
+.ab-blue:hover{background:var(--blue);color:#fff;}
+.ab-green{background:var(--green-bg);color:var(--green);}
+.ab-green:hover{background:var(--green);color:#fff;}
+.ab-amber{background:var(--amber-bg);color:var(--amber);}
+.ab-red{background:var(--red-bg);color:var(--red);}
+.ab-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+.ab-gray:hover{border-color:var(--navy);color:var(--navy);}
+/* GATE PASS CARD */
+.pass-preview{background:var(--navy);border-radius:12px;padding:20px;margin-bottom:16px;}
+.pp-header{font-family:'DM Serif Display',serif;font-size:14px;color:var(--gold);margin-bottom:12px;text-align:center;}
+.pp-type{display:inline-block;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.pp-inward{background:rgba(30,138,90,.3);color:#7EEABC;}
+.pp-outward{background:rgba(217,79,79,.3);color:#F4A4A4;}
+.pp-name{font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;}
+.pp-company{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:10px;}
+.pp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pp-item{background:rgba(255,255,255,.07);border-radius:7px;padding:8px 10px;}
+.pp-label{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:3px;}
+.pp-val{font-size:12px;font-weight:600;color:#fff;}
+.pp-qr{text-align:center;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1);}
+.qr-box{width:64px;height:64px;background:rgba(255,255,255,.9);border-radius:8px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:28px;}
+/* RECENT PASSES */
+.pass-item{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.pass-item:hover{background:var(--bg);}
+.pass-item:last-child{border-bottom:none;}
+.pi-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.pi-body{flex:1;}
+.pi-title{font-size:13px;font-weight:500;}
+.pi-sub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-md{max-width:540px;}
+.modal-lg{max-width:700px;}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:600;}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);}
+.modal-body{padding:22px;max-height:72vh;overflow-y:auto;}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);margin:-22px -22px 20px;}
+.modal-tab{padding:12px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
+.modal-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.mtab{display:none;}
+.mtab.active{display:block;}
+.form-field{margin-bottom:15px;}
+.form-field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--navy);background:#fff;}
+.form-field textarea{resize:vertical;min-height:72px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-secondary{padding:10px 20px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--navy);}
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-top:1px solid var(--border2);background:var(--bg);}
+.pag-info{font-size:13px;color:var(--muted);}
+.pag-btns{display:flex;gap:4px;}
+.pag-btn{padding:6px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;background:var(--surface);color:var(--text);}
+.pag-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sum-grid,.two-col{animation:fadeIn .4s ease both;}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sb-brand"><div class="sb-brand-row"><div class="sb-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh Limited</div></div></div></div>
+  <div class="sb-user"><div class="sb-avatar">DH</div><div><div class="sb-uname">Delowar Hossain</div><div class="sb-urole">Company Admin</div></div></div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">Main</span></div>
+    <a class="sb-item" href="admin-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">Dashboard</span></a>
+    <div class="sb-section"><span class="sb-section-label">Area 1 — Workplace Services</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🏢</div><span class="sb-item-text">Workplace Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="service-requests.html">Service Requests</a>
+      <a class="sb-sub-item" href="visitor-management.html">Visitor Management</a>
+      <a class="sb-sub-item" href="parking.html">Parking Management</a>
+      <a class="sb-sub-item" href="courier.html">Courier and Dispatch</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 2 — Real Estate and Assets</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🏗</div><span class="sb-item-text">Real Estate and Assets</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="asset-register.html">Asset Register</a>
+      <a class="sb-sub-item" href="asset-transfer.html">Asset Transfer</a>
+      <a class="sb-sub-item" href="asset-disposal.html">Asset Disposal</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 3 — Security and EHS</span></div>
+    <div class="sb-item sb-area-toggle open" onclick="toggleArea(this)"><div class="sb-item-icon">🔒</div><span class="sb-item-text">Security and EHS</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list open"><div class="sb-sub">
+      <a class="sb-sub-item" href="security-operations.html">Security Operations</a>
+      <a class="sb-sub-item" href="access-control.html">Access Control</a>
+      <a class="sb-sub-item active" href="gate-pass.html">Gate Pass Management</a>
+      <a class="sb-sub-item" href="incident-management.html">Incident Management</a>
+      <a class="sb-sub-item" href="ehs-compliance.html">EHS Compliance</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 4 — Vendor and Finance</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">💼</div><span class="sb-item-text">Vendor and Finance</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub"><a class="sb-sub-item" href="vendor-list.html">Vendor Management</a><a class="sb-sub-item" href="billing.html">Billing and Payments</a></div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 5 — Fleet</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🚗</div><span class="sb-item-text">Fleet Management</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub"><a class="sb-sub-item" href="coming-soon.html">Fleet Inventory</a></div></div>
+    <div class="sb-section"><span class="sb-section-label">Platform</span></div>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📊</div><span class="sb-item-text">Reports and Analytics</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">👥</div><span class="sb-item-text">User Management</span></a>
+  </nav>
+  <div class="sb-bottom"><div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div></div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <span style="color:var(--muted)">Area 3</span><span style="color:var(--light)">›</span>
+      <span style="color:var(--muted)">Security and EHS</span><span style="color:var(--light)">›</span>
+      <span>Gate Pass Management</span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-bar"><span style="color:var(--light);font-size:14px;">🔍</span><input placeholder="Search pass ID or name..."></div>
+      <div class="top-btn">🔔</div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;">
+          <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);">DH</div>
+          <span>Delowar</span><span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div><div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>Gate Pass Management</h1>
+        <p>Area 3 · Inward and outward material gate passes with QR validation · Today</p>
+      </div>
+      <div class="page-hdr-right">
+        <button class="btn-act btn-outline" onclick="openModal('scanModal')">📷 Scan QR Pass</button>
+        <button class="btn-act" onclick="openModal('newPassModal')">+ Create Gate Pass</button>
+      </div>
+    </div>
+
+    <div class="sum-grid">
+      <div class="sum-card sc-navy"><div class="sum-label">Total Passes Today</div><div class="sum-num">18</div><div class="sum-sub">Inward and outward</div></div>
+      <div class="sum-card sc-green"><div class="sum-label">Inward Passes</div><div class="sum-num">11</div><div class="sum-sub">Items entering premises</div></div>
+      <div class="sum-card sc-blue"><div class="sum-label">Outward Passes</div><div class="sum-num">7</div><div class="sum-sub">Items leaving premises</div></div>
+      <div class="sum-card sc-amber"><div class="sum-label">Pending Approval</div><div class="sum-num">2</div><div class="sum-sub">Awaiting authorisation</div></div>
+      <div class="sum-card sc-red"><div class="sum-label">Expired Today</div><div class="sum-num">3</div><div class="sum-sub">Not used within window</div></div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <!-- TYPE TABS -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <button class="btn-act" id="tabAll" onclick="filterType('all',this)" style="padding:7px 16px;font-size:12px;">All Passes</button>
+          <button class="btn-act btn-outline" id="tabIn" onclick="filterType('in',this)" style="padding:7px 16px;font-size:12px;">📥 Inward</button>
+          <button class="btn-act btn-outline" id="tabOut" onclick="filterType('out',this)" style="padding:7px 16px;font-size:12px;">📤 Outward</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="gp-table">
+            <thead><tr><th>Pass ID</th><th>Type</th><th>Description</th><th>Carrier / Person</th><th>Authorised By</th><th>Time Window</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <!-- INWARD APPROVED -->
+              <tr onclick="openPassDetail('GP-2025-0441','Inward','Stationery Supplies')">
+                <td><span class="gp-id">GP-2025-0441</span></td>
+                <td><span class="tag tag-green">📥 Inward</span></td>
+                <td><div style="font-weight:500;">Stationery Supplies — 2 boxes</div><div style="font-size:11px;color:var(--muted);">From: Office Depot BD</div></td>
+                <td style="font-size:12.5px;">Delivery person<br><span style="color:var(--muted);font-size:11px;">Pathao Delivery</span></td>
+                <td style="font-size:12.5px;font-weight:500;">Delowar Hossain</td>
+                <td style="font-size:12px;color:var(--muted);">9am – 12pm today</td>
+                <td><span class="tag tag-green">Used ✓</span></td>
+                <td onclick="event.stopPropagation()"><button class="act-btn ab-blue" onclick="openPassDetail('GP-2025-0441','Inward','Stationery')">View</button></td>
+              </tr>
+              <!-- INWARD PENDING -->
+              <tr onclick="openPassDetail('GP-2025-0445','Inward','IT Equipment — Dell Monitor')" style="background:rgba(253,245,230,.2);">
+                <td><span class="gp-id">GP-2025-0445</span></td>
+                <td><span class="tag tag-green">📥 Inward</span></td>
+                <td><div style="font-weight:500;">IT Equipment — Dell Monitor</div><div style="font-size:11px;color:var(--muted);">From: Dell Bangladesh</div></td>
+                <td style="font-size:12.5px;">Delivery person<br><span style="color:var(--muted);font-size:11px;">SA Courier</span></td>
+                <td style="font-size:12.5px;color:var(--amber);">Pending</td>
+                <td style="font-size:12px;color:var(--amber);">4pm – 6pm today</td>
+                <td><span class="tag tag-amber">Pending Approval</span></td>
+                <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px;"><button class="act-btn ab-green" onclick="alert('Approving gate pass GP-2025-0445...')">Approve</button><button class="act-btn ab-blue" onclick="openPassDetail('GP-2025-0445','Inward','Dell Monitor')">View</button></div></td>
+              </tr>
+              <!-- OUTWARD APPROVED -->
+              <tr onclick="openPassDetail('GP-2025-0440','Outward','Disposed Conference Table')">
+                <td><span class="gp-id">GP-2025-0440</span></td>
+                <td><span class="tag tag-blue">📤 Outward</span></td>
+                <td><div style="font-weight:500;">Disposed Conference Table</div><div style="font-size:11px;color:var(--muted);">Asset DSP-2025-0018</div></td>
+                <td style="font-size:12.5px;">Scrap vendor<br><span style="color:var(--muted);font-size:11px;">Dhaka Recycle Co</span></td>
+                <td style="font-size:12.5px;font-weight:500;">Karim Rahman</td>
+                <td style="font-size:12px;color:var(--muted);">11am – 2pm today</td>
+                <td><span class="tag tag-green">Used ✓</span></td>
+                <td onclick="event.stopPropagation()"><button class="act-btn ab-blue" onclick="openPassDetail('GP-2025-0440','Outward','Conference Table')">View</button></td>
+              </tr>
+              <!-- OUTWARD ACTIVE -->
+              <tr onclick="openPassDetail('GP-2025-0443','Outward','Laptop for Repair')">
+                <td><span class="gp-id">GP-2025-0443</span></td>
+                <td><span class="tag tag-blue">📤 Outward</span></td>
+                <td><div style="font-weight:500;">Laptop for Repair — Dell XPS</div><div style="font-size:11px;color:var(--muted);">AST-0234 · To repair centre</div></td>
+                <td style="font-size:12.5px;">Ahmed Hassan<br><span style="color:var(--muted);font-size:11px;">Employee carrying</span></td>
+                <td style="font-size:12.5px;font-weight:500;">FM Manager</td>
+                <td style="font-size:12px;color:var(--blue);">Valid today only</td>
+                <td><span class="tag tag-blue">Active</span></td>
+                <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px;"><button class="act-btn ab-green" onclick="alert('Marking GP-2025-0443 as completed...')">Complete</button><button class="act-btn ab-blue" onclick="openPassDetail('GP-2025-0443','Outward','Laptop')">View</button></div></td>
+              </tr>
+              <!-- EXPIRED -->
+              <tr onclick="openPassDetail('GP-2025-0436','Inward','Kitchen Supplies')" style="opacity:.7;">
+                <td><span class="gp-id">GP-2025-0436</span></td>
+                <td><span class="tag tag-green">📥 Inward</span></td>
+                <td><div style="font-weight:500;">Kitchen Supplies — 4 boxes</div><div style="font-size:11px;color:var(--muted);">From: Fresh Foods Ltd</div></td>
+                <td style="font-size:12.5px;">Delivery person</td>
+                <td style="font-size:12.5px;font-weight:500;">FM Manager</td>
+                <td style="font-size:12px;color:var(--muted);">8am – 10am today</td>
+                <td><span class="tag tag-red">Expired</span></td>
+                <td onclick="event.stopPropagation()"><button class="act-btn ab-gray" onclick="openPassDetail('GP-2025-0436','Inward','Kitchen Supplies')">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pagination">
+            <div class="pag-info">Showing 5 of 18 passes today</div>
+            <div class="pag-btns">
+              <button class="pag-btn" disabled>← Prev</button>
+              <button class="pag-btn active">1</button>
+              <button class="pag-btn">2</button>
+              <button class="pag-btn">Next →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+        <!-- RECENT SCAN LOG -->
+        <div class="panel">
+          <div class="panel-hdr"><h2>📷 Recent Gate Scans</h2><span class="tag tag-navy">Today</span></div>
+          <div class="pass-item" onclick="openPassDetail('GP-2025-0441','Inward','Stationery')">
+            <div class="pi-icon" style="background:var(--green-bg);">✅</div>
+            <div class="pi-body"><div class="pi-title">GP-2025-0441 — Inward</div><div class="pi-sub">Stationery · Entered 9:45am · Granted</div></div>
+          </div>
+          <div class="pass-item" onclick="openPassDetail('GP-2025-0440','Outward','Conference Table')">
+            <div class="pi-icon" style="background:var(--blue-bg);">📤</div>
+            <div class="pi-body"><div class="pi-title">GP-2025-0440 — Outward</div><div class="pi-sub">Disposed table · Exited 11:20am · Granted</div></div>
+          </div>
+          <div class="pass-item">
+            <div class="pi-icon" style="background:var(--red-bg);">❌</div>
+            <div class="pi-body"><div class="pi-title">GP-2025-0439 — Denied</div><div class="pi-sub">Expired pass · Rejected at gate 10:05am</div></div>
+          </div>
+          <div style="padding:10px 18px;background:var(--bg);border-top:1px solid var(--border2);">
+            <button class="btn-act btn-outline" style="width:100%;justify-content:center;font-size:12px;" onclick="openModal('scanModal')">📷 Scan New Pass</button>
+          </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="panel">
+          <div class="panel-hdr"><h2>📊 Pass Stats — Today</h2></div>
+          <div style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border2);">
+              <span style="font-size:13px;">Material Inward</span>
+              <div style="display:flex;align-items:center;gap:8px;"><div style="width:70px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;"><div style="width:61%;height:100%;background:var(--green);border-radius:3px;"></div></div><span style="font-size:12px;font-weight:500;">11</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border2);">
+              <span style="font-size:13px;">Material Outward</span>
+              <div style="display:flex;align-items:center;gap:8px;"><div style="width:70px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;"><div style="width:39%;height:100%;background:var(--blue);border-radius:3px;"></div></div><span style="font-size:12px;font-weight:500;">7</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border2);">
+              <span style="font-size:13px;">Rejected at Gate</span>
+              <div style="display:flex;align-items:center;gap:8px;"><div style="width:70px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;"><div style="width:11%;height:100%;background:var(--red);border-radius:3px;"></div></div><span style="font-size:12px;font-weight:500;">2</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+              <span style="font-size:13px;font-weight:600;">Total Movements</span>
+              <span style="font-size:14px;font-weight:700;color:var(--navy);">20</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- GATE PASS DETAIL MODAL -->
+<div class="modal-overlay" id="passDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr"><h3 id="pdTitle">GP-2025-0441 — Inward Pass</h3><button class="modal-close" onclick="closeModal('passDetailModal')">×</button></div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="modal-tab active" onclick="switchMTab(this,'pd1')">Pass Details</button>
+        <button class="modal-tab" onclick="switchMTab(this,'pd2')">QR Pass</button>
+        <button class="modal-tab" onclick="switchMTab(this,'pd3')">Audit Log</button>
+      </div>
+      <div class="mtab active" id="pd1">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Pass Type</div><div style="font-size:13px;font-weight:500;color:var(--green);">📥 Inward</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Pass ID</div><div style="font-size:13px;font-weight:700;font-family:monospace;">GP-2025-0441</div></div>
+          <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--green);margin-bottom:3px;">Status</div><div style="font-size:13px;font-weight:600;color:var(--green);">Used ✓</div></div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:14px 16px;margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Item Details</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Stationery Supplies — 2 boxes</div>
+          <div style="font-size:13px;color:var(--muted);">From: Office Depot BD · Carrier: Pathao Delivery</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Authorised By</div><div style="font-size:13px;font-weight:500;">Delowar Hossain</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Valid Window</div><div style="font-size:13px;font-weight:500;">9:00am – 12:00pm</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Entered At</div><div style="font-size:13px;font-weight:500;">9:45am ✓</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:10.5px;color:var(--muted);margin-bottom:3px;">Verified By</div><div style="font-size:13px;font-weight:500;">Rahim Chowdhury</div></div>
+        </div>
+      </div>
+      <div class="mtab" id="pd2">
+        <div class="pass-preview">
+          <div class="pp-header">SmartWorkplace · Gate Pass</div>
+          <div style="text-align:center;margin-bottom:8px;"><span class="pp-type pp-inward">📥 INWARD</span></div>
+          <div class="pp-name">Stationery Supplies</div>
+          <div class="pp-company">Office Depot BD · Pathao Delivery</div>
+          <div class="pp-grid">
+            <div class="pp-item"><div class="pp-label">Pass ID</div><div class="pp-val">GP-2025-0441</div></div>
+            <div class="pp-item"><div class="pp-label">Date</div><div class="pp-val">26 Mar 2025</div></div>
+            <div class="pp-item"><div class="pp-label">Valid From</div><div class="pp-val">9:00am</div></div>
+            <div class="pp-item"><div class="pp-label">Valid Until</div><div class="pp-val">12:00pm</div></div>
+          </div>
+          <div class="pp-qr"><div class="qr-box">⬛</div><div style="font-size:10px;color:rgba(255,255,255,.4);">Scan at gate to verify</div></div>
+        </div>
+        <div style="text-align:center;"><button class="btn-primary" onclick="alert('Printing gate pass...')">🖨 Print Pass</button></div>
+      </div>
+      <div class="mtab" id="pd3">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:var(--green-bg);border-radius:8px;padding:10px 12px;"><div style="font-size:13px;font-weight:500;color:var(--green);">✅ Entry completed and verified</div><div style="font-size:11.5px;color:var(--muted);">Guard: Rahim Chowdhury · 9:45am · QR scanned</div></div>
+          <div style="background:var(--blue-bg);border-radius:8px;padding:10px 12px;"><div style="font-size:13px;font-weight:500;">Gate pass approved</div><div style="font-size:11.5px;color:var(--muted);">Delowar Hossain · 26 Mar 2025 · 8:30am</div></div>
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px;"><div style="font-size:13px;font-weight:500;">Gate pass created</div><div style="font-size:11.5px;color:var(--muted);">Admin system · 26 Mar 2025 · 8:15am</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('passDetailModal')">Close</button>
+      <button class="btn-primary" onclick="alert('Printing gate pass...')">🖨 Print Pass</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW PASS MODAL -->
+<div class="modal-overlay" id="newPassModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>📋 Create Gate Pass</h3><button class="modal-close" onclick="closeModal('newPassModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-field"><label>Pass Type</label><select><option>Inward — Item entering premises</option><option>Outward — Item leaving premises</option></select></div>
+        <div class="form-field"><label>Category</label><select><option>Delivery / Supplies</option><option>Asset Movement</option><option>Equipment</option><option>Waste Disposal</option><option>Other</option></select></div>
+      </div>
+      <div class="form-field"><label>Item Description</label><textarea placeholder="What is being brought in or taken out? Include quantity and details..."></textarea></div>
+      <div class="form-row">
+        <div class="form-field"><label>From / Sender</label><input type="text" placeholder="Company or person sending item"></div>
+        <div class="form-field"><label>To / Receiver</label><input type="text" placeholder="Department or person receiving"></div>
+      </div>
+      <div class="form-field"><label>Carrier / Delivery Person</label><input type="text" placeholder="Name of person carrying the item"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Valid From</label><input type="datetime-local"></div>
+        <div class="form-field"><label>Valid Until</label><input type="datetime-local"></div>
+      </div>
+      <div class="form-field"><label>Authorised By</label><select><option>Delowar Hossain — Admin</option><option>Karim Rahman — FM Manager</option><option>Ahmed Hassan — Finance</option></select></div>
+      <div class="form-field"><label>Linked Asset ID (if applicable)</label><input type="text" placeholder="e.g. AST-0234 or DSP-2025-0018"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('newPassModal')">Cancel</button>
+      <button class="btn-primary" onclick="savePass()">Create and Print Pass</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCAN QR MODAL -->
+<div class="modal-overlay" id="scanModal">
+  <div class="modal modal-md" style="max-width:400px;">
+    <div class="modal-hdr"><h3>📷 Scan Gate Pass QR</h3><button class="modal-close" onclick="closeModal('scanModal')">×</button></div>
+    <div class="modal-body" style="text-align:center;">
+      <div style="background:var(--navy);border-radius:12px;padding:30px 20px;margin-bottom:16px;">
+        <div style="font-size:48px;margin-bottom:12px;">📷</div>
+        <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;">Point camera at QR code</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);">QR code on printed gate pass</div>
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Or enter pass ID manually:</div>
+      <div class="form-field"><label>Gate Pass ID</label><input type="text" placeholder="e.g. GP-2025-0441" style="text-align:center;font-size:16px;font-family:monospace;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('scanModal')">Cancel</button>
+      <button class="btn-primary" onclick="closeModal('scanModal');openPassDetail('GP-2025-0441','Inward','Stationery')">Verify Pass</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleArea(el){el.classList.toggle('open');const s=el.nextElementSibling;if(s&&s.classList.contains('sb-sub-list'))s.classList.toggle('open');}
+function toggleDD(){document.getElementById('userDD').classList.toggle('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-menu').forEach(m=>m.classList.remove('open'));});
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+function switchMTab(btn,id){
+  btn.closest('.modal-body').querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  btn.closest('.modal-body').querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');document.getElementById(id).classList.add('active');
+}
+function openPassDetail(id,type,desc){
+  document.getElementById('pdTitle').textContent=id+' — '+(type==='Inward'?'📥':'📤')+' '+type+' Pass';
+  openModal('passDetailModal');
+}
+function filterType(type,btn){
+  document.querySelectorAll('[id^="tab"]').forEach(b=>{b.classList.remove('btn-act');b.classList.add('btn-act','btn-outline');});
+  btn.classList.remove('btn-outline');
+}
+function savePass(){
+  closeModal('newPassModal');
+  setTimeout(()=>alert('✅ Gate pass created!\n\nGP-2025-NEW issued.\nQR code generated.\nPrint now or share digitally.\nGuard notified at gate.'),200);
+}
+</script>
+</body>
+</html>

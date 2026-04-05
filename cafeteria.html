@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartWorkplace — Cafeteria and Pantry</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--navy2:#0F2040;--gold:#C8A96E;--gold2:#E2C08A;
+  --bg:#F2F0EB;--surface:#FFFFFF;--border:#E4E0D8;--border2:#EAE6DF;
+  --text:#1A2540;--muted:#6B7A94;--light:#A8B5C8;
+  --red:#D94F4F;--red-bg:#FDF0F0;--red-bd:#F5CECE;
+  --amber:#C47B1A;--amber-bg:#FDF5E6;--amber-bd:#F0D9A8;
+  --blue:#1A5FAB;--blue-bg:#EBF3FD;--blue-bd:#BDDBF7;
+  --green:#1E8A5A;--green-bg:#EAF7F1;--green-bd:#A8DFC5;
+  --purple:#5B45C7;--purple-bg:#F0EEFF;
+  --sidebar-w:248px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+.sidebar{width:var(--sidebar-w);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;overflow-x:hidden;}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-brand-row{display:flex;align-items:center;gap:10px;}
+.sb-icon{width:34px;height:34px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.25);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:18px;height:18px;}
+.sb-name{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;}
+.sb-by{font-size:10px;color:rgba(200,169,110,.7);margin-top:1px;}
+.sb-user{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0;}
+.sb-uname{font-size:12.5px;font-weight:500;color:#fff;line-height:1.2;}
+.sb-urole{font-size:10.5px;color:rgba(200,169,110,.8);margin-top:1px;}
+.sb-nav{padding:10px 0;flex:1;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{width:2px;}
+.sb-section{padding:12px 18px 4px;}
+.sb-section-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;text-decoration:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);}
+.sb-item.active{background:rgba(200,169,110,.1);border-left-color:var(--gold);}
+.sb-item-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.06);}
+.sb-item.active .sb-item-icon{background:rgba(200,169,110,.15);}
+.sb-item-text{font-size:13px;color:rgba(255,255,255,.7);}
+.sb-item.active .sb-item-text{color:#fff;font-weight:500;}
+.sb-item:hover .sb-item-text{color:rgba(255,255,255,.9);}
+.sb-chevron{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s;flex-shrink:0;}
+.sb-area-toggle.open .sb-chevron{transform:rotate(90deg);}
+.sb-sub-list{overflow:hidden;max-height:0;transition:max-height .3s ease;}
+.sb-sub-list.open{max-height:500px;}
+.sb-sub{padding-left:58px;}
+.sb-sub-item{display:flex;align-items:center;gap:6px;padding:6px 18px 6px 0;cursor:pointer;font-size:12px;color:rgba(255,255,255,.5);transition:color .15s;text-decoration:none;}
+.sb-sub-item:hover{color:rgba(255,255,255,.85);}
+.sb-sub-item.active{color:var(--gold);}
+.sb-sub-item::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sb-bottom{padding:12px 18px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.sb-bottom-item{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,.5);transition:color .15s;}
+.sb-bottom-item:hover{color:rgba(255,255,255,.85);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.top-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;}
+.top-btn:hover{border-color:var(--navy);}
+.dd-wrap{position:relative;}
+.dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;z-index:200;display:none;}
+.dd-menu.open{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;}
+.dd-item:hover{background:var(--bg);}
+.dd-sep{border-top:1px solid var(--border);margin:4px 0;}
+.content{padding:24px 28px;flex:1;}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;}
+.page-hdr-left h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.page-hdr-left p{font-size:13px;color:var(--muted);}
+.page-hdr-right{display:flex;gap:8px;align-items:center;}
+.btn-act{display:flex;align-items:center;gap:6px;padding:9px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-act:hover{background:var(--navy2);transform:translateY(-1px);}
+.btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{background:var(--bg);border-color:var(--navy);}
+/* PAGE TABS */
+.page-tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:22px;}
+.page-tab{padding:10px 22px;font-size:13.5px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
+.page-tab.active{color:var(--navy);border-bottom-color:var(--navy);}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+/* SUM CARDS */
+.sum-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;}
+.sum-card:hover{border-color:var(--navy);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.sc-amber::before{background:#E09B1A;}
+.sc-green::before{background:var(--green);}
+.sc-blue::before{background:var(--blue);}
+.sc-navy::before{background:var(--navy);}
+.sum-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.sum-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);line-height:1;}
+.sum-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+/* MEAL PERIOD TOGGLE */
+.meal-toggle{display:flex;gap:8px;margin-bottom:20px;}
+.meal-btn{padding:8px 20px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);transition:all .15s;}
+.meal-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.meal-btn:hover:not(.active){border-color:var(--navy);color:var(--navy);}
+/* TAGS */
+.tag{display:inline-flex;font-size:10.5px;font-weight:500;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-navy{background:rgba(10,22,40,.08);color:var(--navy);}
+.tag-gray{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
+/* MENU GRID */
+.menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.menu-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;}
+.menu-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.1);border-color:var(--navy);}
+.menu-card.sold-out{opacity:.6;}
+.menu-card-img{height:100px;display:flex;align-items:center;justify-content:center;font-size:44px;}
+.menu-card-body{padding:12px 14px;}
+.menu-item-name{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.menu-item-desc{font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5;}
+.menu-item-footer{display:flex;align-items:center;justify-content:space-between;}
+.menu-price{font-size:14px;font-weight:700;color:var(--navy);}
+.qty-ctrl{display:flex;align-items:center;gap:6px;}
+.qty-btn{width:24px;height:24px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);transition:all .15s;}
+.qty-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+.qty-num{font-size:13px;font-weight:600;min-width:20px;text-align:center;}
+/* ORDER CART */
+.cart-bar{background:var(--navy);border-radius:12px;padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;}
+.cart-info{color:#fff;}
+.cart-count{font-size:13px;color:rgba(255,255,255,.6);margin-bottom:2px;}
+.cart-total{font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold);}
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 280px;gap:16px;}
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border2);}
+.panel-hdr h2{font-size:14px;font-weight:600;color:var(--text);}
+/* ORDER ITEMS */
+.order-item{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .15s;}
+.order-item:hover{background:var(--bg);}
+.order-item:last-child{border-bottom:none;}
+.oi-icon{font-size:22px;flex-shrink:0;}
+.oi-body{flex:1;}
+.oi-name{font-size:13px;font-weight:500;}
+.oi-sub{font-size:11.5px;color:var(--muted);margin-top:1px;}
+.oi-right{text-align:right;}
+.oi-price{font-size:13px;font-weight:600;color:var(--navy);}
+.oi-status{font-size:11px;margin-top:2px;}
+/* CONSUMPTION TABLE */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.con-table{width:100%;border-collapse:collapse;}
+.con-table th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);background:var(--bg);}
+.con-table td{padding:11px 16px;font-size:13px;border-bottom:1px solid var(--border2);}
+.con-table tr:last-child td{border-bottom:none;}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-md{max-width:520px;}
+.modal-lg{max-width:680px;}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:600;color:var(--text);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:5px;}
+.modal-close:hover{background:var(--bg);}
+.modal-body{padding:22px;max-height:72vh;overflow-y:auto;}
+.form-field{margin-bottom:15px;}
+.form-field label{display:block;font-size:11.5px;font-weight:600;color:#4A5568;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--bg);outline:none;transition:border-color .18s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--navy);background:#fff;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-sec{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:14px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border2);}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-primary:hover{background:var(--navy2);}
+.btn-secondary{padding:10px 20px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-secondary:hover{border-color:var(--navy);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sum-grid{animation:fadeIn .4s .05s ease both;}
+.menu-grid{animation:fadeIn .4s .1s ease both;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <div class="sb-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 22V12h6v10" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div><div class="sb-name">SmartWorkplace</div><div class="sb-by">bEnabler Bangladesh Limited</div></div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">DH</div>
+    <div><div class="sb-uname">Delowar Hossain</div><div class="sb-urole">Company Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section"><span class="sb-section-label">Main</span></div>
+    <a class="sb-item" href="admin-dashboard.html"><div class="sb-item-icon">🏠</div><span class="sb-item-text">Dashboard</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">🔔</div><span class="sb-item-text">Priority Inbox</span></a>
+    <div class="sb-section"><span class="sb-section-label">Area 1 — Workplace Services</span></div>
+    <div class="sb-item sb-area-toggle open" onclick="toggleArea(this)"><div class="sb-item-icon">🏢</div><span class="sb-item-text">Workplace Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list open"><div class="sb-sub">
+      <a class="sb-sub-item" href="service-requests.html">Service Requests</a>
+      <a class="sb-sub-item" href="meeting-rooms.html">Meeting Room Booking</a>
+      <a class="sb-sub-item" href="visitor-management.html">Visitor Management</a>
+      <a class="sb-sub-item active" href="cafeteria.html">Cafeteria and Pantry</a>
+      <a class="sb-sub-item" href="parking.html">Parking Management</a>
+      <a class="sb-sub-item" href="courier.html">Courier and Dispatch</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 2 — Real Estate and Assets</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🏗</div><span class="sb-item-text">Real Estate and Assets</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="asset-register.html">Asset Register</a>
+      <a class="sb-sub-item" href="maintenance.html">Maintenance</a>
+      <a class="sb-sub-item" href="lease-management.html">Lease Management</a>
+      <a class="sb-sub-item" href="utility-management.html">Utility Management</a>
+      <a class="sb-sub-item" href="license-management.html">License Management</a>
+      <a class="sb-sub-item" href="asset-transfer.html">Asset Transfer</a>
+      <a class="sb-sub-item" href="asset-disposal.html">Asset Disposal</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 3 — Security and EHS</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🔒</div><span class="sb-item-text">Security and EHS</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Security Operations</a>
+      <a class="sb-sub-item" href="coming-soon.html">Gate Pass Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Incident Management</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 4 — Vendor and Finance</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">💼</div><span class="sb-item-text">Vendor and Finance</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="vendor-list.html">Vendor Management</a>
+      <a class="sb-sub-item" href="grn-management.html">GRN Management</a>
+      <a class="sb-sub-item" href="billing.html">Billing and Payments</a>
+      <a class="sb-sub-item" href="vendor-performance.html">Vendor Performance</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 5 — Fleet</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">🚗</div><span class="sb-item-text">Fleet Management</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Fleet Inventory</a>
+      <a class="sb-sub-item" href="coming-soon.html">Vehicle Requisition</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 6 — Inventory</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">📦</div><span class="sb-item-text">Inventory and Supply</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Store Management</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Area 7 — Admin</span></div>
+    <div class="sb-item sb-area-toggle" onclick="toggleArea(this)"><div class="sb-item-icon">✈️</div><span class="sb-item-text">Admin Support Services</span><span class="sb-chevron">▶</span></div>
+    <div class="sb-sub-list"><div class="sb-sub">
+      <a class="sb-sub-item" href="coming-soon.html">Travel Management</a>
+      <a class="sb-sub-item" href="coming-soon.html">Stationery and Supplies</a>
+    </div></div>
+    <div class="sb-section"><span class="sb-section-label">Platform</span></div>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📊</div><span class="sb-item-text">Reports and Analytics</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📅</div><span class="sb-item-text">Activity Calendar</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">📋</div><span class="sb-item-text">Policy and Knowledge Hub</span></a>
+    <a class="sb-item" href="coming-soon.html"><div class="sb-item-icon">👥</div><span class="sb-item-text">User Management</span></a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-bottom-item" onclick="window.location.href='login.html'"><span style="font-size:15px;">🚪</span><span>Sign Out</span></div>
+    <div class="sb-bottom-item" onclick="alert('Help and support coming soon!')"><span style="font-size:15px;">❓</span><span>Help and Support</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb">
+      <span style="color:var(--muted)">Area 1</span><span style="color:var(--light)">›</span>
+      <span style="color:var(--muted)">Workplace Services</span><span style="color:var(--light)">›</span>
+      <span>Cafeteria and Pantry</span>
+    </div>
+    <div class="topbar-right">
+      <div class="top-btn">🔔</div>
+      <div class="dd-wrap">
+        <div class="top-btn" onclick="toggleDD()" style="width:auto;padding:0 10px;gap:6px;font-size:13px;font-weight:500;color:var(--text);">
+          <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);">DH</div>
+          <span>Delowar</span><span style="font-size:10px;color:var(--muted);">▾</span>
+        </div>
+        <div class="dd-menu" id="userDD">
+          <div class="dd-item">👤 My Profile</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="window.location.href='login.html'">🚪 Sign Out</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <h1>Cafeteria and Pantry</h1>
+        <p>Area 1 · Order meals, view today's menu and track consumption · Wednesday 26 March 2025</p>
+      </div>
+      <div class="page-hdr-right">
+        <button class="btn-act btn-outline" onclick="setTab(2)">📊 Consumption Report</button>
+        <button class="btn-act btn-outline" onclick="setTab(3)">🍽 Manage Menu</button>
+        <button class="btn-act" onclick="openModal('orderModal')">🛒 Order Now</button>
+      </div>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="sum-grid">
+      <div class="sum-card sc-amber">
+        <div class="sum-label">Orders Today</div>
+        <div class="sum-num">86</div>
+        <div class="sum-sub">Breakfast + Lunch orders</div>
+      </div>
+      <div class="sum-card sc-green">
+        <div class="sum-label">Revenue Today</div>
+        <div class="sum-num" style="font-size:20px;">18,240</div>
+        <div class="sum-sub">BDT collected</div>
+      </div>
+      <div class="sum-card sc-blue">
+        <div class="sum-label">Menu Items Today</div>
+        <div class="sum-num">18</div>
+        <div class="sum-sub">3 sold out</div>
+      </div>
+      <div class="sum-card sc-navy">
+        <div class="sum-label">Monthly Revenue</div>
+        <div class="sum-num" style="font-size:20px;">412,800</div>
+        <div class="sum-sub">BDT — March 2025</div>
+      </div>
+    </div>
+
+    <!-- PAGE TABS -->
+    <div class="page-tabs">
+      <button class="page-tab active" id="ptab0" onclick="setTab(0)">🍽 Today's Menu</button>
+      <button class="page-tab" id="ptab1" onclick="setTab(1)">📋 My Orders</button>
+      <button class="page-tab" id="ptab2" onclick="setTab(2)">📊 Consumption</button>
+      <button class="page-tab" id="ptab3" onclick="setTab(3)">⚙ Manage Menu</button>
+    </div>
+
+    <!-- TAB 0: TODAY'S MENU -->
+    <div class="tab-pane active" id="pane0">
+      <!-- MEAL PERIOD TOGGLE -->
+      <div class="meal-toggle">
+        <button class="meal-btn" onclick="setMeal('breakfast',this)">🌅 Breakfast</button>
+        <button class="meal-btn active" onclick="setMeal('lunch',this)">☀️ Lunch</button>
+        <button class="meal-btn" onclick="setMeal('snacks',this)">☕ Snacks and Beverages</button>
+      </div>
+
+      <!-- CART BAR -->
+      <div class="cart-bar" id="cartBar" style="display:none;">
+        <div class="cart-info">
+          <div class="cart-count" id="cartCount">0 items in cart</div>
+          <div class="cart-total" id="cartTotal">BDT 0</div>
+        </div>
+        <button class="btn-act" style="background:var(--gold);color:var(--navy);" onclick="openModal('orderModal')">View Cart and Order →</button>
+      </div>
+
+      <!-- MENU GRID -->
+      <div class="menu-grid" id="menuGrid">
+        <div class="menu-card" onclick="addToCart('Chicken Biryani',180)">
+          <div class="menu-card-img" style="background:rgba(200,169,110,.1);">🍛</div>
+          <div class="menu-card-body">
+            <div class="menu-item-name">Chicken Biryani</div>
+            <div class="menu-item-desc">Fragrant basmati with tender chicken, raita and salad</div>
+            <div class="menu-item-footer">
+              <span class="menu-price">BDT 180</span>
+              <div class="qty-ctrl">
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Chicken Biryani',-1)">–</button>
+                <span class="qty-num" id="qty-Chicken Biryani">0</span>
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Chicken Biryani',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="menu-card" onclick="addToCart('Beef Kacchi',220)">
+          <div class="menu-card-img" style="background:rgba(217,79,79,.08);">🥘</div>
+          <div class="menu-card-body">
+            <div class="menu-item-name">Beef Kacchi Biryani</div>
+            <div class="menu-item-desc">Slow-cooked beef with aromatic spices and dum rice</div>
+            <div class="menu-item-footer">
+              <span class="menu-price">BDT 220</span>
+              <div class="qty-ctrl">
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Beef Kacchi',-1)">–</button>
+                <span class="qty-num" id="qty-Beef Kacchi">0</span>
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Beef Kacchi',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="menu-card" onclick="addToCart('Vegetable Khichuri',120)">
+          <div class="menu-card-img" style="background:rgba(30,138,90,.08);">🥗</div>
+          <div class="menu-card-body">
+            <div class="menu-item-name">Vegetable Khichuri</div>
+            <div class="menu-item-desc">Lentil and rice with mixed vegetables and ghee</div>
+            <div class="menu-item-footer">
+              <span class="menu-price">BDT 120</span>
+              <div class="qty-ctrl">
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Vegetable Khichuri',-1)">–</button>
+                <span class="qty-num" id="qty-Vegetable Khichuri">0</span>
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Vegetable Khichuri',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="menu-card" onclick="addToCart('Grilled Chicken Set',200)">
+          <div class="menu-card-img" style="background:rgba(26,95,171,.08);">🍗</div>
+          <div class="menu-card-body">
+            <div class="menu-item-name">Grilled Chicken Set</div>
+            <div class="menu-item-desc">Grilled chicken breast with steamed rice and salad</div>
+            <div class="menu-item-footer">
+              <span class="menu-price">BDT 200</span>
+              <div class="qty-ctrl">
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Grilled Chicken Set',-1)">–</button>
+                <span class="qty-num" id="qty-Grilled Chicken Set">0</span>
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Grilled Chicken Set',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="menu-card sold-out">
+          <div class="menu-card-img" style="background:rgba(108,108,108,.08);">🐟</div>
+          <div class="menu-card-body">
+            <div class="menu-item-name">Fish Curry Set <span class="tag tag-red" style="font-size:10px;margin-left:4px;">Sold Out</span></div>
+            <div class="menu-item-desc">Hilsha fish curry with steamed rice and dal</div>
+            <div class="menu-item-footer">
+              <span class="menu-price" style="color:var(--muted);">BDT 160</span>
+              <span class="tag tag-red">Sold Out</span>
+            </div>
+          </div>
+        </div>
+        <div class="menu-card" onclick="addToCart('Dal and Rice',90)">
+          <div class="menu-card-img" style="background:rgba(196,123,26,.08);">🍲</div>
+          <div class="menu-card-body">
+            <div class="menu-item-name">Dal and Rice</div>
+            <div class="menu-item-desc">Comfort dal with steamed rice and mixed vegetables</div>
+            <div class="menu-item-footer">
+              <span class="menu-price">BDT 90</span>
+              <div class="qty-ctrl">
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Dal and Rice',-1)">–</button>
+                <span class="qty-num" id="qty-Dal and Rice">0</span>
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Dal and Rice',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="menu-card" onclick="addToCart('Pasta Bolognese',160)">
+          <div class="menu-card-img" style="background:rgba(91,69,199,.08);">🍝</div>
+          <div class="menu-card-body">
+            <div class="menu-item-name">Pasta Bolognese</div>
+            <div class="menu-item-desc">Spaghetti with rich beef bolognese sauce</div>
+            <div class="menu-item-footer">
+              <span class="menu-price">BDT 160</span>
+              <div class="qty-ctrl">
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Pasta Bolognese',-1)">–</button>
+                <span class="qty-num" id="qty-Pasta Bolognese">0</span>
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Pasta Bolognese',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="menu-card" onclick="addToCart('Mixed Salad Bowl',80)">
+          <div class="menu-card-img" style="background:rgba(30,138,90,.06);">🥙</div>
+          <div class="menu-card-body">
+            <div class="menu-item-name">Mixed Salad Bowl</div>
+            <div class="menu-item-desc">Fresh greens, cucumber, tomato and lime dressing</div>
+            <div class="menu-item-footer">
+              <span class="menu-price">BDT 80</span>
+              <div class="qty-ctrl">
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Mixed Salad Bowl',-1)">–</button>
+                <span class="qty-num" id="qty-Mixed Salad Bowl">0</span>
+                <button class="qty-btn" onclick="event.stopPropagation();changeQty('Mixed Salad Bowl',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: MY ORDERS -->
+    <div class="tab-pane" id="pane1">
+      <div class="panel">
+        <div class="panel-hdr"><h2>📋 My Orders — Today</h2></div>
+        <div class="order-item">
+          <div class="oi-icon">🍛</div>
+          <div class="oi-body">
+            <div class="oi-name">Chicken Biryani × 1</div>
+            <div class="oi-sub">Lunch · Order #ORD-2025-0482 · Placed 12:02pm</div>
+          </div>
+          <div class="oi-right">
+            <div class="oi-price">BDT 180</div>
+            <div class="oi-status" style="color:var(--green);">✓ Delivered</div>
+          </div>
+        </div>
+        <div class="order-item">
+          <div class="oi-icon">☕</div>
+          <div class="oi-body">
+            <div class="oi-name">Tea × 2 + Biscuits × 1</div>
+            <div class="oi-sub">Snacks · Order #ORD-2025-0465 · Placed 10:30am</div>
+          </div>
+          <div class="oi-right">
+            <div class="oi-price">BDT 55</div>
+            <div class="oi-status" style="color:var(--green);">✓ Delivered</div>
+          </div>
+        </div>
+        <div style="padding:12px 18px;background:var(--bg);border-top:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;color:var(--muted);">Today's total: BDT 235</span>
+          <span style="font-size:13px;font-weight:600;color:var(--navy);">Monthly total: BDT 4,280</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: CONSUMPTION -->
+    <div class="tab-pane" id="pane2">
+      <div class="table-wrap">
+        <div style="padding:12px 18px;border-bottom:1px solid var(--border2);font-size:14px;font-weight:600;">📊 Consumption Report — March 2025</div>
+        <table class="con-table">
+          <thead><tr><th>Item</th><th>Total Ordered</th><th>Revenue (BDT)</th><th>Peak Day</th><th>Trend</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:500;">Chicken Biryani</td><td>412</td><td style="font-weight:600;">74,160</td><td>Monday</td><td style="color:var(--green);">↑ Popular</td></tr>
+            <tr><td style="font-weight:500;">Beef Kacchi Biryani</td><td>198</td><td style="font-weight:600;">43,560</td><td>Tuesday</td><td style="color:var(--green);">↑ Growing</td></tr>
+            <tr><td style="font-weight:500;">Grilled Chicken Set</td><td>287</td><td style="font-weight:600;">57,400</td><td>Wednesday</td><td style="color:var(--blue);">→ Stable</td></tr>
+            <tr><td style="font-weight:500;">Dal and Rice</td><td>334</td><td style="font-weight:600;">30,060</td><td>Friday</td><td style="color:var(--blue);">→ Stable</td></tr>
+            <tr><td style="font-weight:500;">Vegetable Khichuri</td><td>156</td><td style="font-weight:600;">18,720</td><td>Friday</td><td style="color:var(--red);">↓ Declining</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: MANAGE MENU -->
+    <div class="tab-pane" id="pane3">
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <button class="btn-act" onclick="openModal('addItemModal')">+ Add Menu Item</button>
+        <button class="btn-act btn-outline" onclick="alert('Opening meal plan calendar...')">📅 Plan Weekly Menu</button>
+      </div>
+      <div class="table-wrap">
+        <table class="con-table">
+          <thead><tr><th>Item Name</th><th>Category</th><th>Price</th><th>Availability</th><th>Today's Count</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:500;">Chicken Biryani</td><td><span class="tag tag-navy">Lunch</span></td><td>BDT 180</td><td><span class="tag tag-green">Active</span></td><td>32 remaining</td><td><button class="btn-act btn-outline" style="padding:5px 12px;font-size:12px;" onclick="alert('Editing Chicken Biryani...')">Edit</button></td></tr>
+            <tr><td style="font-weight:500;">Beef Kacchi Biryani</td><td><span class="tag tag-navy">Lunch</span></td><td>BDT 220</td><td><span class="tag tag-green">Active</span></td><td>18 remaining</td><td><button class="btn-act btn-outline" style="padding:5px 12px;font-size:12px;">Edit</button></td></tr>
+            <tr><td style="font-weight:500;">Fish Curry Set</td><td><span class="tag tag-navy">Lunch</span></td><td>BDT 160</td><td><span class="tag tag-red">Sold Out</span></td><td>0 remaining</td><td><button class="btn-act btn-outline" style="padding:5px 12px;font-size:12px;" onclick="alert('Restocking...')">Restock</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ORDER MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>🛒 Place Order</h3><button class="modal-close" onclick="closeModal('orderModal')">×</button></div>
+    <div class="modal-body">
+      <div id="cartItems" style="margin-bottom:16px;"></div>
+      <div style="background:var(--navy);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <span style="font-size:13px;font-weight:600;color:rgba(255,255,255,.8);">Total Amount</span>
+        <span style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--gold);" id="modalTotal">BDT 0</span>
+      </div>
+      <div class="form-field"><label>Delivery Location</label>
+        <select><option>Cafeteria — Eat in</option><option>My Desk — Floor 3</option><option>Meeting Room A — Floor 3</option><option>Board Room — Floor 4</option></select>
+      </div>
+      <div class="form-field"><label>Payment Method</label>
+        <select><option>Deduct from monthly salary</option><option>Cash on delivery</option><option>Mobile banking</option></select>
+      </div>
+      <div class="form-field"><label>Special Instructions (optional)</label>
+        <textarea placeholder="Any dietary requirements or customization..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('orderModal')">Cancel</button>
+      <button class="btn-primary" onclick="placeOrder()">✅ Place Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MENU ITEM MODAL -->
+<div class="modal-overlay" id="addItemModal">
+  <div class="modal modal-md">
+    <div class="modal-hdr"><h3>➕ Add Menu Item</h3><button class="modal-close" onclick="closeModal('addItemModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-field"><label>Item Name</label><input type="text" placeholder="e.g. Chicken Biryani"></div>
+        <div class="form-field"><label>Category</label>
+          <select><option>Breakfast</option><option>Lunch</option><option>Snacks</option><option>Beverages</option><option>Dessert</option></select>
+        </div>
+      </div>
+      <div class="form-field"><label>Description</label><textarea placeholder="Brief description of the item..."></textarea></div>
+      <div class="form-row">
+        <div class="form-field"><label>Price (BDT)</label><input type="number" placeholder="0"></div>
+        <div class="form-field"><label>Daily Quantity Available</label><input type="number" placeholder="e.g. 50"></div>
+      </div>
+      <div class="form-field"><label>Available Days</label>
+        <select><option>All weekdays</option><option>Monday to Wednesday</option><option>Thursday and Friday</option><option>Custom</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Dietary Tag</label>
+          <select><option>Regular</option><option>Vegetarian</option><option>Halal</option><option>Healthy</option></select>
+        </div>
+        <div class="form-field"><label>Served By Vendor</label>
+          <select><option>Fresh Foods Ltd</option><option>Dhaka Kitchen Co</option><option>In-house cafeteria</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('addItemModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveMenuItem()">Add to Menu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleArea(el){el.classList.toggle('open');const s=el.nextElementSibling;if(s&&s.classList.contains('sb-sub-list'))s.classList.toggle('open');}
+function toggleDD(){document.getElementById('userDD').classList.toggle('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-menu').forEach(m=>m.classList.remove('open'));});
+function openModal(id){
+  if(id==='orderModal') buildCartModal();
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+
+// Cart state
+const cart={};
+const prices={};
+
+function setTab(n){
+  [0,1,2,3].forEach(i=>{
+    document.getElementById('ptab'+i).classList.toggle('active',i===n);
+    document.getElementById('pane'+i).classList.toggle('active',i===n);
+  });
+}
+
+function setMeal(type,btn){
+  document.querySelectorAll('.meal-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const labels={breakfast:'🌅 Breakfast Menu',lunch:'☀️ Lunch Menu',snacks:'☕ Snacks and Beverages'};
+  alert('Switching to: '+labels[type]);
+}
+
+function addToCart(name,price){
+  prices[name]=price;
+  cart[name]=(cart[name]||0)+1;
+  updateQtyDisplay(name);
+  updateCartBar();
+}
+
+function changeQty(name,delta){
+  const cur=cart[name]||0;
+  const newQty=Math.max(0,cur+delta);
+  if(newQty===0) delete cart[name];
+  else cart[name]=newQty;
+  updateQtyDisplay(name);
+  updateCartBar();
+}
+
+function updateQtyDisplay(name){
+  const el=document.getElementById('qty-'+name);
+  if(el) el.textContent=cart[name]||0;
+}
+
+function updateCartBar(){
+  const total=Object.keys(cart).reduce((s,k)=>s+(cart[k]||0)*prices[k],0);
+  const count=Object.keys(cart).reduce((s,k)=>s+(cart[k]||0),0);
+  const bar=document.getElementById('cartBar');
+  if(count>0){
+    bar.style.display='flex';
+    document.getElementById('cartCount').textContent=count+' item'+(count>1?'s':'')+' in cart';
+    document.getElementById('cartTotal').textContent='BDT '+total;
+  } else {
+    bar.style.display='none';
+  }
+}
+
+function buildCartModal(){
+  const total=Object.keys(cart).reduce((s,k)=>s+(cart[k]||0)*prices[k],0);
+  const el=document.getElementById('cartItems');
+  if(Object.keys(cart).length===0){
+    el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">No items in cart. Add items from the menu first.</div>';
+  } else {
+    el.innerHTML=Object.keys(cart).map(k=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);">
+        <span style="font-size:13px;font-weight:500;">${k} × ${cart[k]}</span>
+        <span style="font-size:13px;font-weight:600;color:var(--navy);">BDT ${cart[k]*prices[k]}</span>
+      </div>`).join('');
+  }
+  document.getElementById('modalTotal').textContent='BDT '+total;
+}
+
+function placeOrder(){
+  closeModal('orderModal');
+  Object.keys(cart).forEach(k=>{delete cart[k];const el=document.getElementById('qty-'+k);if(el)el.textContent=0;});
+  updateCartBar();
+  setTimeout(()=>alert('✅ Order placed!\n\nORD-2025-NEW created.\nEstimated delivery: 20 minutes.\nYou will receive an in-app notification when ready.'),200);
+}
+
+function saveMenuItem(){
+  closeModal('addItemModal');
+  setTimeout(()=>alert('✅ Menu item added!\n\nItem is now live on today\'s menu.\nVendor notified of new item.\nAvailable for ordering immediately.'),200);
+}
+</script>
+</body>
+</html>
